@@ -1,0 +1,9 @@
+name: "sqltodot"
+version: "0.1"
+author: LABEYE Loïc
+about: Convert .sql files to .dot files
+args:
+        - FILENAME:
+                help: File of the sql name
+                required: true
+                index: 1
