@@ -1,8 +1,15 @@
-digraph hello {AGENTS [label=<
+digraph hello {personne [label=<
     <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
-    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="blue">
     <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
-    AGENTS
+    personne
+    </B></FONT></TD></TR>
+</TABLE> >]
+michel [label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="blue">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    michel
     </B></FONT></TD></TR>
 </TABLE> >]
 }

@@ -6,8 +6,8 @@ use clap::App;
 #[macro_use] extern crate lazy_static;
 
 lazy_static! {
-    static ref RE_TABLE_DEFS : Regex = Regex::new(r"(?i)(^\s*CREATE\sTABLE[^;]*.)").unwrap();
-    static ref RE_TABLE_NAME : Regex = Regex::new(r"((?i)^\s?CREATE\sTABLE\s*.)+(\w*).").unwrap();
+    static ref RE_TABLE_DEFS : Regex = Regex::new(r"(?i)\s*CREATE\sTABLE[^;]*.").unwrap();
+    static ref RE_TABLE_NAME : Regex = Regex::new(r"((?i)\s?CREATE\sTABLE\s*.)+(\w*).").unwrap();
 }
 
 fn main() {
@@ -23,6 +23,7 @@ fn main() {
             .map(|element| element.as_str())
             .collect();
         if tables.len() != 0 {
+            println!("Detected tables : {}", tables.len());
             let output_filename : &str = match matches.value_of("output") {
                 Some(value) => value,
                 _ => "output.dot",
@@ -44,6 +45,7 @@ fn main() {
 }
 
 fn convert_sql_to_dot(input: &str) -> String {
+    println!("{}", input);
     let table_name = RE_TABLE_NAME
         .captures(input)
         .unwrap()
@@ -60,8 +62,6 @@ fn convert_sql_to_dot(input: &str) -> String {
         Some(v) => end_dec = v,
         None => return close_table(table_header.as_str())
     }
-    println!("Begin dec : {}", begin_dec);
-    println!("Last dec : {}", end_dec);
     let content : String = input
         .chars()
         .take(end_dec)
@@ -86,7 +86,7 @@ fn write_output_to_file(content: &str, filename: &str) -> std::io::Result<()>{
 fn generate_table_header(name: &str) -> String {
     format!("{0} [label=<
     <TABLE BGCOLOR=\"white\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\">
-    <TR><TD COLSPAN=\"2\" CELLPADDING=\"5\" ALIGN=\"CENTER\" BGCOLOR=\"#1b563f\">
+    <TR><TD COLSPAN=\"2\" CELLPADDING=\"5\" ALIGN=\"CENTER\" BGCOLOR=\"blue\">
     <FONT FACE=\"Roboto\" COLOR=\"white\" POINT-SIZE=\"10\"><B>
     {0}
     </B></FONT></TD></TR>",name)
