@@ -7,3 +7,7 @@ args:
                 help: File of the sql name
                 required: true
                 index: 1
+        - output:
+                help: The output filename
+                short: o
+                takes_value: true
