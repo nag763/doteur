@@ -75,7 +75,10 @@ fn convert_sql_to_dot(input: &str) -> String {
 }
 
 fn init_dot(filename: &str) -> String {
-    format!("digraph {} {{", filename)
+    format!("digraph {} {{\n
+    node [\n
+        shape = \"plaintext\"\n
+    ]\n", filename)
 }
 
 fn close_dot(opened_dot: &str) -> String {

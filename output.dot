@@ -1,4 +1,11 @@
-digraph hello {personne [label=<
+digraph hello {
+
+    node [
+
+        shape = "plaintext"
+
+    ]
+personne [label=<
     <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
     <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="blue">
     <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
