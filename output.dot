@@ -14,42 +14,42 @@ personne [label=<
 <TR><TD ALIGN="LEFT" BORDER="0">
                 <FONT FACE="Roboto">personne_id</FONT>
                 </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto"> int(11) NOT NULL AUTO_INCREMENT</FONT>
+                <FONT FACE="Roboto">int(11) NOT NULL AUTO_INCREMENT</FONT>
                 </TD></TR>
 <TR><TD ALIGN="LEFT" BORDER="0">
                 <FONT FACE="Roboto">personne_nom</FONT>
                 </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto"> varchar(45) NOT NULL</FONT>
+                <FONT FACE="Roboto">varchar(45) NOT NULL</FONT>
                 </TD></TR>
 <TR><TD ALIGN="LEFT" BORDER="0">
                 <FONT FACE="Roboto">personne_prenom</FONT>
                 </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto"> varchar(45) CHARACTER SET utf8mb4 DEFAULT NULL</FONT>
+                <FONT FACE="Roboto">varchar(45) CHARACTER SET utf8mb4 DEFAULT NULL</FONT>
                 </TD></TR>
 <TR><TD ALIGN="LEFT" BORDER="0">
                 <FONT FACE="Roboto">personne_email</FONT>
                 </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto"> varchar(45) CHARACTER SET utf8mb4 NOT NULL</FONT>
+                <FONT FACE="Roboto">varchar(45) CHARACTER SET utf8mb4 NOT NULL</FONT>
                 </TD></TR>
 <TR><TD ALIGN="LEFT" BORDER="0">
                 <FONT FACE="Roboto">personne_mdp</FONT>
                 </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto"> varchar(100) CHARACTER SET utf8mb4 NOT NULL</FONT>
+                <FONT FACE="Roboto">varchar(100) CHARACTER SET utf8mb4 NOT NULL</FONT>
                 </TD></TR>
 <TR><TD ALIGN="LEFT" BORDER="0">
                 <FONT FACE="Roboto">personne_derniere_connexion</FONT>
                 </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto"> timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP</FONT>
+                <FONT FACE="Roboto">timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP</FONT>
                 </TD></TR>
 <TR><TD ALIGN="LEFT" BORDER="0">
                 <FONT FACE="Roboto">personne_role</FONT>
                 </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto"> int(11) NOT NULL</FONT>
+                <FONT FACE="Roboto">int(11) NOT NULL</FONT>
                 </TD></TR>
 <TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto">personne_date_creation</FONT>
+                <FONT FACE="Roboto">personne_dte_creation</FONT>
                 </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto"> timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP</FONT>
+                <FONT FACE="Roboto">timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP</FONT>
                 </TD></TR>
 
 
@@ -63,44 +63,49 @@ michel [label=<
 <TR><TD ALIGN="LEFT" BORDER="0">
                 <FONT FACE="Roboto">personne_id</FONT>
                 </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto"> int(11) NOT NULL AUTO_INCREMENT</FONT>
+                <FONT FACE="Roboto">int(11) NOT NULL AUTO_INCREMENT</FONT>
                 </TD></TR>
 <TR><TD ALIGN="LEFT" BORDER="0">
                 <FONT FACE="Roboto">personne_nom</FONT>
                 </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto"> varchar(45) NOT NULL</FONT>
+                <FONT FACE="Roboto">varchar(45) NOT NULL</FONT>
                 </TD></TR>
 <TR><TD ALIGN="LEFT" BORDER="0">
                 <FONT FACE="Roboto">personne_prenom</FONT>
                 </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto"> varchar(45) CHARACTER SET utf8mb4 DEFAULT NULL</FONT>
+                <FONT FACE="Roboto">varchar(45) CHARACTER SET utf8mb4 DEFAULT NULL</FONT>
                 </TD></TR>
 <TR><TD ALIGN="LEFT" BORDER="0">
                 <FONT FACE="Roboto">personne_email</FONT>
                 </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto"> varchar(45) CHARACTER SET utf8mb4 NOT NULL</FONT>
+                <FONT FACE="Roboto">varchar(45) CHARACTER SET utf8mb4 NOT NULL</FONT>
                 </TD></TR>
 <TR><TD ALIGN="LEFT" BORDER="0">
                 <FONT FACE="Roboto">personne_mdp</FONT>
                 </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto"> varchar(100) CHARACTER SET utf8mb4 NOT NULL</FONT>
+                <FONT FACE="Roboto">varchar(100) CHARACTER SET utf8mb4 NOT NULL</FONT>
                 </TD></TR>
 <TR><TD ALIGN="LEFT" BORDER="0">
                 <FONT FACE="Roboto">personne_derniere_connexion</FONT>
                 </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto"> timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP</FONT>
+                <FONT FACE="Roboto">timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP</FONT>
                 </TD></TR>
 <TR><TD ALIGN="LEFT" BORDER="0">
                 <FONT FACE="Roboto">personne_role</FONT>
                 </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto"> int(11) NOT NULL</FONT>
+                <FONT FACE="Roboto">int(11) NOT NULL</FONT>
                 </TD></TR>
 <TR><TD ALIGN="LEFT" BORDER="0">
                 <FONT FACE="Roboto">personne_date_creation</FONT>
                 </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto"> timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP</FONT>
+                <FONT FACE="Roboto">timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP</FONT>
                 </TD></TR>
 
 
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto">[FK] artist</FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto">Refers to artists(id)</FONT>
+                </TD></TR>
 </TABLE> >]
 }

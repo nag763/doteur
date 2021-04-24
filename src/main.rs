@@ -8,6 +8,8 @@ use clap::App;
 lazy_static! {
     static ref RE_TABLE_DEFS : Regex = Regex::new(r"(?i)\s*CREATE\sTABLE[^;]*.").unwrap();
     static ref RE_TABLE_NAME : Regex = Regex::new(r"((?i)\s?CREATE\sTABLE\s*[`]?)+(\w*).").unwrap();
+    static ref RE_FK : Regex = Regex::new(r"(?i)\sFOREIGN\sKEY").unwrap();
+    static ref RE_IN_PARENTHESES : Regex = Regex::new(r"([a-zA-Z]*)(\(([^()]+)\))").unwrap();
 }
 
 fn main() {
@@ -127,9 +129,29 @@ fn generate_attributes(attr: &str) -> String {
                 <FONT FACE=\"Roboto\">{0}</FONT>
                 </TD><TD ALIGN=\"LEFT\">
                 <FONT FACE=\"Roboto\">{1}</FONT>
-                </TD></TR>", title, rest
+                </TD></TR>", title.trim_start().trim_end(), rest.trim_end().trim_start()
         )
     } else {
-        "".to_string()
+        let is_fk : bool = RE_FK.find_iter(attr).map(|s| s.as_str()).collect::<Vec<&str>>().len() != 0;
+        if is_fk {
+            let matches : Vec<&str> = RE_IN_PARENTHESES.find_iter(attr).map(|s| s.as_str()).collect();
+            let title : String = matches[0]
+                .chars()
+                .take(matches[0].len()-1)
+                .skip(matches[0].find('(').unwrap()+1) 
+                .collect::<String>()
+                .trim_end()
+                .trim_start()
+                .to_string();
+            format!("<TR><TD ALIGN=\"LEFT\" BORDER=\"0\">
+                <FONT FACE=\"Roboto\">[FK] {0}</FONT>
+                </TD><TD ALIGN=\"LEFT\">
+                <FONT FACE=\"Roboto\">Refers to {1}</FONT>
+                </TD></TR>", title, matches[1].trim_start().trim_end()
+            )
+
+        } else {
+            "".to_string()
+        }
     }
 }
