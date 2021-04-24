@@ -4,6 +4,48 @@ digraph hello {personne [label=<
     <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
     personne
     </B></FONT></TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto">personne_id</FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto"> int(11) NOT NULL AUTO_INCREMENT</FONT>
+                </TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto">personne_nom</FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto"> varchar(45) NOT NULL</FONT>
+                </TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto">personne_prenom</FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto"> varchar(45) CHARACTER SET utf8mb4 DEFAULT NULL</FONT>
+                </TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto">personne_email</FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto"> varchar(45) CHARACTER SET utf8mb4 NOT NULL</FONT>
+                </TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto">personne_mdp</FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto"> varchar(100) CHARACTER SET utf8mb4 NOT NULL</FONT>
+                </TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto">personne_derniere_connexion</FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto"> timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP</FONT>
+                </TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto">personne_role</FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto"> int(11) NOT NULL</FONT>
+                </TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto">personne_date_creation</FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto"> timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP</FONT>
+                </TD></TR>
+
+
 </TABLE> >]
 michel [label=<
     <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
@@ -11,5 +53,47 @@ michel [label=<
     <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
     michel
     </B></FONT></TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto">personne_id</FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto"> int(11) NOT NULL AUTO_INCREMENT</FONT>
+                </TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto">personne_nom</FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto"> varchar(45) NOT NULL</FONT>
+                </TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto">personne_prenom</FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto"> varchar(45) CHARACTER SET utf8mb4 DEFAULT NULL</FONT>
+                </TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto">personne_email</FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto"> varchar(45) CHARACTER SET utf8mb4 NOT NULL</FONT>
+                </TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto">personne_mdp</FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto"> varchar(100) CHARACTER SET utf8mb4 NOT NULL</FONT>
+                </TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto">personne_derniere_connexion</FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto"> timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP</FONT>
+                </TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto">personne_role</FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto"> int(11) NOT NULL</FONT>
+                </TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto">personne_date_creation</FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto"> timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP</FONT>
+                </TD></TR>
+
+
 </TABLE> >]
 }

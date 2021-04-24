@@ -7,7 +7,7 @@ use clap::App;
 
 lazy_static! {
     static ref RE_TABLE_DEFS : Regex = Regex::new(r"(?i)\s*CREATE\sTABLE[^;]*.").unwrap();
-    static ref RE_TABLE_NAME : Regex = Regex::new(r"((?i)\s?CREATE\sTABLE\s*.)+(\w*).").unwrap();
+    static ref RE_TABLE_NAME : Regex = Regex::new(r"((?i)\s?CREATE\sTABLE\s*[`]?)+(\w*).").unwrap();
 }
 
 fn main() {
@@ -45,12 +45,11 @@ fn main() {
 }
 
 fn convert_sql_to_dot(input: &str) -> String {
-    println!("{}", input);
     let table_name = RE_TABLE_NAME
         .captures(input)
         .unwrap()
         .get(2)
-        .map_or("TABLE NAME", |t| t.as_str());
+        .map_or("TABLE NAME", |t| t.as_str().trim_start().trim_end());
     let table_header : String = generate_table_header(table_name);
     let begin_dec : usize;
     let end_dec : usize;
@@ -62,12 +61,17 @@ fn convert_sql_to_dot(input: &str) -> String {
         Some(v) => end_dec = v,
         None => return close_table(table_header.as_str())
     }
-    let content : String = input
+    let body_content : String = input
         .chars()
         .take(end_dec)
         .skip(begin_dec+1)
-        .collect(); 
-    close_table(table_header.as_str())
+        .collect::<String>()
+        .split(',')
+        .map(|s| generate_attributes(s).to_string())
+        .collect::<Vec<String>>()
+        .join("\n"); 
+    
+    close_table([table_header, body_content].join("\n").as_str())
 }
 
 fn init_dot(filename: &str) -> String {
@@ -89,9 +93,40 @@ fn generate_table_header(name: &str) -> String {
     <TR><TD COLSPAN=\"2\" CELLPADDING=\"5\" ALIGN=\"CENTER\" BGCOLOR=\"blue\">
     <FONT FACE=\"Roboto\" COLOR=\"white\" POINT-SIZE=\"10\"><B>
     {0}
-    </B></FONT></TD></TR>",name)
+    </B></FONT></TD></TR>", name)
 }
 
 fn close_table(table: &str) -> String {
     format!("{}\n</TABLE> >]", table)
+}
+
+fn generate_attributes(attr: &str) -> String {
+    if !attr.to_lowercase().contains("key") {
+        let title : String;
+        let rest : String;
+        let trimed : &str = attr.trim_start().trim_end();
+        if trimed.chars().collect::<Vec<char>>()[0] == '`' {
+            let splitted = trimed
+                .split('`')
+                .map(|s| s.to_string())
+                .collect::<Vec<String>>();
+            title = splitted[1].to_string();
+            rest = splitted[2].trim_start().to_string();
+        } else {
+            let mut splitted = trimed
+                .split(' ')
+                .map(|s| s.to_string())
+                .collect::<Vec<String>>();
+            title = splitted.remove(0).to_string();
+            rest = splitted.join(" ").into();
+        }
+        format!("<TR><TD ALIGN=\"LEFT\" BORDER=\"0\">
+                <FONT FACE=\"Roboto\">{0}</FONT>
+                </TD><TD ALIGN=\"LEFT\">
+                <FONT FACE=\"Roboto\">{1}</FONT>
+                </TD></TR>", title, rest
+        )
+    } else {
+        "".to_string()
+    }
 }
