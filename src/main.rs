@@ -24,7 +24,7 @@ fn main() {
     if matches.is_present("FILENAME"){
         let filename : &str = matches.value_of("FILENAME").unwrap();
         let contents = fs::read_to_string(&filename)
-            .expect("Something went wrong reading the file");
+            .expect("Something went wrong while reading the file");
         let tables : Vec<&str> = RE_TABLE_DEFS.find_iter(&contents)
             .map(|element| element.as_str())
             .collect();
@@ -74,7 +74,6 @@ fn main() {
                     .collect::<Vec<&str>>()
                     .into_iter()
                     .chain(other_relations_as_str.into_iter())
-                    .filter(|s| trim_leading_trailing(s).len() != 0)
                     .collect::<Vec<&str>>()
                     .join("\n"),
             ].concat();

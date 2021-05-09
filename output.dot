@@ -1,493 +1,54 @@
-digraph mysqlsampledatabase {
+digraph tested {
 
     node [
 
         shape = "plaintext"
 
     ]
-customers [label=<
+artists [label=<
     <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
     <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="blue">
     <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
-    customers
+    artists
     </B></FONT></TD></TR>
 <TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>customerNumber</B></FONT>
+                <FONT FACE="Roboto"><B>id</B></FONT>
                 </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">int(11) NOT NULL</FONT>
+                <FONT FACE="Roboto">int NOT NULL</FONT>
                 </TD></TR>
 <TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>customerName</B></FONT>
+                <FONT FACE="Roboto"><B>name</B></FONT>
                 </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>contactLastName</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>contactFirstName</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>phone</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>addressLine1</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>addressLine2</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) DEFAULT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>city</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>state</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) DEFAULT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>postalCode</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(15) DEFAULT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>country</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>salesRepEmployeeNumber</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">int(11) DEFAULT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>creditLimit</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">decimal(10,2) DEFAULT NULL</FONT>
-                </TD></TR>
-
-
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>[FK] salesRepEmployeeNumber</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">Refers to (employeeNumber)</FONT>
+                <FONT FACE="Roboto">text</FONT>
                 </TD></TR>
 </TABLE> >]
-employees [label=<
+tracks [label=<
     <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
     <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="blue">
     <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
-    employees
+    tracks
     </B></FONT></TD></TR>
 <TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>employeeNumber</B></FONT>
+                <FONT FACE="Roboto"><B>traid</B></FONT>
                 </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">int(11) NOT NULL</FONT>
+                <FONT FACE="Roboto">int DEFAULT NULL</FONT>
                 </TD></TR>
 <TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>lastName</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>firstName</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>extension</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(10) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>email</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(100) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>officeCode</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(10) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>reportsTo</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">int(11) DEFAULT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>jobTitle</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) NOT NULL</FONT>
-                </TD></TR>
-
-
-
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>[FK] reportsTo</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">Refers to (employeeNumber)</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>[FK] officeCode</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">Refers to (officeCode)</FONT>
-                </TD></TR>
-</TABLE> >]
-offices [label=<
-    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
-    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="blue">
-    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
-    offices
-    </B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>officeCode</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(10) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>city</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>phone</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>addressLine1</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>addressLine2</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) DEFAULT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>state</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) DEFAULT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>country</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>postalCode</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(15) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>territory</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(10) NOT NULL</FONT>
-                </TD></TR>
-
-</TABLE> >]
-orderdetails [label=<
-    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
-    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="blue">
-    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
-    orderdetails
-    </B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>orderNumber</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">int(11) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>productCode</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(15) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>quantityOrdered</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">int(11) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>priceEach</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">decimal(10,2) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>orderLineNumber</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">smallint(6) NOT NULL</FONT>
-                </TD></TR>
-
-
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>[FK] orderNumber</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">Refers to (orderNumber)</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>[FK] productCode</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">Refers to (productCode)</FONT>
-                </TD></TR>
-</TABLE> >]
-orders [label=<
-    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
-    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="blue">
-    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
-    orders
-    </B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>orderNumber</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">int(11) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>orderDate</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">date NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>requiredDate</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">date NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>shippedDate</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">date DEFAULT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>status</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(15) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>comments</B></FONT>
+                <FONT FACE="Roboto"><B>title</B></FONT>
                 </TD><TD ALIGN="LEFT">
                 <FONT FACE="Roboto">text</FONT>
                 </TD></TR>
 <TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>customerNumber</B></FONT>
+                <FONT FACE="Roboto"><B>[FK] artist</B></FONT>
                 </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">int(11) NOT NULL</FONT>
-                </TD></TR>
-
-
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>[FK] customerNumber</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">Refers to (customerNumber)</FONT>
-                </TD></TR>
-</TABLE> >]
-payments [label=<
-    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
-    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="blue">
-    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
-    payments
-    </B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>customerNumber</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">int(11) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>checkNumber</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>paymentDate</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">date NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>amount</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">decimal(10,2) NOT NULL</FONT>
-                </TD></TR>
-
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>[FK] customerNumber</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">Refers to (customerNumber)</FONT>
-                </TD></TR>
-</TABLE> >]
-productlines [label=<
-    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
-    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="blue">
-    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
-    productlines
-    </B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>productLine</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>textDescription</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(4000) DEFAULT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>htmlDescription</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">mediumtext</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>image</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">mediumblob</FONT>
-                </TD></TR>
-
-</TABLE> >]
-products [label=<
-    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
-    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="blue">
-    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
-    products
-    </B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>productCode</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(15) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>productName</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(70) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>productLine</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>productScale</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(10) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>productVendor</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">varchar(50) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>productDescription</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">text NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>quantityInStock</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">smallint(6) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>buyPrice</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">decimal(10,2) NOT NULL</FONT>
-                </TD></TR>
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>MSRP</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">decimal(10,2) NOT NULL</FONT>
-                </TD></TR>
-
-
-<TR><TD ALIGN="LEFT" BORDER="0">
-                <FONT FACE="Roboto"><B>[FK] productLine</B></FONT>
-                </TD><TD ALIGN="LEFT">
-                <FONT FACE="Roboto">Refers to (productLine)</FONT>
+                <FONT FACE="Roboto">Refers to (id)</FONT>
                 </TD></TR>
 </TABLE> >]
 
 
 
+tracks ->  artists  [label=" KEY (artist) refers  artists (id)"]
+tracks ->  artists [label=" KEY (artist) refers  artists(id)"]
 
 
-
-
-
-
-
-
-
-
-
-customers ->  employees  [label=" KEY (salesRepEmployeeNumber) refers  employees (employeeNumber)"]
-
-
-
-
-
-
-
-
-
-
-
-employees ->  employees  [label=" KEY (reportsTo) refers  employees (employeeNumber)"]
-employees ->  offices  [label=" KEY (officeCode) refers  offices (officeCode)"]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-orderdetails ->  orders  [label=" KEY (orderNumber) refers  orders (orderNumber)"]
-orderdetails ->  products  [label=" KEY (productCode) refers  products (productCode)"]
-
-
-
-
-
-
-
-
-
-orders ->  customers  [label=" KEY (customerNumber) refers  customers (customerNumber)"]
-
-
-
-
-
-payments ->  customers  [label=" KEY (customerNumber) refers  customers (customerNumber)"]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-products ->  productlines  [label=" KEY (productLine) refers  productlines (productLine)"]
 }
