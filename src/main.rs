@@ -131,6 +131,7 @@ fn convert_sql_to_dot(input: &str) -> (String, String) {
     let relations : String = generated
         .iter()
         .map(|s| s.1.as_deref().unwrap_or_default())
+        .filter(|s| s.len() != 0)
         .collect::<Vec<&str>>()
         .join("\n");
 
