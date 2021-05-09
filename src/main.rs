@@ -13,6 +13,7 @@ lazy_static! {
     static ref RE_FK : Regex = Regex::new(r"(?i)\sFOREIGN\sKEY").unwrap();
     static ref RE_IN_PARENTHESES : Regex = Regex::new(r"([^`][a-zA-Z]*\s*)(\(([^()]+)\))").unwrap();
     static ref RE_SEP_COMA : Regex = Regex::new(r",\s").unwrap();
+    static ref RE_ALTERED_TABLE : Regex = Regex::new(r"(\s(?i)ALTER TABLE\s*)(`?(\w*)`?)([^;]*)").unwrap();
 }
 
 fn main() {
@@ -34,10 +35,46 @@ fn main() {
                 _ => "output.dot",
             };
             let generated_content : Vec<(String, String)> = tables.iter().map(|element| convert_sql_to_dot(element)).collect::<Vec<(String, String)>>();
+            let other_fks : Vec<&str> = RE_ALTERED_TABLE.find_iter(&contents)
+                .map(|element| element.as_str())
+                .collect();
+            let other_relations : Vec<String> = other_fks
+                .iter()
+                .map(|element| 
+                     generate_relations(
+                         RE_ALTERED_TABLE.captures(element)
+                                        .unwrap()
+                                        .get(3)
+                                        .map(|s| s.as_str())
+                                        .unwrap(), 
+                        RE_ALTERED_TABLE.captures(element)
+                                        .unwrap()
+                                        .get(4)
+                                        .map(|s| s.as_str())
+                                        .unwrap()
+                     ).unwrap_or_default()
+                )
+                .collect::<Vec<String>>();
+
+            let other_relations_as_str : Vec<&str> = other_relations
+                .iter()
+                .map(|s| s.as_str())
+                .collect::<Vec<&str>>();
             let output_content = [
                 init_dot(filename), 
-                generated_content.iter().map(|element| element.0.as_str()).collect::<Vec<&str>>().join("\n"),
-                generated_content.iter().map(|element| element.1.as_str()).collect::<Vec<&str>>().join("\n"),
+                generated_content
+                    .iter()
+                    .map(|element| element.0.as_str())
+                    .collect::<Vec<&str>>()
+                    .join("\n"),
+                generated_content
+                    .iter()
+                    .map(|element| element.1.as_str())
+                    .collect::<Vec<&str>>()
+                    .into_iter()
+                    .chain(other_relations_as_str.into_iter())
+                    .collect::<Vec<&str>>()
+                    .join("\n"),
             ].concat();
             
             match write_output_to_file(close_dot(output_content.as_str()).as_str(), output_filename) {

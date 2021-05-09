@@ -42,6 +42,9 @@ CREATE TABLE `personne` (
 -- Dumping data for table `personne`
 --
 
+ALTER TABLE Orders
+ADD FOREIGN KEY (PersonID) REFERENCES Persons(PersonID); 
+
 CREATE TABLE `michel2` (
   `personne_id` int(11) NOT NULL AUTO_INCREMENT,
   `personne_nom` varchar(45) NOT NULL,

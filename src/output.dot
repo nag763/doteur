@@ -1,0 +1,58 @@
+digraph Sample-SQL-File-100000-Rows {
+
+    node [
+
+        shape = "plaintext"
+
+    ]
+IF [label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="blue">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    IF
+    </B></FONT></TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto"><B>user_id</B></FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto">int(11) NOT NULL AUTO_INCREMENT</FONT>
+                </TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto"><B>username</B></FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto">varchar(255) DEFAULT NULL</FONT>
+                </TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto"><B>first_name</B></FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto">varchar(50) DEFAULT NULL</FONT>
+                </TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto"><B>last_name</B></FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto">varchar(50) DEFAULT NULL</FONT>
+                </TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto"><B>gender</B></FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto">varchar(10) DEFAULT NULL</FONT>
+                </TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto"><B>password</B></FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto">varchar(50) DEFAULT NULL</FONT>
+                </TD></TR>
+<TR><TD ALIGN="LEFT" BORDER="0">
+                <FONT FACE="Roboto"><B>status</B></FONT>
+                </TD><TD ALIGN="LEFT">
+                <FONT FACE="Roboto">tinyint(10) DEFAULT NULL</FONT>
+                </TD></TR>
+
+</TABLE> >]
+
+
+
+
+
+
+
+}
