@@ -34,7 +34,7 @@ CREATE TABLE `personne` (
   `personne_role` int(11) NOT NULL,
   `personne_date_creation` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`personne_id`),
-  UNIQUE KEY `pers_email_UNIQUE` (`personne_email`)
+   KEY `pers_email_UNIQUE` (`personne_email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -52,8 +52,8 @@ CREATE TABLE `michel2` (
   `personne_role` int(11) NOT NULL,
   `personne_date_creation` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`personne_id`),
-  UNIQUE KEY `pers_email_UNIQUE` (`personne_email`)
-      FOREIGN KEY(michel_id) REFERENCES michel(personne_id)
+  UNIQUE KEY `pers_email_UNIQUE` (`personne_email`),
+      FOREIGN KEY(michel_id) REFERENCES personne(personne_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

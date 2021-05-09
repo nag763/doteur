@@ -12,6 +12,7 @@ lazy_static! {
     static ref RE_TABLE_NAME : Regex = Regex::new(r"((?i)\s?CREATE\sTABLE\s*[`]?)+(\w*).").unwrap();
     static ref RE_FK : Regex = Regex::new(r"(?i)\sFOREIGN\sKEY").unwrap();
     static ref RE_IN_PARENTHESES : Regex = Regex::new(r"([^`][a-zA-Z]*\s*)(\(([^()]+)\))").unwrap();
+    static ref RE_SEP_COMA : Regex = Regex::new(r",\s").unwrap();
 }
 
 fn main() {
@@ -69,13 +70,13 @@ fn convert_sql_to_dot(input: &str) -> (String, String) {
         Some(v) => end_dec = v,
         None => return (close_table(table_header.as_str()), "".to_string())
     }
-    let lines : Vec<String> = input
+    let lines : Vec<String> = RE_SEP_COMA.split(input
         .chars()
         .take(end_dec)
         .skip(begin_dec+1)
         .collect::<String>()
-        .split(',')
-        .map(|s| s.to_string())
+        .as_str()
+        ).map(|s| s.to_string())
         .collect::<Vec<String>>();
 
     let generated : Vec<(String, Option<String>)> = lines
