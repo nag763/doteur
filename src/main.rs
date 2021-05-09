@@ -41,6 +41,7 @@ fn main() {
             let other_relations : Vec<String> = other_fks
                 .iter()
                 .map(|element| 
+                     // TODO : Améliorer ici, deux fois appel au regex
                      generate_relations(
                          RE_ALTERED_TABLE.captures(element)
                                         .unwrap()
@@ -73,6 +74,7 @@ fn main() {
                     .collect::<Vec<&str>>()
                     .into_iter()
                     .chain(other_relations_as_str.into_iter())
+                    .filter(|s| trim_leading_trailing(s).len() != 0)
                     .collect::<Vec<&str>>()
                     .join("\n"),
             ].concat();
