@@ -97,7 +97,7 @@ fn init_dot(filename: &str) -> String {
 digraph {} {{\n
     node [\n
         shape = \"plaintext\"
-    ]\n\n", Path::new(filename).file_stem().unwrap_or(OsStr::new("sql")).to_str().unwrap_or("sql"))
+    ]\n\n", Path::new(filename).file_stem().unwrap_or_else(|| OsStr::new("sql")).to_str().unwrap_or("sql"))
 }
 
 ///Close dot file properly.
@@ -163,7 +163,7 @@ fn generate_attributes(attr: &str) -> String {
         </TD></TR>", title.trim_leading_trailing(), rest.trim_leading_trailing()
         )
     } else {
-        let is_fk : bool = RE_FK.find_iter(attr).map(|s| s.as_str()).count() != 0;
+        let is_fk : bool = RE_FK.find_iter(attr).count() != 0;
         // If the key is a foreign key, write it.
         if is_fk {
             let matches : Vec<&str> = RE_IN_PARENTHESES
@@ -195,7 +195,7 @@ fn generate_attributes(attr: &str) -> String {
 
 ///Generate relations from the given inputs.
 fn generate_relations(table_name : &str, input: &str) -> Option<String> {
-    let is_fk : bool = RE_FK.find_iter(input).map(|s| s.as_str()).count() != 0;
+    let is_fk : bool = RE_FK.find_iter(input).count() != 0;
     // No PK support yet.
     if is_fk {
         let replaced : &str = &input.replace("`", "");
@@ -264,8 +264,6 @@ pub fn process_file(filename: &str, content: &str) -> String {
                              .join("\n"),
             generated_content.iter()
                              .map(|element| element.1.as_str())
-                             .collect::<Vec<&str>>()
-                             .into_iter()
                              .chain(other_relations_as_str.into_iter())
                              .collect::<Vec<&str>>()
                              .join("\n"),

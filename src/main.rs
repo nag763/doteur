@@ -74,7 +74,7 @@ fn main() {
 ///Check if the program is in path.
 fn dot_in_path() -> bool {
     if let Ok(path) = env::var("PATH") {
-        for p in path.split(":") {
+        for p in path.split(':') {
             let p_str = format!("{}/dot", p);
             if fs::metadata(p_str).is_ok() {
                 return true;
