@@ -1,9 +1,14 @@
+pub mod add_trait;
+
 use std::path::Path;
 use std::ffi::OsStr;
 use regex::Regex;
 use std::fs;
 
+use add_trait::{Trim};
+
 #[macro_use] extern crate lazy_static;
+
 
 lazy_static! {
     ///Look after table defs.
@@ -38,7 +43,7 @@ fn convert_sql_to_dot(input: &str) -> (String, String) {
     let table_name = RE_TABLE_NAME.captures(input)
                                   .unwrap()
                                   .get(2)
-                                  .map_or("TABLE NAME".to_string(), |t| trim_leading_trailing(t.as_str()));
+                                  .map_or("TABLE NAME".to_string(), |t| t.as_str().trim_leading_trailing());
     let table_header : String = generate_table_header(table_name.as_str());
 
     let begin_dec : usize;
@@ -129,7 +134,7 @@ fn generate_attributes(attr: &str) -> String {
     if !attr.to_lowercase().contains("key") {
         let title : String;
         let rest : String;
-        let trimed : String = trim_leading_trailing(attr);
+        let trimed : String = attr.trim_leading_trailing();
         //If it contains back coma, remove it.
         if trimed.chars().collect::<Vec<char>>()[0] == '`' {
             let splitted = trimed
@@ -137,7 +142,7 @@ fn generate_attributes(attr: &str) -> String {
                 .map(|s| s.to_string())
                 .collect::<Vec<String>>();
             title = splitted[1].to_string();
-            rest = trim_leading_trailing(splitted[2].as_str());
+            rest = splitted[2].trim_leading_trailing();
         } else {
             let mut splitted = trimed
                 .split(' ')
@@ -150,7 +155,7 @@ fn generate_attributes(attr: &str) -> String {
                 <FONT FACE=\"Roboto\"><B>{0}</B></FONT>
                 </TD><TD ALIGN=\"LEFT\">
                 <FONT FACE=\"Roboto\">{1}</FONT>
-                </TD></TR>", trim_leading_trailing(title.as_str()), trim_leading_trailing(rest.as_str())
+                </TD></TR>", title.trim_leading_trailing(), rest.trim_leading_trailing()
         )
     } else {
         let is_fk : bool = RE_FK.find_iter(attr).map(|s| s.as_str()).collect::<Vec<&str>>().len() != 0;
@@ -161,19 +166,17 @@ fn generate_attributes(attr: &str) -> String {
                 .map(
                     |s| s.as_str()
                 ).collect::<Vec<&str>>();
-            let title : String = trim_leading_trailing(
-                matches[0]
-                .chars()
-                .take(matches[0].len()-1)
-                .skip(matches[0].find('(').unwrap()+1)
-                .collect::<String>()
-                .as_str()
-                );
+            let title : String = matches[0].chars()
+                                           .take(matches[0].len()-1)
+                                           .skip(matches[0].find('(').unwrap()+1)
+                                           .collect::<String>()
+                                           .as_str()
+                                           .trim_leading_trailing();
             format!("<TR><TD ALIGN=\"LEFT\" BORDER=\"0\">
                 <FONT FACE=\"Roboto\"><B>[FK] {0}</B></FONT>
                 </TD><TD ALIGN=\"LEFT\">
                 <FONT FACE=\"Roboto\">Refers to {1}</FONT>
-                </TD></TR>", title.replace("`", ""), trim_leading_trailing(matches[1]).replace("`", "")
+                </TD></TR>", title.replace("`", ""), matches[1].trim_leading_trailing().replace("`", "")
             )
         //If not, write an empty string.
         } else {
@@ -192,19 +195,13 @@ fn generate_relations(table_name : &str, input: &str) -> Option<String> {
         let matches : Vec<&str> = RE_IN_PARENTHESES.find_iter(replaced).map(|s| s.as_str()).collect();
         if matches.len() != 0 {
             let table_end : &str = matches[1].split("(").collect::<Vec<&str>>()[0];
-            Some(format!("{} -> {} [label=\"{} refers {}\"]", table_name, table_end, trim_leading_trailing(matches[0]), trim_leading_trailing(matches[1])))
+            Some(format!("{} -> {} [label=\"{} refers {}\"]", table_name, table_end, matches[0].trim_leading_trailing(), matches[1].trim_leading_trailing()))
         } else {
             None
         }
     } else {
         None
     }
-}
-
-
-///Trim the leading and trailing spaces of a string.
-fn trim_leading_trailing(input : &str) -> String {
-    input.trim_start().trim_end().to_string()
 }
 
 
