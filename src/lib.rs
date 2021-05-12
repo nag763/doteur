@@ -96,7 +96,7 @@ fn init_dot(filename: &str) -> String {
     format!("//This file has been generated with sqltodot, enjoy!
 digraph {} {{\n
     node [\n
-        fillcolor = \"black\"\n
+        shape = \"plaintext\"
     ]\n\n", Path::new(filename).file_stem().unwrap_or(OsStr::new("sql")).to_str().unwrap_or("sql"))
 }
 
