@@ -3,6 +3,7 @@ use std::env;
 use clap::App;
 use std::process::Command;
 
+use sqltodot::add_trait::{Replacable};
 use sqltodot::{process_file, write_output_to_file, contains_tables};
 
 #[macro_use] extern crate clap;
@@ -22,6 +23,7 @@ fn main() {
 
     if matches.is_present("FILENAME"){
         let filename : &str = matches.value_of("FILENAME").unwrap();
+        let filename_without_specials = filename.replace_specials();
         let contents = fs::read_to_string(&filename)
             .expect("Something went wrong while reading the file");
         if contains_tables(contents.as_str()) {
@@ -30,7 +32,7 @@ fn main() {
                 _ => "output.dot",
             };
 
-            let output_content : String = process_file(filename, contents.as_str());
+            let output_content : String = process_file(&filename_without_specials, contents.as_str());
             let file_ext : &str = get_ext(output_filename);
 
             if get_ext(output_filename) != "dot" {
