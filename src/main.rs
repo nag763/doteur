@@ -19,73 +19,23 @@ lazy_static! {
 fn main() {
 
     let yaml = load_yaml!("cli.yml");
-    let matches = App::from(yaml).get_matches(); 
-    
+    let matches = App::from(yaml).get_matches();
+
     if matches.is_present("FILENAME"){
         let filename : &str = matches.value_of("FILENAME").unwrap();
         let contents = fs::read_to_string(&filename)
             .expect("Something went wrong while reading the file");
-        let tables : Vec<&str> = RE_TABLE_DEFS.find_iter(&contents)
-            .map(|element| element.as_str())
-            .collect();
-        if tables.len() != 0 {
+        let tables : Vec<&str> = get_tables(contents.as_str());
+        if contains_tables(contents.as_str()) {
             println!("Detected tables : {}", tables.len());
             let output_filename : &str = match matches.value_of("output") {
                 Some(value) => value,
                 _ => "output.dot",
             };
-            let generated_content : Vec<(String, String)> = tables.iter().map(|element| convert_sql_to_dot(element)).collect::<Vec<(String, String)>>();
-            let other_fks : Vec<&str> = RE_ALTERED_TABLE.find_iter(&contents)
-                .map(|element| element.as_str())
-                .collect();
-            let other_relations : Vec<String> = other_fks
-                .iter()
-                // TODO : Si virgules, erreur (je pense)
-                .map(|element| 
-                     {
-                         let captures = RE_ALTERED_TABLE.captures(element)
-                                        .unwrap();
-                         let lines : Vec<String> = RE_SEP_COMA.split(captures.get(4)
-                                                           .map(|s| s.as_str())
-                                                           .unwrap())
-                                                           .map(|s| s.to_string())
-                                                           .collect();
-                        return lines
-                            .iter()
-                            .map(|s| generate_relations(
-                                    captures.get(3)
-                                            .map(|s| s.as_str())
-                                            .unwrap(),
-                                    s).unwrap_or_default())
-                            .filter(|s| s.len() != 0)
-                            .collect::<Vec<String>>()
-                            .join("\n");
-                    }
-                )
-                .collect::<Vec<String>>();
 
-            let other_relations_as_str : Vec<&str> = other_relations
-                .iter()
-                .map(|s| s.as_str())
-                .collect::<Vec<&str>>();
-            let output_content = [
-                init_dot(filename), 
-                generated_content
-                    .iter()
-                    .map(|element| element.0.as_str())
-                    .collect::<Vec<&str>>()
-                    .join("\n"),
-                generated_content
-                    .iter()
-                    .map(|element| element.1.as_str())
-                    .collect::<Vec<&str>>()
-                    .into_iter()
-                    .chain(other_relations_as_str.into_iter())
-                    .collect::<Vec<&str>>()
-                    .join("\n"),
-            ].concat();
-            
-            match write_output_to_file(close_dot(output_content.as_str()).as_str(), output_filename) {
+            let output_content : String = process_file(filename, contents.as_str());
+
+            match write_output_to_file(output_content.as_str(), output_filename) {
                 Ok(_) => println!("The output has been successfully written to the {} file", output_filename),
                 Err(_) => println!("An error happened while writing the output file")
             }
@@ -96,6 +46,75 @@ fn main() {
         print!("Please provide a filename. Use --help to see possibilities");
     }
 
+}
+
+fn process_file(filename: &str, content: &str) -> String {
+   let generated_content : Vec<(String, String)> = get_tables(content).iter()
+                                                                      .map(|element| convert_sql_to_dot(element))
+                                                                      .collect::<Vec<(String, String)>>();
+
+   let other_fks : Vec<&str> = RE_ALTERED_TABLE.find_iter(content)
+       .map(|element| element.as_str())
+       .collect();
+
+   let other_relations : Vec<String> = other_fks
+       .iter()
+       .map(|element|
+            {
+                let captures = RE_ALTERED_TABLE.captures(element)
+                               .unwrap();
+                let lines : Vec<String> = RE_SEP_COMA.split(captures.get(4)
+                                                  .map(|s| s.as_str())
+                                                  .unwrap())
+                                                  .map(|s| s.to_string())
+                                                  .collect();
+               return lines
+                   .iter()
+                   .map(|s| generate_relations(
+                           captures.get(3)
+                                   .map(|s| s.as_str())
+                                   .unwrap(),
+                           s).unwrap_or_default())
+                   .filter(|s| s.len() != 0)
+                   .collect::<Vec<String>>()
+                   .join("\n");
+           }
+       )
+       .collect::<Vec<String>>();
+
+   let other_relations_as_str : Vec<&str> = other_relations
+       .iter()
+       .map(|s| s.as_str())
+       .collect::<Vec<&str>>();
+
+    close_dot(
+        [
+           init_dot(filename),
+           generated_content
+               .iter()
+               .map(|element| element.0.as_str())
+               .collect::<Vec<&str>>()
+               .join("\n"),
+           generated_content
+               .iter()
+               .map(|element| element.1.as_str())
+               .collect::<Vec<&str>>()
+               .into_iter()
+               .chain(other_relations_as_str.into_iter())
+               .collect::<Vec<&str>>()
+               .join("\n"),
+        ].concat().as_str()
+    )
+}
+
+fn get_tables(input: &str) -> Vec<&str> {
+    RE_TABLE_DEFS.find_iter(input)
+            .map(|element| element.as_str())
+            .collect::<Vec<&str>>()
+}
+
+fn contains_tables(input: &str) -> bool {
+    get_tables(input).len() != 0
 }
 
 fn convert_sql_to_dot(input: &str) -> (String, String) {
@@ -159,7 +178,7 @@ fn close_dot(opened_dot: &str) -> String {
 fn write_output_to_file(content: &str, filename: &str) -> std::io::Result<()>{
     fs::write(filename ,content)?;
     Ok(())
-}   
+}
 
 fn generate_table_header(name: &str) -> String {
     format!("{0} [label=<
@@ -212,7 +231,7 @@ fn generate_attributes(attr: &str) -> String {
                 matches[0]
                 .chars()
                 .take(matches[0].len()-1)
-                .skip(matches[0].find('(').unwrap()+1) 
+                .skip(matches[0].find('(').unwrap()+1)
                 .collect::<String>()
                 .as_str()
                 );
