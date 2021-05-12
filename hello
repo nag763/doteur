@@ -38,6 +38,11 @@ CREATE TABLE `personne` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+ALTER TABLE Orders
+ADD FOREIGN KEY (PersonID) REFERENCES Persons(PersonID),
+ADD FOREIGN KEY (PersonID) REFERENCES Persons(PersonID);
+ADD FOREIGN KEY(michel_id) REFERENCES personne(personne_id);
+
 --
 -- Dumping data for table `personne`
 --
@@ -55,8 +60,7 @@ CREATE TABLE `michel2` (
   `personne_role` int(11) NOT NULL,
   `personne_date_creation` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`personne_id`),
-  UNIQUE KEY `pers_email_UNIQUE` (`personne_email`),
-      FOREIGN KEY(michel_id) REFERENCES personne(personne_id)
+  UNIQUE KEY `pers_email_UNIQUE` (`personne_email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

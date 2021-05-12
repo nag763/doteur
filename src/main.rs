@@ -40,20 +40,27 @@ fn main() {
                 .collect();
             let other_relations : Vec<String> = other_fks
                 .iter()
+                // TODO : Si virgules, erreur (je pense)
                 .map(|element| 
-                     // TODO : Améliorer ici, deux fois appel au regex
-                     generate_relations(
-                         RE_ALTERED_TABLE.captures(element)
-                                        .unwrap()
-                                        .get(3)
-                                        .map(|s| s.as_str())
-                                        .unwrap(), 
-                        RE_ALTERED_TABLE.captures(element)
-                                        .unwrap()
-                                        .get(4)
-                                        .map(|s| s.as_str())
-                                        .unwrap()
-                     ).unwrap_or_default()
+                     {
+                         let captures = RE_ALTERED_TABLE.captures(element)
+                                        .unwrap();
+                         let lines : Vec<String> = RE_SEP_COMA.split(captures.get(4)
+                                                           .map(|s| s.as_str())
+                                                           .unwrap())
+                                                           .map(|s| s.to_string())
+                                                           .collect();
+                        return lines
+                            .iter()
+                            .map(|s| generate_relations(
+                                    captures.get(3)
+                                            .map(|s| s.as_str())
+                                            .unwrap(),
+                                    s).unwrap_or_default())
+                            .filter(|s| s.len() != 0)
+                            .collect::<Vec<String>>()
+                            .join("\n");
+                    }
                 )
                 .collect::<Vec<String>>();
 
