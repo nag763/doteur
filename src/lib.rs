@@ -96,7 +96,7 @@ fn init_dot(filename: &str) -> String {
     format!("//This file has been generated with sqltodot, enjoy!
 digraph {} {{\n
     node [\n
-        shape = \"plaintext\"\n
+        fillcolor = \"black\"\n
     ]\n\n", Path::new(filename).file_stem().unwrap_or(OsStr::new("sql")).to_str().unwrap_or("sql"))
 }
 
@@ -202,7 +202,7 @@ fn generate_relations(table_name : &str, input: &str) -> Option<String> {
         let matches : Vec<&str> = RE_IN_PARENTHESES.find_iter(replaced).map(|s| s.as_str()).collect();
         if matches.len() != 0 {
             let table_end : &str = matches[1].split("(").collect::<Vec<&str>>()[0];
-            Some(format!("\t{} -> {} [label=\"{} refers {}\"]", table_name, table_end, matches[0].trim_leading_trailing(), matches[1].trim_leading_trailing()))
+            Some(format!("\t{} -> {} [label=\"{} refers {}\", arrowhead = \"dot\"]", table_name, table_end, matches[0].trim_leading_trailing(), matches[1].trim_leading_trailing()))
         } else {
             None
         }
