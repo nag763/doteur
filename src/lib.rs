@@ -34,7 +34,7 @@ fn get_tables(input: &str) -> Vec<&str> {
 
 ///Check if the given input has declared tables.
 pub fn contains_tables(input: &str) -> bool {
-    get_tables(input).len() != 0
+    !get_tables(input).is_empty()
 }
 
 
@@ -76,14 +76,14 @@ fn convert_sql_to_dot(input: &str) -> (String, String) {
     let body_content : String = generated
         .iter()
         .map(|s| s.0.as_str())
-        .filter(|s| s.len() != 0)
+        .filter(|s| !s.is_empty())
         .collect::<Vec<&str>>()
         .join("\n\n");
 
     let relations : String = generated
         .iter()
         .map(|s| s.1.as_deref().unwrap_or_default())
-        .filter(|s| s.len() != 0)
+        .filter(|s| !s.is_empty())
         .collect::<Vec<&str>>()
         .join("\n");
 
@@ -152,8 +152,8 @@ fn generate_attributes(attr: &str) -> String {
                 .split(' ')
                 .map(|s| s.to_string())
                 .collect::<Vec<String>>();
-            title = splitted.remove(0).to_string();
-            rest = splitted.join(" ").into();
+            title = splitted.remove(0);
+            rest = splitted.join(" ");
         }
         format!("
         <TR><TD ALIGN=\"LEFT\" BORDER=\"0\">
@@ -163,7 +163,7 @@ fn generate_attributes(attr: &str) -> String {
         </TD></TR>", title.trim_leading_trailing(), rest.trim_leading_trailing()
         )
     } else {
-        let is_fk : bool = RE_FK.find_iter(attr).map(|s| s.as_str()).collect::<Vec<&str>>().len() != 0;
+        let is_fk : bool = RE_FK.find_iter(attr).map(|s| s.as_str()).count() != 0;
         // If the key is a foreign key, write it.
         if is_fk {
             let matches : Vec<&str> = RE_IN_PARENTHESES
@@ -195,13 +195,13 @@ fn generate_attributes(attr: &str) -> String {
 
 ///Generate relations from the given inputs.
 fn generate_relations(table_name : &str, input: &str) -> Option<String> {
-    let is_fk : bool = RE_FK.find_iter(input).map(|s| s.as_str()).collect::<Vec<&str>>().len() != 0;
+    let is_fk : bool = RE_FK.find_iter(input).map(|s| s.as_str()).count() != 0;
     // No PK support yet.
     if is_fk {
         let replaced : &str = &input.replace("`", "");
         let matches : Vec<&str> = RE_IN_PARENTHESES.find_iter(replaced).map(|s| s.as_str()).collect();
-        if matches.len() != 0 {
-            let table_end : &str = matches[1].split("(").collect::<Vec<&str>>()[0];
+        if !matches.is_empty() {
+            let table_end : &str = matches[1].split('(').collect::<Vec<&str>>()[0];
             Some(format!("\t{} -> {} [label=\"{} refers {}\", arrowhead = \"dot\"]", table_name, table_end, matches[0].trim_leading_trailing(), matches[1].trim_leading_trailing()))
         } else {
             None
@@ -244,7 +244,7 @@ pub fn process_file(filename: &str, content: &str) -> String {
                                                         // Returns the new relation if they aren't empty.
                                                         return lines.iter()
                                                                     .map(|s| generate_relations(altered_table_name, s).unwrap_or_default())
-                                                                    .filter(|s| s.len() != 0)
+                                                                    .filter(|s| !s.is_empty())
                                                                     .collect::<Vec<String>>()
                                                                     .join("\n");
                                                     }
