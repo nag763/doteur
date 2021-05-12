@@ -37,9 +37,9 @@ fn main() {
 
             if get_ext(output_filename) != "dot" {
                 if !dot_in_path() {
-                    println!("The dot exe isn't in your path, we couldn't write the output.\nIf you work on linux, use your package manager to download graphviz.\nIf you work on windows, refer to the tutorial or download the tool via the official graphviz site.");
+                    panic!("The dot exe isn't in your path, we couldn't write the output.\nIf you work on linux, use your package manager to download graphviz.\nIf you work on windows, refer to the tutorial or download the tool via the official graphviz site.");
                 } else if !ext_supported(file_ext) {
-                    println!("The given extension isn't supported. Please verify it is one of the following :\n\n{}", POSSIBLE_DOTS_OUTPUT.join(";"));
+                    panic!("The given extension isn't supported. Please verify it is one of the following :\n\n{}", POSSIBLE_DOTS_OUTPUT.join(";"));
                 } else {
                     match write_output_to_file(output_content.as_str(), "output.dot") {
                         Ok(_) => {
@@ -52,20 +52,20 @@ fn main() {
 
                             println!("The output has been successfully written to the {} file", output_filename);
                         },
-                        Err(_) => println!("An error happened while writing the output file")
+                        Err(_) => panic!("An error happened while writing the output file")
                     }
                 }
             } else {
                 match write_output_to_file(output_content.as_str(), output_filename) {
                     Ok(_) => println!("The output has been successfully written to the {} file", output_filename),
-                    Err(_) => println!("An error happened while writing the output file")
+                    Err(_) => panic!("An error happened while writing the output file")
                 }
             }
         } else {
-            println!("Sorry, we couldn't find any table for the given file(s), please verify that the format of the file is correct, or report the incident on github");
+            panic!("Sorry, we couldn't find any table for the given file(s), please verify that the format of the file is correct, or report the incident on github");
         }
     } else {
-        print!("Please provide a filename. Use --help to see possibilities");
+        panic!("Please provide a filename. Use --help to see possibilities");
     }
 
 }
