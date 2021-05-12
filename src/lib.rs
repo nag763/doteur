@@ -192,7 +192,7 @@ fn generate_relations(table_name : &str, input: &str) -> Option<String> {
         let matches : Vec<&str> = RE_IN_PARENTHESES.find_iter(replaced).map(|s| s.as_str()).collect();
         if matches.len() != 0 {
             let table_end : &str = matches[1].split("(").collect::<Vec<&str>>()[0];
-            Some(format!("{} -> {} [label=\"{} refers {}\"]", table_name, table_end, matches[0], matches[1]))
+            Some(format!("{} -> {} [label=\"{} refers {}\"]", table_name, table_end, trim_leading_trailing(matches[0]), trim_leading_trailing(matches[1])))
         } else {
             None
         }

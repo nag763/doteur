@@ -409,14 +409,14 @@ products [label=<
                 </TD><TD ALIGN="LEFT">
                 <FONT FACE="Roboto">Refers to (productLine)</FONT>
                 </TD></TR>
-</TABLE> >]customers ->  employees  [label=" KEY (salesRepEmployeeNumber) refers  employees (employeeNumber)"]
-employees ->  employees  [label=" KEY (reportsTo) refers  employees (employeeNumber)"]
-employees ->  offices  [label=" KEY (officeCode) refers  offices (officeCode)"]
+</TABLE> >]customers ->  employees  [label="KEY (salesRepEmployeeNumber) refers employees (employeeNumber)"]
+employees ->  employees  [label="KEY (reportsTo) refers employees (employeeNumber)"]
+employees ->  offices  [label="KEY (officeCode) refers offices (officeCode)"]
 
-orderdetails ->  orders  [label=" KEY (orderNumber) refers  orders (orderNumber)"]
-orderdetails ->  products  [label=" KEY (productCode) refers  products (productCode)"]
-orders ->  customers  [label=" KEY (customerNumber) refers  customers (customerNumber)"]
-payments ->  customers  [label=" KEY (customerNumber) refers  customers (customerNumber)"]
+orderdetails ->  orders  [label="KEY (orderNumber) refers orders (orderNumber)"]
+orderdetails ->  products  [label="KEY (productCode) refers products (productCode)"]
+orders ->  customers  [label="KEY (customerNumber) refers customers (customerNumber)"]
+payments ->  customers  [label="KEY (customerNumber) refers customers (customerNumber)"]
 
-products ->  productlines  [label=" KEY (productLine) refers  productlines (productLine)"]
+products ->  productlines  [label="KEY (productLine) refers productlines (productLine)"]
 }
