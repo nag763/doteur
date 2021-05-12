@@ -1,11 +1,22 @@
 use std::fs;
+use std::env;
 use clap::App;
+use std::process::Command;
+
 use sqltodot::{process_file, write_output_to_file, contains_tables};
 
 #[macro_use] extern crate clap;
 
-fn main() {
+const POSSIBLE_DOTS_OUTPUT : [&str; 54] = ["bmp", "canon", "gv", "xdot", "xdot1.2", "xdot1.4",
+                                            "cgimage", "cmap", "eps", "eps", "exr", "fig", "gd",
+                                            "gd2" , "gif", "gtk", "ico", "imap", "cmapx", "imap_np",
+                                            "cmapx_np", "ismap", "jp2", "jpg", "jpeg", "jpe", "json",
+                                            "json0", "dot_json", "xdot_json", "pct", "pict","pdf",
+                                            "pic", "plain", "plain-ext", "png", "pov", "ps2", "psd",
+                                            "sgi", "svg", "svgz", "tga", "tif", "tiff", "tk", "vml",
+                                            "vmlz", "vrml", "wbmp", "webp", "xlib", "x11"];
 
+fn main() {
     let yaml = load_yaml!("cli.yml");
     let matches = App::from(yaml).get_matches();
 
@@ -20,10 +31,33 @@ fn main() {
             };
 
             let output_content : String = process_file(filename, contents.as_str());
+            let file_ext : &str = get_ext(output_filename);
 
-            match write_output_to_file(output_content.as_str(), output_filename) {
-                Ok(_) => println!("The output has been successfully written to the {} file", output_filename),
-                Err(_) => println!("An error happened while writing the output file")
+            if get_ext(output_filename) != "dot" {
+                if !dot_in_path() {
+                    println!("The dot exe isn't in your path, we couldn't write the output.\nIf you work on linux, use your package manager to download graphviz.\nIf you work on windows, refer to the tutorial or download the tool via the official graphviz site.");
+                } else if !ext_supported(file_ext) {
+                    println!("The given extension isn't supported. Please verify it is one of the following :\n\n{}", POSSIBLE_DOTS_OUTPUT.join(";"));
+                } else {
+                    match write_output_to_file(output_content.as_str(), "output.dot") {
+                        Ok(_) => {
+                            Command::new("dot")
+                                    .arg(["-T", file_ext].join(""))
+                                    .arg("output.dot")
+                                    .arg(["-o", output_filename].join(""))
+                                    .spawn()
+                                    .expect("An error happened while writing the output file");
+
+                            println!("The output has been successfully written to the {} file", output_filename);
+                        },
+                        Err(_) => println!("An error happened while writing the output file")
+                    }
+                }
+            } else {
+                match write_output_to_file(output_content.as_str(), output_filename) {
+                    Ok(_) => println!("The output has been successfully written to the {} file", output_filename),
+                    Err(_) => println!("An error happened while writing the output file")
+                }
             }
         } else {
             println!("Sorry, we couldn't find any table for the given file(s), please verify that the format of the file is correct, or report the incident on github");
@@ -32,4 +66,28 @@ fn main() {
         print!("Please provide a filename. Use --help to see possibilities");
     }
 
+}
+
+
+///Check if the program is in path.
+fn dot_in_path() -> bool {
+    if let Ok(path) = env::var("PATH") {
+        for p in path.split(":") {
+            let p_str = format!("{}/dot", p);
+            if fs::metadata(p_str).is_ok() {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+
+fn get_ext(filename: &str) -> &str {
+    std::path::Path::new(filename).extension().unwrap_or_default().to_str().unwrap_or_default()
+}
+
+
+fn ext_supported(ext: &str) -> bool {
+    POSSIBLE_DOTS_OUTPUT.iter().any(|&i| i== ext)
 }
