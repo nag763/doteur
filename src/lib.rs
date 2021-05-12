@@ -93,7 +93,8 @@ fn convert_sql_to_dot(input: &str) -> (String, String) {
 
 ///Create dot file header.
 fn init_dot(filename: &str) -> String {
-    format!("digraph {} {{\n
+    format!("//This file has been generated with sqltodot, enjoy!
+digraph {} {{\n
     node [\n
         shape = \"plaintext\"\n
     ]\n\n", Path::new(filename).file_stem().unwrap_or(OsStr::new("sql")).to_str().unwrap_or("sql"))
