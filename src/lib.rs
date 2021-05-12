@@ -76,8 +76,9 @@ fn convert_sql_to_dot(input: &str) -> (String, String) {
     let body_content : String = generated
         .iter()
         .map(|s| s.0.as_str())
+        .filter(|s| s.len() != 0)
         .collect::<Vec<&str>>()
-        .join("\n");
+        .join("\n\n");
 
     let relations : String = generated
         .iter()
@@ -95,7 +96,7 @@ fn init_dot(filename: &str) -> String {
     format!("digraph {} {{\n
     node [\n
         shape = \"plaintext\"\n
-    ]\n", Path::new(filename).file_stem().unwrap_or(OsStr::new("sql")).to_str().unwrap_or("sql"))
+    ]\n\n", Path::new(filename).file_stem().unwrap_or(OsStr::new("sql")).to_str().unwrap_or("sql"))
 }
 
 ///Close dot file properly.
@@ -113,18 +114,20 @@ pub fn write_output_to_file(content: &str, filename: &str) -> std::io::Result<()
 
 ///Generate the .dot table header.
 fn generate_table_header(name: &str) -> String {
-    format!("{0} [label=<
-    <TABLE BGCOLOR=\"white\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\">
-    <TR><TD COLSPAN=\"2\" CELLPADDING=\"5\" ALIGN=\"CENTER\" BGCOLOR=\"blue\">
-    <FONT FACE=\"Roboto\" COLOR=\"white\" POINT-SIZE=\"10\"><B>
-    {0}
-    </B></FONT></TD></TR>", name)
+    format!("
+    {0} [label=<
+        <TABLE BGCOLOR=\"white\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\">
+
+        <TR><TD COLSPAN=\"2\" CELLPADDING=\"5\" ALIGN=\"CENTER\" BGCOLOR=\"blue\">
+        <FONT FACE=\"Roboto\" COLOR=\"white\" POINT-SIZE=\"10\">
+        <B>{0}</B>
+        </FONT></TD></TR>", name)
 }
 
 
 ///Close a .dot table.
 fn close_table(table: &str) -> String {
-    format!("{}\n</TABLE> >]", table)
+    format!("{}\n\n\t</TABLE> >]\n", table)
 }
 
 
@@ -151,11 +154,12 @@ fn generate_attributes(attr: &str) -> String {
             title = splitted.remove(0).to_string();
             rest = splitted.join(" ").into();
         }
-        format!("<TR><TD ALIGN=\"LEFT\" BORDER=\"0\">
-                <FONT FACE=\"Roboto\"><B>{0}</B></FONT>
-                </TD><TD ALIGN=\"LEFT\">
-                <FONT FACE=\"Roboto\">{1}</FONT>
-                </TD></TR>", title.trim_leading_trailing(), rest.trim_leading_trailing()
+        format!("
+        <TR><TD ALIGN=\"LEFT\" BORDER=\"0\">
+        <FONT FACE=\"Roboto\"><B>{0}</B></FONT>
+        </TD><TD ALIGN=\"LEFT\">
+        <FONT FACE=\"Roboto\">{1}</FONT>
+        </TD></TR>", title.trim_leading_trailing(), rest.trim_leading_trailing()
         )
     } else {
         let is_fk : bool = RE_FK.find_iter(attr).map(|s| s.as_str()).collect::<Vec<&str>>().len() != 0;
@@ -172,11 +176,13 @@ fn generate_attributes(attr: &str) -> String {
                                            .collect::<String>()
                                            .as_str()
                                            .trim_leading_trailing();
-            format!("<TR><TD ALIGN=\"LEFT\" BORDER=\"0\">
-                <FONT FACE=\"Roboto\"><B>[FK] {0}</B></FONT>
-                </TD><TD ALIGN=\"LEFT\">
-                <FONT FACE=\"Roboto\">Refers to {1}</FONT>
-                </TD></TR>", title.replace("`", ""), matches[1].trim_leading_trailing().replace("`", "")
+            // The tabs here are for the output file.
+            format!("
+        <TR><TD ALIGN=\"LEFT\" BORDER=\"0\">
+        <FONT FACE=\"Roboto\"><B>[FK] {0}</B></FONT>
+        </TD><TD ALIGN=\"LEFT\">
+        <FONT FACE=\"Roboto\">Refers to {1}</FONT>
+        </TD></TR>", title.replace("`", ""), matches[1].trim_leading_trailing().replace("`", "")
             )
         //If not, write an empty string.
         } else {
@@ -195,7 +201,7 @@ fn generate_relations(table_name : &str, input: &str) -> Option<String> {
         let matches : Vec<&str> = RE_IN_PARENTHESES.find_iter(replaced).map(|s| s.as_str()).collect();
         if matches.len() != 0 {
             let table_end : &str = matches[1].split("(").collect::<Vec<&str>>()[0];
-            Some(format!("{} -> {} [label=\"{} refers {}\"]", table_name, table_end, matches[0].trim_leading_trailing(), matches[1].trim_leading_trailing()))
+            Some(format!("\t{} -> {} [label=\"{} refers {}\"]", table_name, table_end, matches[0].trim_leading_trailing(), matches[1].trim_leading_trailing()))
         } else {
             None
         }
