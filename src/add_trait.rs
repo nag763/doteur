@@ -1,4 +1,6 @@
+///Trim whitespaces.
 pub trait Trim {
+    ///Trim leading and trailing whitespaces.
     fn trim_leading_trailing(&self) -> String;
 }
 
