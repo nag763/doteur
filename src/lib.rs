@@ -176,7 +176,7 @@ fn generate_attributes(attr: &str) -> String {
         <TR><TD ALIGN=\"LEFT\" BORDER=\"0\">
         <FONT FACE=\"Roboto\"><B>[FK] {0}</B></FONT>
         </TD><TD ALIGN=\"LEFT\">
-        <FONT FACE=\"Roboto\">Refers to {1}[{2}]</FONT>
+        <FONT FACE=\"Roboto\">Refers to <I>{1}[{2}]</I></FONT>
         </TD></TR>", captures[0].1, captures[1].0, captures[1].1
             )
         //If not, write an empty string.
