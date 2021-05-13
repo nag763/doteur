@@ -1,6 +1,9 @@
-## Doteur
 
-A simple tool to draw your mysql relations from exports.
+<p align="center"><img src="https://github.com/nag763/doteur/blob/main/logo.png"></img></p>
+
+<h2 align="center">Doteur</h2>
+<h4 align="center">A simple tool to draw your mysql relations from exports.</h4>
+
 
 ![sample](sample.jpeg)
 
