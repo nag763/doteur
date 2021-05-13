@@ -225,10 +225,6 @@ pub fn process_file(filename: &str, content: &str) -> String {
                                                         .filter(|s| !s.is_empty())
                                                         .collect::<Vec<String>>();
 
-    let other_relations_as_str : Vec<&str> = other_relations.iter()
-                                                            .map(|element| element.as_str())
-                                                            .collect::<Vec<&str>>();
-
     // Returns the content generated
     close_dot(
         [
@@ -239,7 +235,7 @@ pub fn process_file(filename: &str, content: &str) -> String {
                              .join("\n"),
             generated_content.iter()
                              .map(|element| element.1.as_str())
-                             .chain(other_relations_as_str.into_iter())
+                             .chain(other_relations.iter().map(|element| element.as_str()))
                              .collect::<Vec<&str>>()
                              .join("\n"),
         ].concat().as_str()
