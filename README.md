@@ -1,23 +1,21 @@
 ## Doteur
 
-#### Roadmap
+```bash
 
-- [ ] Finish those :
+sqltodot 0.1
+LABEYE Loïc
+Convert .sql files to .dot files
 
-	- [ ] Include, exclude tables
+USAGE:
+    doteur [OPTIONS] <FILENAME>
 
-	- [ ] Include graphviz lib
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
 
-	- [ ] Autogenerate graph given the output (.png)
+OPTIONS:
+    -o <output>        The output filename
 
-- [ ] Publish licence
-
-- [ ] Clean code, logical parts in lib
-
-- [ ] Do tests and prepare for CI
-
-- [ ] Create README
-
-- [ ] Create site
-
-- [ ] Create tutorial
+ARGS:
+    <FILENAME>    File of the sql name
+```

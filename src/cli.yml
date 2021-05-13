@@ -1,4 +1,4 @@
-name: "sqltodot"
+name: "doteur"
 version: "0.1"
 author: LABEYE Loïc
 about: Convert .sql files to .dot files
