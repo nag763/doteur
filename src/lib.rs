@@ -196,7 +196,7 @@ fn generate_relations(table_name : &str, input: &str) -> Option<String> {
                                                 .map(|matched| (matched.get(1).unwrap().as_str(), matched.get(2).unwrap().as_str()))
                                                 .collect::<Vec<(&str, &str)>>();
         if captures.len() == 2 {
-            Some(format!("\t{0} -> {1} [label=\"{0}[{2}] refers {1}[{3}]\", arrowhead = \"dot\"]", table_name, captures[1].0, captures[0].1, captures[1].1))
+            Some(format!("\t{0} -> {1} [label=\"Key {2} refers {3}\", arrowhead = \"dot\"]", table_name, captures[1].0, captures[0].1, captures[1].1))
         } else {
             None
         }
@@ -215,37 +215,18 @@ pub fn process_file(filename: &str, content: &str) -> String {
                                                                        .collect::<Vec<(String, String)>>();
 
     // Look after the other fks, declared on alter table statements.
-    let other_fks : Vec<&str> = RE_ALTERED_TABLE.find_iter(content)
-                                                .map(|element| element.as_str())
-                                                .collect();
-
-    // Generate the relations from the altered statements.
-    let other_relations : Vec<String> = other_fks.iter()
-                                                 .map(|element|
-                                                    {
-                                                        let captures = RE_ALTERED_TABLE.captures(element)
-                                                        .unwrap();
-                                                        // The fourth element is the table content.
-                                                        let lines : Vec<String> = RE_SEP_COMA.split(captures.get(0)
-                                                                                             .map(|s| s.as_str())
-                                                                                             .unwrap())
-                                                                                             .map(|s| s.to_string())
-                                                                                             .collect();
-
-                                                        let altered_table_name : &str = captures.get(1)
-                                                                                                .map(|s| s.as_str())
-                                                                                                .unwrap();
-                                                        // Returns the new relation if they aren't empty.
-                                                        return lines.iter()
-                                                                    .map(|s| generate_relations(altered_table_name, s).unwrap_or_default())
-                                                                    .filter(|s| !s.is_empty())
-                                                                    .collect::<Vec<String>>()
-                                                                    .join("\n");
-                                                    }
-    ).collect::<Vec<String>>();
+    let other_relations : Vec<String> = RE_ALTERED_TABLE.captures_iter(content)
+                                                        .map(|element|
+                                                            generate_relations(
+                                                                element.get(1).unwrap().as_str(),
+                                                                element.get(2).unwrap().as_str()
+                                                            ).unwrap_or_default()
+                                                        )
+                                                        .filter(|s| !s.is_empty())
+                                                        .collect::<Vec<String>>();
 
     let other_relations_as_str : Vec<&str> = other_relations.iter()
-                                                            .map(|s| s.as_str())
+                                                            .map(|element| element.as_str())
                                                             .collect::<Vec<&str>>();
 
     // Returns the content generated
