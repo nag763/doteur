@@ -3,8 +3,8 @@ use std::env;
 use clap::App;
 use std::process::Command;
 
-use sqltodot::add_trait::{Replacable};
-use sqltodot::{process_file, write_output_to_file, contains_tables};
+use doteur::add_trait::{Replacable};
+use doteur::{process_file, write_output_to_file, contains_tables};
 
 #[macro_use] extern crate clap;
 
