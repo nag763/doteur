@@ -5,7 +5,7 @@ use std::ffi::OsStr;
 use regex::Regex;
 use std::fs;
 
-use add_trait::{Trim, Replacable};
+use add_trait::{Trim};
 
 #[macro_use] extern crate lazy_static;
 
@@ -14,15 +14,15 @@ lazy_static! {
     ///Look after table defs.
     static ref RE_TABLE_DEFS : Regex = Regex::new(r"(?i)\s*CREATE\s*TABLE[^;]*.").unwrap();
     ///Get table name.
-    static ref RE_TABLE_NAME : Regex = Regex::new(r"((?i)\s*CREATE\s*TABLE\s*[`]?)+(\w*).").unwrap();
+    static ref RE_TABLE_NAME : Regex = Regex::new(r"(?i)\s*CREATE\s*TABLE\s*(?:IF\s*NOT\s*EXISTS)?\s*[`]?(\w*).").unwrap();
     ///Check if foreign key exists.
     static ref RE_FK : Regex = Regex::new(r"(?i)\s*FOREIGN\s*KEY").unwrap();
     ///Check for the content in parenthesis.
-    static ref RE_IN_PARENTHESES : Regex = Regex::new(r"([^`][a-zA-Z]*\s*)(\(([^()]+)\))").unwrap();
+    static ref RE_IN_PARENTHESES : Regex = Regex::new(r"[`]?(\w*)[`]?\s*(?:\(`?([^()`]+)`?\))").unwrap();
     ///Split on coma.
     static ref RE_SEP_COMA : Regex = Regex::new(r",\s").unwrap();
     ///Look after alter table statements.
-    static ref RE_ALTERED_TABLE : Regex = Regex::new(r"(\s(?i)ALTER TABLE\s*)(`?(\w*)`?)([^;]*)").unwrap();
+    static ref RE_ALTERED_TABLE : Regex = Regex::new(r"\s*(?i)ALTER\s*TABLE\s*`?(\w*)`?\s*([^;]*)").unwrap();
 }
 
 ///Get the tables from the input.
@@ -42,7 +42,7 @@ pub fn contains_tables(input: &str) -> bool {
 fn convert_sql_to_dot(input: &str) -> (String, String) {
     let table_name = RE_TABLE_NAME.captures(input)
                                   .unwrap()
-                                  .get(2)
+                                  .get(1)
                                   .unwrap()
                                   .as_str()
                                   .trim_leading_trailing();
@@ -168,24 +168,16 @@ fn generate_attributes(attr: &str) -> String {
         let is_fk : bool = RE_FK.find_iter(attr).count() != 0;
         // If the key is a foreign key, write it.
         if is_fk {
-            let matches : Vec<&str> = RE_IN_PARENTHESES
-                .find_iter(attr)
-                .map(
-                    |s| s.as_str()
-                ).collect::<Vec<&str>>();
-            let title : String = matches[0].chars()
-                                           .take(matches[0].len()-1)
-                                           .skip(matches[0].find('(').unwrap()+1)
-                                           .collect::<String>()
-                                           .as_str()
-                                           .trim_leading_trailing();
+            let captures : Vec<(&str, &str)> = RE_IN_PARENTHESES.captures_iter(attr)
+                                                    .map(|matched| (matched.get(1).unwrap().as_str(), matched.get(2).unwrap().as_str()))
+                                                    .collect::<Vec<(&str, &str)>>();
             // The tabs here are for the output file.
             format!("
         <TR><TD ALIGN=\"LEFT\" BORDER=\"0\">
         <FONT FACE=\"Roboto\"><B>[FK] {0}</B></FONT>
         </TD><TD ALIGN=\"LEFT\">
-        <FONT FACE=\"Roboto\">Refers to {1}</FONT>
-        </TD></TR>", title.replace_specials(), matches[1].trim_leading_trailing().replace_specials()
+        <FONT FACE=\"Roboto\">Refers to {1}[{2}]</FONT>
+        </TD></TR>", captures[0].1, captures[1].0, captures[1].1
             )
         //If not, write an empty string.
         } else {
@@ -200,11 +192,11 @@ fn generate_relations(table_name : &str, input: &str) -> Option<String> {
     let is_fk : bool = RE_FK.find_iter(input).count() != 0;
     // No PK support yet.
     if is_fk {
-        let replaced : &str = &input.replace("`", "");
-        let matches : Vec<&str> = RE_IN_PARENTHESES.find_iter(replaced).map(|s| s.as_str()).collect();
-        if !matches.is_empty() {
-            let table_end : &str = matches[1].split('(').collect::<Vec<&str>>()[0];
-            Some(format!("\t{} -> {} [label=\"{} refers {}\", arrowhead = \"dot\"]", table_name, table_end, matches[0].trim_leading_trailing(), matches[1].trim_leading_trailing()))
+        let captures : Vec<(&str, &str)> = RE_IN_PARENTHESES.captures_iter(input)
+                                                .map(|matched| (matched.get(1).unwrap().as_str(), matched.get(2).unwrap().as_str()))
+                                                .collect::<Vec<(&str, &str)>>();
+        if captures.len() == 2 {
+            Some(format!("\t{0} -> {1} [label=\"{0}[{2}] refers {1}[{3}]\", arrowhead = \"dot\"]", table_name, captures[1].0, captures[0].1, captures[1].1))
         } else {
             None
         }
@@ -234,13 +226,13 @@ pub fn process_file(filename: &str, content: &str) -> String {
                                                         let captures = RE_ALTERED_TABLE.captures(element)
                                                         .unwrap();
                                                         // The fourth element is the table content.
-                                                        let lines : Vec<String> = RE_SEP_COMA.split(captures.get(4)
+                                                        let lines : Vec<String> = RE_SEP_COMA.split(captures.get(0)
                                                                                              .map(|s| s.as_str())
                                                                                              .unwrap())
                                                                                              .map(|s| s.to_string())
                                                                                              .collect();
 
-                                                        let altered_table_name : &str = captures.get(3)
+                                                        let altered_table_name : &str = captures.get(1)
                                                                                                 .map(|s| s.as_str())
                                                                                                 .unwrap();
                                                         // Returns the new relation if they aren't empty.
@@ -288,6 +280,7 @@ mod tests {
         assert_ne!(RE_TABLE_DEFS.find_iter("\tCREATE\t\t TABLE   \t HELLO();").count(), 0, "several spaces between");
         assert_ne!(RE_TABLE_DEFS.find_iter("CREATE \n\tTABLE \n \t HELLO();").count(), 0, "several backline between");
         assert_ne!(RE_TABLE_DEFS.find_iter("CREATE \n\tTABLE \n \t HELLO();").count(), 0, "several backline between");
+        assert_ne!(RE_TABLE_DEFS.find_iter("CREATE TABLE IF NOT EXISTS HELLO();").count(), 0, "if not exists");
 
         assert_eq!(RE_TABLE_DEFS.find_iter("CREATE TABL HELLO();").count(), 0, "typo");
         assert_eq!(RE_TABLE_DEFS.find_iter("CRATE TABLE HELLO();").count(), 0, "typo");
@@ -299,10 +292,12 @@ mod tests {
 
     #[test]
     fn test_re_table_name() {
-        assert_eq!(RE_TABLE_NAME.captures("CREATE TABLE HELLO();").unwrap().get(2).unwrap().as_str(), "HELLO", "normal");
-        assert_eq!(RE_TABLE_NAME.captures("CREATE TABLE `HELLO`();").unwrap().get(2).unwrap().as_str(), "HELLO", "with backquotes");
-        assert_eq!(RE_TABLE_NAME.captures("\t\nCREATE\t\n TABLE\t\n `HELLO`\t();").unwrap().get(2).unwrap().as_str(), "HELLO", "with separative sequences");
-        assert_eq!(RE_TABLE_NAME.captures("\t\nCreATE\t\n TaBle\t\n `HeLlO`();").unwrap().get(2).unwrap().as_str(), "HeLlO", "mixed");
+        assert_eq!(RE_TABLE_NAME.captures("CREATE TABLE HELLO();").unwrap().get(1).unwrap().as_str(), "HELLO", "normal");
+        assert_eq!(RE_TABLE_NAME.captures("CREATE TABLE `HELLO`();").unwrap().get(1).unwrap().as_str(), "HELLO", "with backquotes");
+        assert_eq!(RE_TABLE_NAME.captures("CREATE TABLE IF NOT EXISTS `HELLO`();").unwrap().get(1).unwrap().as_str(), "HELLO", "with backquotes");
+        assert_eq!(RE_TABLE_NAME.captures("CREATE TABLE If NoT EXIsTS HELLO();").unwrap().get(1).unwrap().as_str(), "HELLO", "with backquotes and mixed");
+        assert_eq!(RE_TABLE_NAME.captures("\t\nCREATE\t\n TABLE\t\n `HELLO`\t();").unwrap().get(1).unwrap().as_str(), "HELLO", "with separative sequences");
+        assert_eq!(RE_TABLE_NAME.captures("\t\nCreATE\t\n TaBle\t\n `HeLlO`();").unwrap().get(1).unwrap().as_str(), "HeLlO", "mixed");
     }
 
     #[test]
@@ -320,6 +315,34 @@ mod tests {
 
     #[test]
     fn test_re_in_parenthesis() {
+        assert_eq!(RE_IN_PARENTHESES.find_iter("FOREIGN KEY (PersonID) REFERENCES Persons(PersonID)").count(), 2, "normal");
+        let matches : Vec<&str> = RE_IN_PARENTHESES.find_iter("FOREIGN KEY (PersonID) REFERENCES Persons(PersonID)").map(|s| s.as_str()).collect();
+        assert_eq!(matches.get(0).unwrap(), &"KEY (PersonID)", "normal");
+        assert_eq!(matches.get(1).unwrap(), &"Persons(PersonID)", "normal");
+
+        assert_eq!(RE_IN_PARENTHESES.find_iter("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`)").count(), 2, "normal with backquotes");
+        let matches2 : Vec<&str> = RE_IN_PARENTHESES.find_iter("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`)").map(|s| s.as_str()).collect();
+        assert_eq!(matches2.get(0).unwrap(), &"KEY (`PersonID`)", "normal with backquotes");
+        assert_eq!(matches2.get(1).unwrap(), &"`Persons`(`PersonID`)", "normal with backquotes");
+
+        let captures = RE_IN_PARENTHESES.captures_iter("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`)").map(|matched| (matched.get(1).unwrap().as_str(), matched.get(2).unwrap().as_str())).collect::<Vec<(&str, &str)>>();
+        assert_eq!(captures[0].0, "KEY", "normal with backquotes");
+        assert_eq!(captures[0].1, "PersonID", "normal with backquotes");
+        assert_eq!(captures[1].0, "Persons", "normal with backquotes");
+        assert_eq!(captures[1].1, "PersonID", "normal with backquotes");
     }
 
+    #[test]
+    fn test_re_alter_table() {
+        assert_eq!(RE_ALTERED_TABLE.find_iter("ALTER TABLE HELLO ADD FOREIGN KEY (PersonID) REFERENCES artists (id) ;").count(), 1, "normal");
+        let captures = RE_ALTERED_TABLE.captures("ALTER \t\nTABLE HELLO ADD FOREIGN KEY (PersonID) REFERENCES artists (id) ;").unwrap();
+        assert_eq!(captures.get(1).unwrap().as_str(), "HELLO", "normal");
+        assert_eq!(captures.get(2).unwrap().as_str(), "ADD FOREIGN KEY (PersonID) REFERENCES artists (id) ", "normal");
+
+        assert_eq!(RE_ALTERED_TABLE.find_iter("ALTER TABLE `HELLO` ADD FOREIGN KEY (`PersonID`) REFERENCES `artists` (`id`) ;").count(), 1, "normal");
+        let captures2 = RE_ALTERED_TABLE.captures("ALTER TABLE `HELLO` ADD FOREIGN KEY (`PersonID`) REFERENCES `artists` (`id`) ;").unwrap();
+        assert_eq!(captures2.get(1).unwrap().as_str(), "HELLO", "normal");
+        assert_eq!(captures2.get(2).unwrap().as_str(), "ADD FOREIGN KEY (`PersonID`) REFERENCES `artists` (`id`) ", "normal");
+
+    }
 }
