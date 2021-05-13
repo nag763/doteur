@@ -5,18 +5,18 @@ use std::ffi::OsStr;
 use regex::Regex;
 use std::fs;
 
-use add_trait::{Trim};
+use add_trait::{Trim, Replacable};
 
 #[macro_use] extern crate lazy_static;
 
 
 lazy_static! {
     ///Look after table defs.
-    static ref RE_TABLE_DEFS : Regex = Regex::new(r"(?i)\s*CREATE\sTABLE[^;]*.").unwrap();
+    static ref RE_TABLE_DEFS : Regex = Regex::new(r"(?i)\s*CREATE\s*TABLE[^;]*.").unwrap();
     ///Get table name.
-    static ref RE_TABLE_NAME : Regex = Regex::new(r"((?i)\s?CREATE\sTABLE\s*[`]?)+(\w*).").unwrap();
+    static ref RE_TABLE_NAME : Regex = Regex::new(r"((?i)\s*CREATE\s*TABLE\s*[`]?)+(\w*).").unwrap();
     ///Check if foreign key exists.
-    static ref RE_FK : Regex = Regex::new(r"(?i)\sFOREIGN\sKEY").unwrap();
+    static ref RE_FK : Regex = Regex::new(r"(?i)\s*FOREIGN\s*KEY").unwrap();
     ///Check for the content in parenthesis.
     static ref RE_IN_PARENTHESES : Regex = Regex::new(r"([^`][a-zA-Z]*\s*)(\(([^()]+)\))").unwrap();
     ///Split on coma.
@@ -43,7 +43,9 @@ fn convert_sql_to_dot(input: &str) -> (String, String) {
     let table_name = RE_TABLE_NAME.captures(input)
                                   .unwrap()
                                   .get(2)
-                                  .map_or("TABLE NAME".to_string(), |t| t.as_str().trim_leading_trailing());
+                                  .unwrap()
+                                  .as_str()
+                                  .trim_leading_trailing();
     let table_header : String = generate_table_header(table_name.as_str());
 
     let begin_dec : usize;
@@ -183,7 +185,7 @@ fn generate_attributes(attr: &str) -> String {
         <FONT FACE=\"Roboto\"><B>[FK] {0}</B></FONT>
         </TD><TD ALIGN=\"LEFT\">
         <FONT FACE=\"Roboto\">Refers to {1}</FONT>
-        </TD></TR>", title.replace("`", ""), matches[1].trim_leading_trailing().replace("`", "")
+        </TD></TR>", title.replace_specials(), matches[1].trim_leading_trailing().replace_specials()
             )
         //If not, write an empty string.
         } else {
@@ -269,4 +271,55 @@ pub fn process_file(filename: &str, content: &str) -> String {
                              .join("\n"),
         ].concat().as_str()
     )
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_re_table_defs() {
+        assert_ne!(RE_TABLE_DEFS.find_iter("\nCREATE TABLE HELLO();").count(), 0, "with leading");
+        assert_ne!(RE_TABLE_DEFS.find_iter("\n\tCREATE TABLE HELLO();").count(), 0, "with leading");
+        assert_ne!(RE_TABLE_DEFS.find_iter("\nCREATE TABLE `HELLO`();").count(), 0, "with backquotes");
+        assert_ne!(RE_TABLE_DEFS.find_iter("\n\tCReaTe TabLe HELLO();").count(), 0, "non capital letters");
+        assert_ne!(RE_TABLE_DEFS.find_iter("CREATE TABLE   \t HELLO();").count(), 0, "several spaces between");
+        assert_ne!(RE_TABLE_DEFS.find_iter("\tCREATE\t\t TABLE   \t HELLO();").count(), 0, "several spaces between");
+        assert_ne!(RE_TABLE_DEFS.find_iter("CREATE \n\tTABLE \n \t HELLO();").count(), 0, "several backline between");
+        assert_ne!(RE_TABLE_DEFS.find_iter("CREATE \n\tTABLE \n \t HELLO();").count(), 0, "several backline between");
+
+        assert_eq!(RE_TABLE_DEFS.find_iter("CREATE TABL HELLO();").count(), 0, "typo");
+        assert_eq!(RE_TABLE_DEFS.find_iter("CRATE TABLE HELLO();").count(), 0, "typo");
+        assert_eq!(RE_TABLE_DEFS.find_iter("CREATE OR TABLE HELLO();").count(), 0, "wrong keyword");
+        assert_eq!(RE_TABLE_DEFS.find_iter("CREATE DATABASE HELLO();").count(), 0, "wrong keyword");
+        assert_eq!(RE_TABLE_DEFS.find_iter("DROP TABLE HELLO();").count(), 0, "wrong keyword");
+        assert_eq!(RE_TABLE_DEFS.find_iter("ALTER TABLE HELLO();").count(), 0, "wrong keyword");
+    }
+
+    #[test]
+    fn test_re_table_name() {
+        assert_eq!(RE_TABLE_NAME.captures("CREATE TABLE HELLO();").unwrap().get(2).unwrap().as_str(), "HELLO", "normal");
+        assert_eq!(RE_TABLE_NAME.captures("CREATE TABLE `HELLO`();").unwrap().get(2).unwrap().as_str(), "HELLO", "with backquotes");
+        assert_eq!(RE_TABLE_NAME.captures("\t\nCREATE\t\n TABLE\t\n `HELLO`\t();").unwrap().get(2).unwrap().as_str(), "HELLO", "with separative sequences");
+        assert_eq!(RE_TABLE_NAME.captures("\t\nCreATE\t\n TaBle\t\n `HeLlO`();").unwrap().get(2).unwrap().as_str(), "HeLlO", "mixed");
+    }
+
+    #[test]
+    fn test_re_fk() {
+        assert_eq!(RE_FK.find_iter("ADD FOREIGN KEY (PersonID) REFERENCES Persons(PersonID)").count(), 1, "normal");
+        assert_eq!(RE_FK.find_iter("ADD FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`)").count(), 1, "normal");
+        assert_eq!(RE_FK.find_iter("FOREIGN KEY (PersonID) REFERENCES Persons(PersonID);").count(), 1, "normal");
+        assert_eq!(RE_FK.find_iter("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`)").count(), 1, "normal");
+        assert_eq!(RE_FK.find_iter("\n\tFOREIGN\t\n \t\nKEY \n\t(`PersonID`) REFERENCES `Persons`(`PersonID`)").count(), 1, "with spaces");
+        assert_eq!(RE_FK.find_iter("\n\tForeIgN\t\n \t\nkeY (`PersonID`) REFERENCES `Persons`(`PersonID`)").count(), 1, "mixed");
+
+        assert_ne!(RE_FK.find_iter("ADD PRIMARY KEY (PersonID) REFERENCES Persons(PersonID)").count(), 1, "wrong key");
+        assert_ne!(RE_FK.find_iter("ADD UNIQUE KEY (PersonID) REFERENCES Persons(PersonID)").count(), 1, "wrong key");
+    }
+
+    #[test]
+    fn test_re_in_parenthesis() {
+    }
+
 }
