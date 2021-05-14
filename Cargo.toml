@@ -1,6 +1,6 @@
 [package]
 name = "doteur"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["nag763 <loic.labeye@tutanota.de>"]
 edition = "2018"
 
@@ -10,3 +10,4 @@ edition = "2018"
 regex = "1"
 clap = { version = "2.3.3", features = ["yaml"] }
 lazy_static = "1.4.0"
+which = "4.1.0"

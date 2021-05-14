@@ -1,7 +1,7 @@
 use std::fs;
-use std::env;
 use clap::App;
 use std::process::Command;
+use which::which;
 
 use doteur::add_trait::{Replacable};
 use doteur::{process_file, write_output_to_file, contains_tables};
@@ -36,7 +36,7 @@ fn main() {
             let file_ext : &str = get_ext(output_filename);
 
             if get_ext(output_filename) != "dot" {
-                if !dot_in_path() {
+                if  which("dot").is_err() {
                     panic!("The dot exe isn't in your path, we couldn't write the output.\nIf you work on linux, use your package manager to download graphviz.\nIf you work on windows, refer to the tutorial or download the tool via the official graphviz site.");
                 } else if !ext_supported(file_ext) {
                     panic!("The given extension isn't supported. Please verify it is one of the following :\n\n{}", POSSIBLE_DOTS_OUTPUT.join(";"));
@@ -68,20 +68,6 @@ fn main() {
         panic!("Please provide a filename. Use --help to see possibilities");
     }
 
-}
-
-
-///Check if the program is in path.
-fn dot_in_path() -> bool {
-    if let Ok(path) = env::var("PATH") {
-        for p in path.split(':') {
-            let p_str = format!("{}/dot", p);
-            if fs::metadata(p_str).is_ok() {
-                return true;
-            }
-        }
-    }
-    false
 }
 
 
