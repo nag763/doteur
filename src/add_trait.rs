@@ -1,8 +1,8 @@
 use regex::Regex;
 
 pub enum ReSearchType {
-    INCLUSIVE,
-    EXCLUSIVE
+    Inclusive,
+    Exclusive
 }
 
 ///Trim whitespaces.
@@ -17,7 +17,7 @@ pub trait Replacable {
 }
 
 pub trait ReSearch {
-    fn regex_search(&self, regex_list : &Vec<Regex>, re_search_type : &ReSearchType) -> bool;
+    fn regex_search(&self, regex_list : &[Regex], re_search_type : &ReSearchType) -> bool;
 }
 
 
@@ -46,19 +46,19 @@ impl Replacable for String {
 }
 
 impl ReSearch for &str {
-    fn regex_search(&self, regex_list : &Vec<Regex>, re_search_type : &ReSearchType) -> bool {
+    fn regex_search(&self, regex_list : &[Regex], re_search_type : &ReSearchType) -> bool {
         match re_search_type {
-            ReSearchType::INCLUSIVE => regex_list.iter().any(|e| e.is_match(self)),
-            ReSearchType::EXCLUSIVE => !regex_list.iter().all(|e| e.is_match(self))
+            ReSearchType::Inclusive => regex_list.iter().any(|e| e.is_match(self)),
+            ReSearchType::Exclusive => !regex_list.iter().all(|e| e.is_match(self))
         }
     }
 }
 
 impl ReSearch for String {
-    fn regex_search(&self, regex_list : &Vec<Regex>, re_search_type : &ReSearchType) -> bool {
+    fn regex_search(&self, regex_list : &[Regex], re_search_type : &ReSearchType) -> bool {
         match re_search_type {
-            ReSearchType::INCLUSIVE => regex_list.iter().any(|e| e.is_match(self)),
-            ReSearchType::EXCLUSIVE => !regex_list.iter().any(|e| e.is_match(self))
+            ReSearchType::Inclusive => regex_list.iter().any(|e| e.is_match(self)),
+            ReSearchType::Exclusive => !regex_list.iter().any(|e| e.is_match(self))
         }
     }
 }

@@ -205,7 +205,7 @@ fn generate_relations(table_name : &str, input: &str, restrictive_regex : Option
         if captures.len() == 2 {
             let table_end : &str = captures[1].0;
             if let Some(restriction) = restrictive_regex {
-                if vec![table_name ,table_end].iter().all(|element| element.regex_search(&restriction.0, &restriction.1)) {
+                if vec![table_name ,table_end].iter().all(|element| element.trim_leading_trailing().regex_search(&restriction.0, &restriction.1)) {
                     Some(format!("\t{0} -> {1} [label=\"Key {2} refers {3}\", arrowhead = \"dot\"]", table_name, table_end, captures[0].1, captures[1].1))
                 } else {
                     None
@@ -276,7 +276,7 @@ pub fn process_file(filename: &str, content: &str, restrictions : Option<(Vec<&s
 
 ///From a String makes a regex.
 fn str_to_regex(input : &str) -> Result<regex::Regex, regex::Error> {
-    Regex::new(input.replace('*', ".*").as_str())
+    Regex::new(format!("^{}$", input.replace('*', ".*")).as_str())
 }
 
 #[cfg(test)]

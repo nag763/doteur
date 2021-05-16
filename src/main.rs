@@ -34,9 +34,9 @@ fn main() {
                 _ => "output.dot",
             };
             if matches.is_present("include") {
-                restrictions = Some((matches.values_of("include").unwrap().collect::<Vec<&str>>(), ReSearchType::INCLUSIVE));
+                restrictions = Some((matches.values_of("include").unwrap().collect::<Vec<&str>>(), ReSearchType::Inclusive));
             } else if matches.is_present("exclude") {
-                restrictions = Some((matches.values_of("exclude").unwrap().collect::<Vec<&str>>(), ReSearchType::EXCLUSIVE));
+                restrictions = Some((matches.values_of("exclude").unwrap().collect::<Vec<&str>>(), ReSearchType::Exclusive));
             } else {
                 restrictions = None;
             }
