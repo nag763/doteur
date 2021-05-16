@@ -3,7 +3,7 @@ use clap::App;
 use std::process::Command;
 use which::which;
 
-use doteur::add_trait::{Replacable};
+use doteur::add_trait::{Replacable, ReSearchType};
 use doteur::{process_file, write_output_to_file, contains_tables};
 
 #[macro_use] extern crate clap;
@@ -20,6 +20,8 @@ const POSSIBLE_DOTS_OUTPUT : [&str; 54] = ["bmp", "canon", "gv", "xdot", "xdot1.
 fn main() {
     let yaml = load_yaml!("cli.yml");
     let matches = App::from(yaml).get_matches();
+    let restrictions : Option<(Vec<&str>, ReSearchType)>;
+
 
     if matches.is_present("FILENAME"){
         let filename : &str = matches.value_of("FILENAME").unwrap();
@@ -31,8 +33,15 @@ fn main() {
                 Some(value) => value,
                 _ => "output.dot",
             };
+            if matches.is_present("include") {
+                restrictions = Some((matches.values_of("include").unwrap().collect::<Vec<&str>>(), ReSearchType::INCLUSIVE));
+            } else if matches.is_present("exclude") {
+                restrictions = Some((matches.values_of("exclude").unwrap().collect::<Vec<&str>>(), ReSearchType::EXCLUSIVE));
+            } else {
+                restrictions = None;
+            }
 
-            let output_content : String = process_file(&filename_without_specials, contents.as_str());
+            let output_content : String = process_file(&filename_without_specials, contents.as_str(), restrictions);
             let file_ext : &str = get_ext(output_filename);
 
             if get_ext(output_filename) != "dot" {

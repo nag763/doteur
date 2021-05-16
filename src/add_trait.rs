@@ -1,3 +1,10 @@
+use regex::Regex;
+
+pub enum ReSearchType {
+    INCLUSIVE,
+    EXCLUSIVE
+}
+
 ///Trim whitespaces.
 pub trait Trim {
     ///Trim leading and trailing whitespaces.
@@ -7,6 +14,10 @@ pub trait Trim {
 ///Replace characters that can set issues.
 pub trait Replacable {
     fn replace_specials(&self) -> String;
+}
+
+pub trait ReSearch {
+    fn regex_search(&self, regex_list : &Vec<Regex>, re_search_type : &ReSearchType) -> bool;
 }
 
 
@@ -31,6 +42,24 @@ impl Replacable for str {
 impl Replacable for String {
     fn replace_specials(&self) -> String {
         self.chars().filter(|c| c.is_ascii_alphanumeric() || c.is_ascii_whitespace()).collect::<String>()
+    }
+}
+
+impl ReSearch for &str {
+    fn regex_search(&self, regex_list : &Vec<Regex>, re_search_type : &ReSearchType) -> bool {
+        match re_search_type {
+            ReSearchType::INCLUSIVE => regex_list.iter().any(|e| e.is_match(self)),
+            ReSearchType::EXCLUSIVE => !regex_list.iter().all(|e| e.is_match(self))
+        }
+    }
+}
+
+impl ReSearch for String {
+    fn regex_search(&self, regex_list : &Vec<Regex>, re_search_type : &ReSearchType) -> bool {
+        match re_search_type {
+            ReSearchType::INCLUSIVE => regex_list.iter().any(|e| e.is_match(self)),
+            ReSearchType::EXCLUSIVE => !regex_list.iter().any(|e| e.is_match(self))
+        }
     }
 }
 

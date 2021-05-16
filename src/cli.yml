@@ -13,12 +13,12 @@ args:
                 takes_value: true
         - include:
                 help: include only the given tables
-                short: I
+                short: i
                 takes_value: true
                 multiple: true
         - exclude:
                 help: exclude the given tables
-                short: E
+                short: x
                 takes_value: true
                 multiple: true
                 conflicts_with:
