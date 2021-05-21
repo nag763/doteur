@@ -5,7 +5,7 @@ use std::ffi::OsStr;
 use regex::Regex;
 use std::fs;
 
-use models::{Trim, ReSearchType, ReSearch};
+use models::{Trim, ReSearchType, ReSearch, Args};
 
 #[macro_use] extern crate lazy_static;
 
@@ -224,34 +224,21 @@ fn generate_relations(table_name : &str, input: &str, restrictive_regex : Option
 
 ///Process the given filename and content to generate a
 ///.dot file.
-pub fn process_file(filename: &str, content: &str, restrictions : Option<(Vec<&str>, ReSearchType)>) -> String {
+pub fn process_file(args : Args) -> String {
 
-    let restrictive_regex : Option<(Vec<Regex>, ReSearchType)>;
-
-    if let Some(rest) = restrictions {
-        restrictive_regex = Some((
-            rest.0.iter()
-                  .map(|element| str_to_regex(element).unwrap_or_else(|_| Regex::new("").unwrap()))
-                  .filter(|element| element.as_str() != "")
-                  .collect::<Vec<Regex>>(),
-            rest.1
-        ));
-    } else {
-        restrictive_regex = None;
-    }
     // Generate content from the declared tables.
-    let generated_content : Vec<(String, String)> = get_tables(content).iter()
-                                                                       .map(|element| convert_sql_to_dot(element, restrictive_regex.as_ref()))
+    let generated_content : Vec<(String, String)> = get_tables(args.get_filecontent()).iter()
+                                                                       .map(|element| convert_sql_to_dot(element, args.get_restrictions().as_ref()))
                                                                        .filter(|(element1 , _)| !element1.is_empty())
                                                                        .collect::<Vec<(String, String)>>();
 
     // Look after the other fks, declared on alter table statements.
-    let other_relations : Vec<String> = RE_ALTERED_TABLE.captures_iter(content)
+    let other_relations : Vec<String> = RE_ALTERED_TABLE.captures_iter(args.get_filecontent())
                                                         .map(|element|
                                                             generate_relations(
                                                                 element.get(1).unwrap().as_str(),
                                                                 element.get(2).unwrap().as_str(),
-                                                                restrictive_regex.as_ref()
+                                                                args.get_restrictions().as_ref()
                                                             ).unwrap_or_default()
                                                         )
                                                         .filter(|s| !s.is_empty())
@@ -260,7 +247,7 @@ pub fn process_file(filename: &str, content: &str, restrictions : Option<(Vec<&s
     // Returns the content generated
     close_dot(
         [
-            init_dot(filename),
+            init_dot(args.get_output_filename()),
             generated_content.iter()
                              .map(|element| element.0.as_str())
                              .collect::<Vec<&str>>()
@@ -272,11 +259,6 @@ pub fn process_file(filename: &str, content: &str, restrictions : Option<(Vec<&s
                              .join("\n"),
         ].concat().as_str()
     )
-}
-
-///From a String makes a regex.
-fn str_to_regex(input : &str) -> Result<regex::Regex, regex::Error> {
-    Regex::new(format!("^{}$", input.replace('*', ".*")).as_str())
 }
 
 #[cfg(test)]

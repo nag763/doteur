@@ -10,11 +10,17 @@ pub const POSSIBLE_DOTS_OUTPUT : [&str; 54] = ["bmp", "canon", "gv", "xdot", "xd
                                             "sgi", "svg", "svgz", "tga", "tif", "tiff", "tk", "vml",
                                             "vmlz", "vrml", "wbmp", "webp", "xlib", "x11"];
 
+///From a String makes a regex.
+fn str_to_regex(input : &str) -> Result<regex::Regex, regex::Error> {
+    Regex::new(format!("^{}$", input.replace('*', ".*")).as_str())
+}
+
+#[derive(Clone)]
 pub struct Args {
     pub filename: String,
     pub filecontent: String,
     pub output_filename: String,
-    pub restrictions: Option<(Vec<String>, ReSearchType)>,
+    pub restrictions: Option<(Vec<Regex>, ReSearchType)>,
 }
 
 impl Args {
@@ -52,15 +58,32 @@ impl Args {
         self.output_filename = output_filename;
     }
 
-    pub fn get_restrictions(&self) -> Option<(Vec<&str>, ReSearchType)> {
+    pub fn get_restrictions(&self) -> Option<(Vec<Regex>, ReSearchType)> {
         match &self.restrictions {
-            Some(value) => Some((value.0.iter().map(|s| s.as_str()).collect::<Vec<&str>>(), value.1.clone())),
+            Some(value) => Some((value.0.clone(), value.1.clone())),
             None => None
         }
     }
 
-    pub fn set_restrictions(&mut self, restrictions: Option<(Vec<String>, ReSearchType)>) {
-        self.restrictions = restrictions;
+    pub fn set_inclusions(&mut self, inclusions : Vec<String>) {
+        self.restrictions = Some(
+            (inclusions.iter()
+                       .map(|element| str_to_regex(element).unwrap_or_else(|_| Regex::new("").unwrap()))
+                       .filter(|element| element.as_str() != "")
+                       .collect::<Vec<Regex>>(),
+             ReSearchType::Inclusive)
+         );
+    }
+
+
+    pub fn set_exclusions(&mut self, exclusions : Vec<String>) {
+        self.restrictions = Some(
+            (exclusions.iter()
+                       .map(|element| str_to_regex(element).unwrap_or_else(|_| Regex::new("").unwrap()))
+                       .filter(|element| element.as_str() != "")
+                       .collect::<Vec<Regex>>(),
+            ReSearchType::Exclusive)
+        );
     }
 
 }

@@ -2,7 +2,7 @@ use clap::App;
 use std::process::Command;
 use which::which;
 
-use doteur::models::{ReSearchType, Args, POSSIBLE_DOTS_OUTPUT};
+use doteur::models::{Args, POSSIBLE_DOTS_OUTPUT};
 use doteur::{process_file, write_output_to_file, contains_tables};
 
 #[macro_use] extern crate clap;
@@ -15,17 +15,15 @@ fn main() {
     let mut args : Args = Args::new(matches.value_of("FILENAME").expect("Please provide a filename. Use --help to see possibilities").to_string());
     if contains_tables(args.get_filecontent()) {
         if let Some(value) = matches.value_of("output") {
-            args.set_output_filename(value.to_string()); 
+            args.set_output_filename(value.to_string());
         }
         if matches.is_present("include") {
-            args.set_restrictions(Some((matches.values_of("include").unwrap().map(|s| s.to_string()).collect::<Vec<String>>(), ReSearchType::Inclusive)));
+            args.set_inclusions(matches.values_of("include").unwrap().map(|s| s.to_string()).collect::<Vec<String>>());
         } else if matches.is_present("exclude") {
-            args.set_restrictions(Some((matches.values_of("exclude").unwrap().map(|s| s.to_string()).collect::<Vec<String>>(), ReSearchType::Exclusive)));
-        } else {
-            args.set_restrictions(None);
+            args.set_exclusions(matches.values_of("exclude").unwrap().map(|s| s.to_string()).collect::<Vec<String>>());
         }
 
-        let output_content : String = process_file(args.get_filename_without_specials().as_str(), args.get_filecontent(), args.get_restrictions());
+        let output_content : String = process_file(args.clone());
         let file_ext : &str = args.get_file_ext();
 
         if file_ext != "dot" {
