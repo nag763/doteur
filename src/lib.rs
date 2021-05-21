@@ -173,7 +173,7 @@ pub fn process_file(args : Args) -> String {
                     );
 
     // Returns the content generated
-    format!("{}", dot_file)
+    dot_file.to_string()
 }
 
 #[cfg(test)]
