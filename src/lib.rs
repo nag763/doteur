@@ -5,7 +5,8 @@ use std::ffi::OsStr;
 use regex::Regex;
 use std::fs;
 
-use models::{Trim, ReSearchType, ReSearch, Args};
+use models::args::{ReSearchType, ReSearch, Args};
+use models::add_traits::{Trim};
 
 #[macro_use] extern crate lazy_static;
 
@@ -205,7 +206,8 @@ fn generate_relations(table_name : &str, input: &str, restrictive_regex : Option
         if captures.len() == 2 {
             let table_end : &str = captures[1].0;
             if let Some(restriction) = restrictive_regex {
-                if vec![table_name ,table_end].iter().all(|element| element.trim_leading_trailing().regex_search(&restriction.0, &restriction.1)) {
+                if vec![table_name ,table_end].iter().all(|element| element.trim_leading_trailing().regex_search(&restriction.0, &restriction.1))
+                 {
                     Some(format!("\t{0} -> {1} [label=\"Key {2} refers {3}\", arrowhead = \"dot\"]", table_name, table_end, captures[0].1, captures[1].1))
                 } else {
                     None

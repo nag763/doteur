@@ -21,6 +21,7 @@ pub struct Args {
     pub filecontent: String,
     pub output_filename: String,
     pub restrictions: Option<(Vec<Regex>, ReSearchType)>,
+    pub first_depth : bool
 }
 
 impl Args {
@@ -29,7 +30,8 @@ impl Args {
             filename: filename.clone(),
             filecontent: fs::read_to_string(filename.as_str()).expect("Something went wrong while reading the file"),
             output_filename: String::from("output.dot"),
-            restrictions: None
+            restrictions: None,
+            first_depth: false
         }
     }
 
@@ -86,6 +88,14 @@ impl Args {
         );
     }
 
+    pub fn get_first_depth(&self) -> bool {
+        self.first_depth
+    }
+
+    pub fn set_first_depth(&mut self, first_depth : bool) {
+        self.first_depth = first_depth
+    }
+
 }
 
 #[derive(Clone)]
@@ -94,44 +104,9 @@ pub enum ReSearchType {
     Exclusive
 }
 
-///Trim whitespaces.
-pub trait Trim {
-    ///Trim leading and trailing whitespaces.
-    fn trim_leading_trailing(&self) -> String;
-}
-
-///Replace characters that can set issues.
-pub trait Replacable {
-    fn replace_specials(&self) -> String;
-}
 
 pub trait ReSearch {
     fn regex_search(&self, regex_list : &[Regex], re_search_type : &ReSearchType) -> bool;
-}
-
-
-impl Trim for String {
-    fn trim_leading_trailing(&self) -> String {
-        self.trim_start().trim_end().to_string()
-    }
-}
-
-impl Trim for str {
-    fn trim_leading_trailing(&self) -> String {
-        self.trim_start().trim_end().to_string()
-    }
-}
-
-impl Replacable for str {
-    fn replace_specials(&self) -> String {
-        self.chars().filter(|c| c.is_ascii_alphanumeric() || c.is_ascii_whitespace()).collect::<String>()
-    }
-}
-
-impl Replacable for String {
-    fn replace_specials(&self) -> String {
-        self.chars().filter(|c| c.is_ascii_alphanumeric() || c.is_ascii_whitespace()).collect::<String>()
-    }
 }
 
 impl ReSearch for &str {

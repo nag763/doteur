@@ -26,3 +26,9 @@ args:
                 multiple: true
                 conflicts_with:
                         - include
+        - first-depth:
+                help: show first relational depth of the given table if in inclusive mode
+                long: first-depth
+                takes_value: false
+                requires:
+                        - include

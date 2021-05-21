@@ -2,7 +2,7 @@ use clap::App;
 use std::process::Command;
 use which::which;
 
-use doteur::models::{Args, POSSIBLE_DOTS_OUTPUT};
+use doteur::models::args::{Args, POSSIBLE_DOTS_OUTPUT};
 use doteur::{process_file, write_output_to_file, contains_tables};
 
 #[macro_use] extern crate clap;
@@ -22,6 +22,8 @@ fn main() {
         } else if matches.is_present("exclude") {
             args.set_exclusions(matches.values_of("exclude").unwrap().map(|s| s.to_string()).collect::<Vec<String>>());
         }
+        // TODO : Use first depth
+        args.set_first_depth(matches.is_present("first_depth"));
 
         let output_content : String = process_file(args.clone());
         let file_ext : &str = args.get_file_ext();
