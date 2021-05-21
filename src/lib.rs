@@ -5,7 +5,8 @@ use std::ffi::OsStr;
 use regex::Regex;
 use std::fs;
 
-use models::args::{ReSearchType, ReSearch, Args};
+use models::args::{Args};
+use models::restriction::{Restriction};
 use models::add_traits::{Trim};
 
 #[macro_use] extern crate lazy_static;
@@ -40,7 +41,7 @@ pub fn contains_tables(input: &str) -> bool {
 
 
 ///Convert sql table to dot output.
-fn convert_sql_to_dot(input: &str, restrictive_regex : Option<&(Vec<Regex>, ReSearchType)>) -> (String, String) {
+fn convert_sql_to_dot(input: &str, restrictions : Option<&Restriction>) -> (String, String) {
     let table_name = RE_TABLE_NAME.captures(input)
                                   .unwrap()
                                   .get(1)
@@ -48,8 +49,8 @@ fn convert_sql_to_dot(input: &str, restrictive_regex : Option<&(Vec<Regex>, ReSe
                                   .as_str()
                                   .trim_leading_trailing();
 
-    if let Some(restriction) = restrictive_regex {
-        if !table_name.regex_search(&restriction.0, &restriction.1) {
+    if let Some(restriction) = restrictions {
+        if !restriction.clone().verify_table_name(table_name.as_str()) {
             return (String::from(""), String::from(""));
         }
     }
@@ -80,7 +81,7 @@ fn convert_sql_to_dot(input: &str, restrictive_regex : Option<&(Vec<Regex>, ReSe
 
     let generated : Vec<(String, Option<String>)> = lines
         .iter()
-        .map(|s| (generate_attributes(s), generate_relations(&table_name, s, restrictive_regex)))
+        .map(|s| (generate_attributes(s), generate_relations(&table_name, s, restrictions)))
         .collect::<Vec<(String, Option<String>)>>();
 
     let body_content : String = generated
@@ -196,7 +197,7 @@ fn generate_attributes(attr: &str) -> String {
 
 
 ///Generate relations from the given inputs.
-fn generate_relations(table_name : &str, input: &str, restrictive_regex : Option<&(Vec<Regex>, ReSearchType)>) -> Option<String> {
+fn generate_relations(table_name : &str, input: &str, restrictive_regex : Option<&Restriction>) -> Option<String> {
     let is_fk : bool = RE_FK.find_iter(input).count() != 0;
     // No PK support yet.
     if is_fk {
@@ -206,7 +207,7 @@ fn generate_relations(table_name : &str, input: &str, restrictive_regex : Option
         if captures.len() == 2 {
             let table_end : &str = captures[1].0;
             if let Some(restriction) = restrictive_regex {
-                if vec![table_name ,table_end].iter().all(|element| element.trim_leading_trailing().regex_search(&restriction.0, &restriction.1))
+                if vec![table_name ,table_end].iter().all(|element| restriction.clone().verify_table_name(element))
                  {
                     Some(format!("\t{0} -> {1} [label=\"Key {2} refers {3}\", arrowhead = \"dot\"]", table_name, table_end, captures[0].1, captures[1].1))
                 } else {
@@ -230,7 +231,7 @@ pub fn process_file(args : Args) -> String {
 
     // Generate content from the declared tables.
     let generated_content : Vec<(String, String)> = get_tables(args.get_filecontent()).iter()
-                                                                       .map(|element| convert_sql_to_dot(element, args.get_restrictions().as_ref()))
+                                                                       .map(|element| convert_sql_to_dot(element, args.get_restrictions()))
                                                                        .filter(|(element1 , _)| !element1.is_empty())
                                                                        .collect::<Vec<(String, String)>>();
 
@@ -240,7 +241,7 @@ pub fn process_file(args : Args) -> String {
                                                             generate_relations(
                                                                 element.get(1).unwrap().as_str(),
                                                                 element.get(2).unwrap().as_str(),
-                                                                args.get_restrictions().as_ref()
+                                                                args.get_restrictions()
                                                             ).unwrap_or_default()
                                                         )
                                                         .filter(|s| !s.is_empty())
