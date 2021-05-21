@@ -19,12 +19,10 @@ pub struct Restriction {
 
 impl Restriction {
         fn new(re_string : Vec<String>, re_search_type : ReSearchType) -> Restriction {
-            let regexs = re_string.iter()
-                                  .map(|element| str_to_regex(element).unwrap_or_else(|_| Regex::new("").unwrap()))
-                                  .filter(|element| element.as_str() != "")
-                                  .collect::<Vec<Regex>>();
+            let mut regexs : Vec<Regex> = Vec::new();
+            re_string.iter().for_each(|element| if let Ok(value) = str_to_regex(element) { regexs.push(value) });
 
-            Restriction {regexs,re_search_type}
+            Restriction {regexs, re_search_type}
         }
 
         pub fn new_inclusion(re_string : Vec<String>) -> Restriction {
