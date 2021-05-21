@@ -39,7 +39,7 @@ impl DotTable {
 fn generate_table_header(name: &str) -> String {
     format!("
     {0} [label=<
-        <TABLE BGCOLOR=\"white\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\">
+        <TABLE BGCOLOR=\"gray92\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\">
 
         <TR><TD COLSPAN=\"2\" CELLPADDING=\"5\" ALIGN=\"CENTER\" BGCOLOR=\"blue\">
         <FONT FACE=\"Roboto\" COLOR=\"white\" POINT-SIZE=\"10\">
