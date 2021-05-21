@@ -17,11 +17,11 @@ fn str_to_regex(input : &str) -> Result<regex::Regex, regex::Error> {
 
 #[derive(Clone)]
 pub struct Args {
-    pub filename: String,
-    pub filecontent: String,
-    pub output_filename: String,
-    pub restrictions: Option<(Vec<Regex>, ReSearchType)>,
-    pub first_depth : bool
+    filename: String,
+    filecontent: String,
+    output_filename: String,
+    restrictions: Option<(Vec<Regex>, ReSearchType)>,
+    first_depth : bool
 }
 
 impl Args {
