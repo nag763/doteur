@@ -10,15 +10,18 @@ args:
         - output:
                 help: The output filename
                 short: o
+                long: output
                 takes_value: true
         - include:
                 help: include only the given tables
                 short: i
+                long: include
                 takes_value: true
                 multiple: true
         - exclude:
                 help: exclude the given tables
                 short: x
+                long: exclude
                 takes_value: true
                 multiple: true
                 conflicts_with:

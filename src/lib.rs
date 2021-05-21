@@ -1,11 +1,11 @@
-pub mod add_trait;
+pub mod models;
 
 use std::path::Path;
 use std::ffi::OsStr;
 use regex::Regex;
 use std::fs;
 
-use add_trait::{Trim, ReSearchType, ReSearch};
+use models::{Trim, ReSearchType, ReSearch};
 
 #[macro_use] extern crate lazy_static;
 
