@@ -1,13 +1,14 @@
 pub mod models;
 
-use std::path::Path;
-use std::ffi::OsStr;
 use regex::Regex;
 use std::fs;
 
 use models::args::{Args};
 use models::restriction::{Restriction};
 use models::add_traits::{Trim};
+
+use models::dot_structs::dot_table::{DotTable};
+use models::dot_structs::dot_file::{DotFile};
 
 #[macro_use] extern crate lazy_static;
 
@@ -41,32 +42,34 @@ pub fn contains_tables(input: &str) -> bool {
 
 
 ///Convert sql table to dot output.
-fn convert_sql_to_dot(input: &str, restrictions : Option<&Restriction>) -> (String, String) {
-    let table_name = RE_TABLE_NAME.captures(input)
+fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Option<&Restriction>) {
+    let table_name : String = RE_TABLE_NAME.captures(input)
                                   .unwrap()
                                   .get(1)
                                   .unwrap()
                                   .as_str()
                                   .trim_leading_trailing();
 
+
+    // TODO : first depth et si relations pas nulles
     if let Some(restriction) = restrictions {
         if !restriction.clone().verify_table_name(table_name.as_str()) {
-            return (String::from(""), String::from(""));
+            return;
         }
     }
 
-    let table_header : String = generate_table_header(table_name.as_str());
+    let mut dot_table : DotTable = DotTable::new(table_name.as_str());
 
     let begin_dec : usize;
     let end_dec : usize;
     // If the table is empty
     match input.find('('){
         Some(v) => begin_dec = v,
-        None => return (close_table(table_header.as_str()), "".to_string())
+        None => {dot_file.add_table(dot_table); return;}
     }
     match input.rfind(')') {
         Some(v) => end_dec = v,
-        None => return (close_table(table_header.as_str()), "".to_string())
+        None => {dot_file.add_table(dot_table); return;}
     }
     //
     let lines : Vec<String> = RE_SEP_COMA
@@ -79,43 +82,9 @@ fn convert_sql_to_dot(input: &str, restrictions : Option<&Restriction>) -> (Stri
         .map(|s| s.to_string())
         .collect::<Vec<String>>();
 
-    let generated : Vec<(String, Option<String>)> = lines
-        .iter()
-        .map(|s| (generate_attributes(s), generate_relations(&table_name, s, restrictions)))
-        .collect::<Vec<(String, Option<String>)>>();
-
-    let body_content : String = generated
-        .iter()
-        .map(|s| s.0.as_str())
-        .filter(|s| !s.is_empty())
-        .collect::<Vec<&str>>()
-        .join("\n\n");
-
-    let relations : String = generated
-        .iter()
-        .map(|s| s.1.as_deref().unwrap_or_default())
-        .filter(|s| !s.is_empty())
-        .collect::<Vec<&str>>()
-        .join("\n");
-
-    (close_table([table_header, body_content].join("\n").as_str()), relations)
+    lines.iter().for_each(|s| {generate_attributes(&mut dot_table, s); generate_relations(dot_file, &table_name, s, restrictions);});
+    dot_file.add_table(dot_table);
 }
-
-
-///Create dot file header.
-fn init_dot(filename: &str) -> String {
-    format!("//This file has been generated with sqltodot, enjoy!
-digraph {} {{\n
-    node [\n
-        shape = \"plaintext\"
-    ]\n\n", Path::new(filename).file_stem().unwrap_or_else(|| OsStr::new("sql")).to_str().unwrap_or("sql"))
-}
-
-///Close dot file properly.
-fn close_dot(opened_dot: &str) -> String {
-    format!("{}\n}}", opened_dot)
-}
-
 
 ///Write the output in the given file.
 pub fn write_output_to_file(content: &str, filename: &str) -> std::io::Result<()>{
@@ -123,28 +92,8 @@ pub fn write_output_to_file(content: &str, filename: &str) -> std::io::Result<()
     Ok(())
 }
 
-
-///Generate the .dot table header.
-fn generate_table_header(name: &str) -> String {
-    format!("
-    {0} [label=<
-        <TABLE BGCOLOR=\"white\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\">
-
-        <TR><TD COLSPAN=\"2\" CELLPADDING=\"5\" ALIGN=\"CENTER\" BGCOLOR=\"blue\">
-        <FONT FACE=\"Roboto\" COLOR=\"white\" POINT-SIZE=\"10\">
-        <B>{0}</B>
-        </FONT></TD></TR>", name)
-}
-
-
-///Close a .dot table.
-fn close_table(table: &str) -> String {
-    format!("{}\n\n\t</TABLE> >]\n", table)
-}
-
-
 ///Generate the .dot attributes for the given input.
-fn generate_attributes(attr: &str) -> String {
+fn generate_attributes(dot_table : &mut DotTable, attr: &str) {
     //If the attribute is not a key.
     if !attr.to_lowercase().contains("key") {
         let title : String;
@@ -166,13 +115,7 @@ fn generate_attributes(attr: &str) -> String {
             title = splitted.remove(0);
             rest = splitted.join(" ");
         }
-        format!("
-        <TR><TD ALIGN=\"LEFT\" BORDER=\"0\">
-        <FONT FACE=\"Roboto\"><B>{0}</B></FONT>
-        </TD><TD ALIGN=\"LEFT\">
-        <FONT FACE=\"Roboto\">{1}</FONT>
-        </TD></TR>", title.trim_leading_trailing(), rest.trim_leading_trailing()
-        )
+        dot_table.add_attribute(title.as_str(), rest.as_str());
     } else {
         let is_fk : bool = RE_FK.find_iter(attr).count() != 0;
         // If the key is a foreign key, write it.
@@ -180,24 +123,14 @@ fn generate_attributes(attr: &str) -> String {
             let captures : Vec<(&str, &str)> = RE_IN_PARENTHESES.captures_iter(attr)
                                                     .map(|matched| (matched.get(1).unwrap().as_str(), matched.get(2).unwrap().as_str()))
                                                     .collect::<Vec<(&str, &str)>>();
-            // The tabs here are for the output file.
-            format!("
-        <TR><TD ALIGN=\"LEFT\" BORDER=\"0\">
-        <FONT FACE=\"Roboto\"><B>[FK] {0}</B></FONT>
-        </TD><TD ALIGN=\"LEFT\">
-        <FONT FACE=\"Roboto\">Refers to <I>{1}[{2}]</I></FONT>
-        </TD></TR>", captures[0].1, captures[1].0, captures[1].1
-            )
-        //If not, write an empty string.
-        } else {
-            "".to_string()
+            dot_table.add_attribute_fk(captures[0].1, captures[1].0, captures[1].1);
         }
     }
 }
 
 
 ///Generate relations from the given inputs.
-fn generate_relations(table_name : &str, input: &str, restrictive_regex : Option<&Restriction>) -> Option<String> {
+fn generate_relations(dot_file : &mut DotFile, table_name : &str, input: &str, restrictive_regex : Option<&Restriction>) {
     let is_fk : bool = RE_FK.find_iter(input).count() != 0;
     // No PK support yet.
     if is_fk {
@@ -207,21 +140,15 @@ fn generate_relations(table_name : &str, input: &str, restrictive_regex : Option
         if captures.len() == 2 {
             let table_end : &str = captures[1].0;
             if let Some(restriction) = restrictive_regex {
-                if vec![table_name ,table_end].iter().all(|element| restriction.clone().verify_table_name(element))
-                 {
-                    Some(format!("\t{0} -> {1} [label=\"Key {2} refers {3}\", arrowhead = \"dot\"]", table_name, table_end, captures[0].1, captures[1].1))
-                } else {
-                    None
+                if vec![table_name ,table_end].iter().all(|element| restriction.clone().verify_table_name(element)){
+                    dot_file.add_relation(table_name, table_end, captures[0].1, captures[1].1);
                 }
             } else {
-                Some(format!("\t{0} -> {1} [label=\"Key {2} refers {3}\", arrowhead = \"dot\"]", table_name, table_end, captures[0].1, captures[1].1))
+                dot_file.add_relation(table_name, table_end, captures[0].1, captures[1].1);
             }
-        } else {
-            None
         }
-    } else {
-        None
     }
+
 }
 
 
@@ -229,39 +156,24 @@ fn generate_relations(table_name : &str, input: &str, restrictive_regex : Option
 ///.dot file.
 pub fn process_file(args : Args) -> String {
 
+    let mut dot_file : DotFile = DotFile::new(args.get_filename_without_specials().as_str());
+
     // Generate content from the declared tables.
-    let generated_content : Vec<(String, String)> = get_tables(args.get_filecontent()).iter()
-                                                                       .map(|element| convert_sql_to_dot(element, args.get_restrictions()))
-                                                                       .filter(|(element1 , _)| !element1.is_empty())
-                                                                       .collect::<Vec<(String, String)>>();
+    get_tables(args.get_filecontent()).iter().for_each(|element| convert_sql_to_dot(&mut dot_file, element, args.get_restrictions()));
 
     // Look after the other fks, declared on alter table statements.
-    let other_relations : Vec<String> = RE_ALTERED_TABLE.captures_iter(args.get_filecontent())
-                                                        .map(|element|
-                                                            generate_relations(
-                                                                element.get(1).unwrap().as_str(),
-                                                                element.get(2).unwrap().as_str(),
-                                                                args.get_restrictions()
-                                                            ).unwrap_or_default()
-                                                        )
-                                                        .filter(|s| !s.is_empty())
-                                                        .collect::<Vec<String>>();
+    RE_ALTERED_TABLE.captures_iter(args.get_filecontent())
+                    .for_each(|element|
+                        generate_relations(
+                            &mut dot_file,
+                            element.get(1).unwrap().as_str(),
+                            element.get(2).unwrap().as_str(),
+                            args.get_restrictions()
+                        )
+                    );
 
     // Returns the content generated
-    close_dot(
-        [
-            init_dot(args.get_output_filename()),
-            generated_content.iter()
-                             .map(|element| element.0.as_str())
-                             .collect::<Vec<&str>>()
-                             .join("\n"),
-            generated_content.iter()
-                             .map(|element| element.1.as_str())
-                             .chain(other_relations.iter().map(|element| element.as_str()))
-                             .collect::<Vec<&str>>()
-                             .join("\n"),
-        ].concat().as_str()
-    )
+    format!("{}", dot_file)
 }
 
 #[cfg(test)]
