@@ -41,7 +41,7 @@ fn generate_table_header(name: &str) -> String {
     {0} [label=<
         <TABLE BGCOLOR=\"gray92\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\">
 
-        <TR><TD COLSPAN=\"2\" CELLPADDING=\"5\" ALIGN=\"CENTER\" BGCOLOR=\"blue\">
+        <TR><TD COLSPAN=\"2\" CELLPADDING=\"5\" ALIGN=\"CENTER\" BGCOLOR=\"indigo\">
         <FONT FACE=\"Roboto\" COLOR=\"white\" POINT-SIZE=\"10\">
         <B>{0}</B>
         </FONT></TD></TR>", name.trim_leading_trailing())
