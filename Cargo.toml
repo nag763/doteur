@@ -1,6 +1,6 @@
 [package]
 name = "doteur"
-version = "0.1.2"
+version = "0.2.0"
 authors = ["nag763 <loic.labeye@tutanota.de>"]
 edition = "2018"
 
