@@ -55,14 +55,17 @@ impl Args {
     }
 
     /// Returns the file extension
-    pub fn get_file_ext(&self) -> &str {
+    pub fn get_output_file_ext(&self) -> &str {
         std::path::Path::new(self.output_filename.as_str()).extension().unwrap_or_default().to_str().unwrap_or_default()
     }
 
     /// Check if the file extension is supported by the graphviz tool
-    pub fn ext_supported(&self) -> bool {
-        let file_ext : &str = self.get_file_ext();
-        POSSIBLE_DOTS_OUTPUT.iter().any(|&i| i == file_ext)
+    ///
+    /// # Arguments
+    ///
+    /// * `ext` - extension to verify
+    pub fn ext_supported(ext: &str) -> bool {
+        POSSIBLE_DOTS_OUTPUT.iter().any(|&i| i == ext)
     }
 
     /// Returns the file content
@@ -85,7 +88,7 @@ impl Args {
     }
 
     /// Get restrictions
-    pub fn get_restrictions(&self) -> Option<&Restriction>{
+    pub fn get_restrictions(&self) -> Option<&Restriction> {
         self.restrictions.as_ref()
     }
 
@@ -112,6 +115,40 @@ impl Args {
     /// * `exclusions` - The exclusions to set
     pub fn set_exclusions(&mut self, exclusions : Vec<String>) {
         self.restrictions = Some(Restriction::new_exclusion(exclusions));
+    }
+
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_file_ext() {
+        assert_eq!({
+            let args = Args::new("./examples/samplefile3.sql".to_string());
+            args.clone().get_output_file_ext()
+        }, "dot", "default value");
+
+        assert_eq!({
+            let mut args = Args::new("./examples/samplefile3.sql".to_string());
+            args.set_output_filename("hello.png".to_string());
+            args.clone().get_output_file_ext()
+        }, "png", "set value");
+
+        assert_eq!({
+            let mut args = Args::new("./examples/samplefile3.sql".to_string());
+            args.set_output_filename("./path/to/file/hello.png".to_string());
+            args.clone().get_output_file_ext()
+        }, "png", "set value");
+    }
+
+    #[test]
+    fn test_file_in_list() {
+        assert!(POSSIBLE_DOTS_OUTPUT.iter().all(|e| Args::ext_supported(e)), "normal use cases");
+        assert!(!Args::ext_supported("dot"), "normal use case, we don't handle the dot files to the graphviz tool");
+        assert!(!Args::ext_supported("file.png"), "normal use case, only the extension should be given");
     }
 
 }

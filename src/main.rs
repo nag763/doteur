@@ -23,12 +23,12 @@ fn main() {
             args.set_exclusions(matches.values_of("exclude").unwrap().map(|s| s.to_string()).collect::<Vec<String>>());
         }
         let output_content : String = process_file(args.clone());
-        let file_ext : &str = args.get_file_ext();
+        let file_ext : &str = args.get_output_file_ext();
 
         if file_ext != "dot" {
             if  which("dot").is_err() {
                 panic!("The dot exe isn't in your path, we couldn't write the output.\nIf you work on linux, use your package manager to download graphviz.\nIf you work on windows, refer to the tutorial or download the tool via the official graphviz site.");
-            } else if !args.ext_supported() {
+            } else if !Args::ext_supported(file_ext) {
                 panic!("The given extension isn't supported. Please verify it is one of the following :\n\n{}", POSSIBLE_DOTS_OUTPUT.join(";"));
             } else {
                 match write_output_to_file(output_content.as_str(), "output.dot") {

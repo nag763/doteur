@@ -16,7 +16,11 @@ pub enum ReSearchType {
 ///
 /// * `input` - The string to transform into regex.
 fn str_to_regex(input : &str) -> Result<regex::Regex, regex::Error> {
-    Regex::new(format!("^{}$", input.replace('*', ".*")).as_str())
+    if input.len() != 0{
+        Regex::new(format!("^{}$", input.replace('*', ".*")).as_str())
+    } else {
+        Err(regex::Error::Syntax(String::from("Can't create an empty regex")))
+    }
 }
 
 /// A restriction represents a condition to render or not the given table.
@@ -66,9 +70,115 @@ impl Restriction {
         ///
         /// * `table_name` - The table to verify with the given restriction
         pub fn verify_table_name(self, table_name : &str) -> bool {
-            match self.re_search_type {
-                ReSearchType::Inclusive => self.regexs.iter().any(|e| e.is_match(table_name)),
-                ReSearchType::Exclusive => !self.regexs.iter().all(|e| e.is_match(table_name))
+            if !self.regexs.is_empty() {
+                match self.re_search_type {
+                    ReSearchType::Inclusive => self.regexs.iter().any(|e| e.is_match(table_name)),
+                    ReSearchType::Exclusive => !self.regexs.iter().all(|e| e.is_match(table_name))
+                }
+            } else {
+                // If the array is empty
+                true
             }
         }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_str_to_regex(){
+        assert!(str_to_regex("").is_err(), "empty regexs not allowed");
+        assert_eq!(str_to_regex("*hell*").unwrap().as_str(), Regex::new("^.*hell.*$").unwrap().as_str(), "normal use case");
+        assert_eq!(str_to_regex("*helO1*").unwrap().as_str(), Regex::new("^.*helO1.*$").unwrap().as_str(), "normal use case");
+        assert_eq!(str_to_regex("*el").unwrap().as_str(), Regex::new("^.*el$").unwrap().as_str(), "normal use case");
+        assert_eq!(str_to_regex("he*").unwrap().as_str(), Regex::new("^he.*$").unwrap().as_str(), "normal use case");
+        assert_eq!(str_to_regex("dollar$*").unwrap().as_str(), Regex::new("^dollar$.*$").unwrap().as_str(), "edgy normal use case");
+    }
+
+    #[test]
+    fn test_restrictive_type(){
+        assert!(matches!({let rest = Restriction::new_inclusion(vec![String::from(".*hell")]); rest.re_search_type}, ReSearchType::Inclusive), "normal use case");
+        assert!(matches!({let rest = Restriction::new_exclusion(vec![String::from(".*hell")]); rest.re_search_type}, ReSearchType::Exclusive), "normal use case");
+    }
+
+    #[test]
+    fn test_verify_table_name_inclusive(){
+        assert!(
+            {
+                let rest = Restriction::new_inclusion(vec![String::from("hell")]);
+                rest.verify_table_name("hell")
+            },
+            "Exact match"
+        );
+        assert!(
+            {
+                let rest = Restriction::new_inclusion(vec![String::from("hell*")]);
+                vec!["hell", "helloe$", "helloa", "hell"].iter().all(|e| rest.clone().verify_table_name(e))
+            },
+            "Exact match"
+        );
+        assert!(
+            !{
+                let rest = Restriction::new_inclusion(vec![String::from("*ll*")]);
+                vec!["hel", "heloe$", "heloa", "helel"].iter().all(|e| rest.clone().verify_table_name(e))
+            },
+            "Shouldn't match"
+        );
+        assert!(
+            {
+                let rest = Restriction::new_inclusion(vec![String::from("*ll*"), String::from("he*")]);
+                vec!["hey", "heloe$", "heloa", "helell", "llorn"].iter().all(|e| rest.clone().verify_table_name(e))
+            },
+            "Multiple match and regex"
+        );
+        assert!(
+            {
+                let rest = Restriction::new_inclusion(vec![]);
+                vec!["hey", "heloe$", "heloa", "helell", "llorn"].iter().all(|e| rest.clone().verify_table_name(e))
+            },
+            "No regex"
+        );
+    }
+
+    #[test]
+    fn test_verify_table_name_exclusive(){
+        assert!(
+            !{
+                let rest = Restriction::new_exclusion(vec![String::from("hell")]);
+                rest.verify_table_name("hell")
+            },
+            "Exact match"
+        );
+        assert!(
+            !{
+                let rest = Restriction::new_exclusion(vec![String::from("hell*")]);
+                vec!["hell", "helloe$", "helloa", "hell"].iter().all(|e| rest.clone().verify_table_name(e))
+            },
+            "Exact match"
+        );
+        assert!(
+            {
+                let rest = Restriction::new_exclusion(vec![String::from("*ll*")]);
+                vec!["hel", "heloe$", "heloa", "helel"].iter().all(|e| rest.clone().verify_table_name(e))
+            },
+            "Shouldn't match"
+        );
+        assert!(
+            !{
+                let rest = Restriction::new_exclusion(vec![String::from("*ll*"), String::from("he*")]);
+                vec!["hey", "heloe$", "heloa", "helell", "llorn"].iter().all(|e| rest.clone().verify_table_name(e))
+            },
+            "Multiple match and regex"
+        );
+        assert!(
+            {
+                let rest = Restriction::new_exclusion(vec![]);
+                vec!["hey", "heloe$", "heloa", "helell", "llorn"].iter().all(|e| rest.clone().verify_table_name(e))
+            },
+            "No regex"
+        );
+    }
+
 }
