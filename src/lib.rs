@@ -141,15 +141,15 @@ fn generate_attributes(dot_table : &mut DotTable, attr: &str) -> Result<&'static
             rest = splitted.join(" ");
         }
         dot_table.add_attribute(title.as_str(), rest.as_str());
-        return Ok("Attribute");
+        Ok("Attribute")
     } else if RE_FK.find_iter(attr).count() != 0 {
         let captures : Vec<(&str, &str)> = RE_IN_PARENTHESES.captures_iter(attr)
                                                 .map(|matched| (matched.get(1).unwrap().as_str(), matched.get(2).unwrap().as_str()))
                                                 .collect::<Vec<(&str, &str)>>();
         dot_table.add_attribute_fk(captures[0].1, captures[1].0, captures[1].1);
-        return Ok("FK Attribute");
+        Ok("FK Attribute")
     } else {
-        return Err("Not an attribute");
+        Err("Not an attribute")
     }
 }
 
@@ -181,7 +181,7 @@ fn generate_relations(dot_file : &mut DotFile, table_name : &str, input: &str, r
             }
         }
     }
-    return Err("Not a relation");
+    Err("Not a relation")
 
 
 }
