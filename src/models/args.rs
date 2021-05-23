@@ -1,4 +1,5 @@
 use std::fs;
+use std::path::Path;
 
 use super::restriction::{Restriction};
 
@@ -29,14 +30,19 @@ impl Args {
     ///
     /// # Arguments
     ///
-    /// * `filename` - The name of the input file.
-    pub fn new(filename: String) -> Args {
-        Args {
-            filename: filename.clone(),
-            filecontent: fs::read_to_string(filename.as_str()).expect("Something went wrong while reading the file"),
-            output_filename: String::from("output.dot"),
-            restrictions: None,
-            first_depth: false
+    /// * `path_str` - The path of the input file
+    pub fn new(path_str: String) -> Args {
+        let filename : String = Path::new(path_str.as_str()).file_name().expect("Incorrect file name").to_str().unwrap().to_string();
+        if Path::new(path_str.as_str()).is_dir() {
+            panic!("Directories aren't supported");
+        } else {
+            Args {
+                filename,
+                filecontent: fs::read_to_string(path_str.as_str()).expect("Something went wrong while reading the file"),
+                output_filename: String::from("output.dot"),
+                restrictions: None,
+                first_depth: false
+            }
         }
     }
 
