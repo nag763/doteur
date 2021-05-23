@@ -1,11 +1,12 @@
-///Trim whitespaces.
+/// Trait to facilitate the triming of white spaces
 pub trait Trim {
-    ///Trim leading and trailing whitespaces.
+    /// Trim leading and trailing whitespace.
     fn trim_leading_trailing(&self) -> String;
 }
 
-///Replace characters that can set issues.
+/// Replace characters that can set issues for the dot file.
 pub trait Replacable {
+    /// Replace all non ascii chars or digits by whitespaces.
     fn replace_specials(&self) -> String;
 }
 

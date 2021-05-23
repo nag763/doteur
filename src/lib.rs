@@ -14,7 +14,7 @@ use models::dot_structs::dot_file::{DotFile};
 
 
 lazy_static! {
-    ///Look after table defs.
+    // /Look after table defs.
     static ref RE_TABLE_DEFS : Regex = Regex::new(r"(?i)\s*CREATE\s*TABLE[^;]*.").unwrap();
     ///Get table name.
     static ref RE_TABLE_NAME : Regex = Regex::new(r"(?i)\s*CREATE\s*TABLE\s*(?:IF\s*NOT\s*EXISTS)?\s*[`]?(\w*).").unwrap();
@@ -28,20 +28,34 @@ lazy_static! {
     static ref RE_ALTERED_TABLE : Regex = Regex::new(r"\s*(?i)ALTER\s*TABLE\s*`?(\w*)`?\s*([^;]*)").unwrap();
 }
 
-///Get the tables from the input.
+/// Get the tables from the input
+///
+/// # Arguments
+///
+/// * `input` - The content where sql table are stored
 fn get_tables(input: &str) -> Vec<&str> {
     RE_TABLE_DEFS.find_iter(input)
             .map(|element| element.as_str())
             .collect::<Vec<&str>>()
 }
 
-///Check if the given input has declared tables.
+
+/// Check if the given input contains sql tables
+///
+/// # Arguments
+///
+/// * `input` - The content where sql table are stored
 pub fn contains_tables(input: &str) -> bool {
     !get_tables(input).is_empty()
 }
 
-
-///Convert sql table to dot output.
+/// Convert a sql table to a dot table and store it in the given dot file
+///
+/// # Arguments
+///
+/// * `dot_file` - A mutable dot file
+/// * `input` - The content to convert
+/// * `restrictions` - The restriction to apply on the table
 fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Option<&Restriction>) {
     let table_name : String = RE_TABLE_NAME.captures(input)
                                   .unwrap()
@@ -71,7 +85,7 @@ fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Optio
         Some(v) => end_dec = v,
         None => {dot_file.add_table(dot_table); return;}
     }
-    //
+
     let lines : Vec<String> = RE_SEP_COMA
         .split(input
             .chars()
@@ -86,13 +100,23 @@ fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Optio
     dot_file.add_table(dot_table);
 }
 
-///Write the output in the given file.
+/// Write the output to the given file
+///
+/// # Arguments
+///
+/// * `content` - The content to write
+/// * `filename` - The output file
 pub fn write_output_to_file(content: &str, filename: &str) -> std::io::Result<()>{
     fs::write(filename ,content)?;
     Ok(())
 }
 
-///Generate the .dot attributes for the given input.
+/// Generate the attributes and write them into the dot_table
+///
+/// # Arguments
+///
+/// * `dot_table` - A mutable DotTable object where the attributes will be written
+/// * `attr` - The attributes as string
 fn generate_attributes(dot_table : &mut DotTable, attr: &str) {
     //If the attribute is not a key.
     if !attr.to_lowercase().contains("key") {
@@ -128,8 +152,14 @@ fn generate_attributes(dot_table : &mut DotTable, attr: &str) {
     }
 }
 
-
-///Generate relations from the given inputs.
+/// Generates the relations and write them into the DotFile
+///
+/// # Arguments
+///
+/// * `dot_file` - Where the content should be written in
+/// * `table_name` - The name of the table where the relations originates
+/// * `input` - Where the relations are written
+/// * `restrictive_regex` - The restrictions to apply
 fn generate_relations(dot_file : &mut DotFile, table_name : &str, input: &str, restrictive_regex : Option<&Restriction>) {
     let is_fk : bool = RE_FK.find_iter(input).count() != 0;
     // No PK support yet.
@@ -151,9 +181,11 @@ fn generate_relations(dot_file : &mut DotFile, table_name : &str, input: &str, r
 
 }
 
-
-///Process the given filename and content to generate a
-///.dot file.
+/// Process the given file and return the output dot string
+///
+/// # Arguments
+///
+/// * `args` - The CLI args
 pub fn process_file(args : Args) -> String {
 
     let mut dot_file : DotFile = DotFile::new(args.get_filename_without_specials().as_str());
@@ -180,26 +212,26 @@ pub fn process_file(args : Args) -> String {
 mod tests {
 
     use super::*;
-
-    #[test]
-    fn test_re_table_defs() {
-        assert_ne!(RE_TABLE_DEFS.find_iter("\nCREATE TABLE HELLO();").count(), 0, "with leading");
-        assert_ne!(RE_TABLE_DEFS.find_iter("\n\tCREATE TABLE HELLO();").count(), 0, "with leading");
-        assert_ne!(RE_TABLE_DEFS.find_iter("\nCREATE TABLE `HELLO`();").count(), 0, "with backquotes");
-        assert_ne!(RE_TABLE_DEFS.find_iter("\n\tCReaTe TabLe HELLO();").count(), 0, "non capital letters");
-        assert_ne!(RE_TABLE_DEFS.find_iter("CREATE TABLE   \t HELLO();").count(), 0, "several spaces between");
-        assert_ne!(RE_TABLE_DEFS.find_iter("\tCREATE\t\t TABLE   \t HELLO();").count(), 0, "several spaces between");
-        assert_ne!(RE_TABLE_DEFS.find_iter("CREATE \n\tTABLE \n \t HELLO();").count(), 0, "several backline between");
-        assert_ne!(RE_TABLE_DEFS.find_iter("CREATE \n\tTABLE \n \t HELLO();").count(), 0, "several backline between");
-        assert_ne!(RE_TABLE_DEFS.find_iter("CREATE TABLE IF NOT EXISTS HELLO();").count(), 0, "if not exists");
-
-        assert_eq!(RE_TABLE_DEFS.find_iter("CREATE TABL HELLO();").count(), 0, "typo");
-        assert_eq!(RE_TABLE_DEFS.find_iter("CRATE TABLE HELLO();").count(), 0, "typo");
-        assert_eq!(RE_TABLE_DEFS.find_iter("CREATE OR TABLE HELLO();").count(), 0, "wrong keyword");
-        assert_eq!(RE_TABLE_DEFS.find_iter("CREATE DATABASE HELLO();").count(), 0, "wrong keyword");
-        assert_eq!(RE_TABLE_DEFS.find_iter("DROP TABLE HELLO();").count(), 0, "wrong keyword");
-        assert_eq!(RE_TABLE_DEFS.find_iter("ALTER TABLE HELLO();").count(), 0, "wrong keyword");
-    }
+    //
+    // #[test]
+    // fn test_re_table_defs() {
+    //     assert_ne!(RE_TABLE_DEFS.find_iter("\nCREATE TABLE HELLO();").count(), 0, "with leading");
+    //     assert_ne!(RE_TABLE_DEFS.find_iter("\n\tCREATE TABLE HELLO();").count(), 0, "with leading");
+    //     assert_ne!(RE_TABLE_DEFS.find_iter("\nCREATE TABLE `HELLO`();").count(), 0, "with backquotes");
+    //     assert_ne!(RE_TABLE_DEFS.find_iter("\n\tCReaTe TabLe HELLO();").count(), 0, "non capital letters");
+    //     assert_ne!(RE_TABLE_DEFS.find_iter("CREATE TABLE   \t HELLO();").count(), 0, "several spaces between");
+    //     assert_ne!(RE_TABLE_DEFS.find_iter("\tCREATE\t\t TABLE   \t HELLO();").count(), 0, "several spaces between");
+    //     assert_ne!(RE_TABLE_DEFS.find_iter("CREATE \n\tTABLE \n \t HELLO();").count(), 0, "several backline between");
+    //     assert_ne!(RE_TABLE_DEFS.find_iter("CREATE \n\tTABLE \n \t HELLO();").count(), 0, "several backline between");
+    //     assert_ne!(RE_TABLE_DEFS.find_iter("CREATE TABLE IF NOT EXISTS HELLO();").count(), 0, "if not exists");
+    //
+    //     assert_eq!(RE_TABLE_DEFS.find_iter("CREATE TABL HELLO();").count(), 0, "typo");
+    //     assert_eq!(RE_TABLE_DEFS.find_iter("CRATE TABLE HELLO();").count(), 0, "typo");
+    //     assert_eq!(RE_TABLE_DEFS.find_iter("CREATE OR TABLE HELLO();").count(), 0, "wrong keyword");
+    //     assert_eq!(RE_TABLE_DEFS.find_iter("CREATE DATABASE HELLO();").count(), 0, "wrong keyword");
+    //     assert_eq!(RE_TABLE_DEFS.find_iter("DROP TABLE HELLO();").count(), 0, "wrong keyword");
+    //     assert_eq!(RE_TABLE_DEFS.find_iter("ALTER TABLE HELLO();").count(), 0, "wrong keyword");
+    // }
 
     #[test]
     fn test_re_table_name() {

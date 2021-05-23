@@ -2,9 +2,13 @@ use std::fmt;
 
 use super::super::add_traits::{Trim};
 
+/// A dot table is the corresponding rendering of a sql table in a dot file
 pub struct DotTable {
+    /// The header of the table
     header: String,
+    /// The attribute of the table
     attributes: Vec<String>,
+    /// The footer of the table
     footer: String
 }
 
@@ -16,8 +20,13 @@ impl fmt::Display for DotTable {
 
 impl DotTable {
 
-    pub fn new(input: &str) -> DotTable {
-        let header : String = generate_table_header(input);
+    /// Creates a new table
+    ///
+    /// # Arguments
+    ///
+    /// * `table_name` - The table to render in dot
+    pub fn new(table_name: &str) -> DotTable {
+        let header : String = generate_table_header(table_name);
         DotTable {
             header,
             attributes: Vec::new(),
@@ -25,17 +34,35 @@ impl DotTable {
         }
     }
 
+    /// Adds an attribute to the table
+    ///
+    /// # Arguments
+    ///
+    /// * `title` - The title of the attribute
+    /// * `desc` - The description of the attribute
     pub fn add_attribute(&mut self, title: &str, desc : &str) {
         self.attributes.push(generate_attribute(title, desc));
     }
 
+
+    /// Adds a foreign key attribute
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - The key of the attribute in the table
+    /// * `fk_table` - The refered table
+    /// * `fk_col` - The refered key
     pub fn add_attribute_fk(&mut self, key: &str, fk_table : &str, fk_col : &str) {
         self.attributes.push(generate_fk_attribute(key, fk_table, fk_col));
     }
 
 }
 
-///Generate the .dot table header.
+/// Generate the .dot table header.
+///
+/// # Arguments
+///
+/// * `name` - The name of the talbe
 fn generate_table_header(name: &str) -> String {
     format!("
     {0} [label=<
@@ -48,6 +75,12 @@ fn generate_table_header(name: &str) -> String {
 }
 
 
+/// Generate an attribute
+///
+/// # Arguments
+///
+/// * `title` - The name of the attribute
+/// * `desc` - The description of the attribute
 fn generate_attribute(title: &str, desc : &str) -> String {
     format!("
         <TR><TD ALIGN=\"LEFT\" BORDER=\"0\">
@@ -58,6 +91,13 @@ fn generate_attribute(title: &str, desc : &str) -> String {
     )
 }
 
+/// Generas a foreign key attribute
+///
+/// # Arguments
+///
+/// * `key` - The key of the attribute in the table
+/// * `fk_table` - The refered table
+/// * `fk_col` - The refered key
 fn generate_fk_attribute(key : &str, fk_table : &str, fk_col : &str) -> String {
     format!("
         <TR><TD ALIGN=\"LEFT\" BORDER=\"0\">
