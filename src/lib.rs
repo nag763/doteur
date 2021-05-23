@@ -56,7 +56,7 @@ pub fn contains_tables(input: &str) -> bool {
 /// * `dot_file` - A mutable dot file
 /// * `input` - The content to convert
 /// * `restrictions` - The restriction to apply on the table
-fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Option<&Restriction>) {
+fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Option<&Restriction>) -> Result<&'static str, &'static str> {
     let table_name : String = RE_TABLE_NAME.captures(input)
                                   .unwrap()
                                   .get(1)
@@ -68,7 +68,7 @@ fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Optio
     // TODO : first depth et si relations pas nulles
     if let Some(restriction) = restrictions {
         if !restriction.clone().verify_table_name(table_name.as_str()) {
-            return;
+            return Err("Table doesn't match the restrictions");
         }
     }
 
@@ -79,11 +79,11 @@ fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Optio
     // If the table is empty
     match input.find('('){
         Some(v) => begin_dec = v,
-        None => {dot_file.add_table(dot_table); return;}
+        None => {dot_file.add_table(dot_table); return Ok("No attributes");}
     }
     match input.rfind(')') {
         Some(v) => end_dec = v,
-        None => {dot_file.add_table(dot_table); return;}
+        None => {dot_file.add_table(dot_table); return Ok("No attributes");}
     }
 
     let lines : Vec<String> = RE_SEP_COMA
@@ -96,8 +96,9 @@ fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Optio
         .map(|s| s.to_string())
         .collect::<Vec<String>>();
 
-    lines.iter().for_each(|s| {generate_attributes(&mut dot_table, s); generate_relations(dot_file, &table_name, s, restrictions);});
+    lines.iter().for_each(|s| {let _ = generate_attributes(&mut dot_table, s); let _ = generate_relations(dot_file, &table_name, s, restrictions);});
     dot_file.add_table(dot_table);
+    Ok("Attributes")
 }
 
 /// Write the output to the given file
@@ -117,7 +118,7 @@ pub fn write_output_to_file(content: &str, filename: &str) -> std::io::Result<()
 ///
 /// * `dot_table` - A mutable DotTable object where the attributes will be written
 /// * `attr` - The attributes as string
-fn generate_attributes(dot_table : &mut DotTable, attr: &str) {
+fn generate_attributes(dot_table : &mut DotTable, attr: &str) -> Result<&'static str, &'static str>{
     //If the attribute is not a key.
     if !attr.to_lowercase().contains("key") {
         let title : String;
@@ -140,15 +141,15 @@ fn generate_attributes(dot_table : &mut DotTable, attr: &str) {
             rest = splitted.join(" ");
         }
         dot_table.add_attribute(title.as_str(), rest.as_str());
+        return Ok("Attribute");
+    } else if RE_FK.find_iter(attr).count() != 0 {
+        let captures : Vec<(&str, &str)> = RE_IN_PARENTHESES.captures_iter(attr)
+                                                .map(|matched| (matched.get(1).unwrap().as_str(), matched.get(2).unwrap().as_str()))
+                                                .collect::<Vec<(&str, &str)>>();
+        dot_table.add_attribute_fk(captures[0].1, captures[1].0, captures[1].1);
+        return Ok("FK Attribute");
     } else {
-        let is_fk : bool = RE_FK.find_iter(attr).count() != 0;
-        // If the key is a foreign key, write it.
-        if is_fk {
-            let captures : Vec<(&str, &str)> = RE_IN_PARENTHESES.captures_iter(attr)
-                                                    .map(|matched| (matched.get(1).unwrap().as_str(), matched.get(2).unwrap().as_str()))
-                                                    .collect::<Vec<(&str, &str)>>();
-            dot_table.add_attribute_fk(captures[0].1, captures[1].0, captures[1].1);
-        }
+        return Err("Not an attribute");
     }
 }
 
@@ -160,10 +161,8 @@ fn generate_attributes(dot_table : &mut DotTable, attr: &str) {
 /// * `table_name` - The name of the table where the relations originates
 /// * `input` - Where the relations are written
 /// * `restrictive_regex` - The restrictions to apply
-fn generate_relations(dot_file : &mut DotFile, table_name : &str, input: &str, restrictive_regex : Option<&Restriction>) {
-    let is_fk : bool = RE_FK.find_iter(input).count() != 0;
-    // No PK support yet.
-    if is_fk {
+fn generate_relations(dot_file : &mut DotFile, table_name : &str, input: &str, restrictive_regex : Option<&Restriction>) -> Result<&'static str, &'static str> {
+    if RE_FK.find_iter(input).count() != 0 {
         let captures : Vec<(&str, &str)> = RE_IN_PARENTHESES.captures_iter(input)
                                                 .map(|matched| (matched.get(1).unwrap().as_str(), matched.get(2).unwrap().as_str()))
                                                 .collect::<Vec<(&str, &str)>>();
@@ -172,12 +171,18 @@ fn generate_relations(dot_file : &mut DotFile, table_name : &str, input: &str, r
             if let Some(restriction) = restrictive_regex {
                 if vec![table_name ,table_end].iter().all(|element| restriction.clone().verify_table_name(element)){
                     dot_file.add_relation(table_name, table_end, captures[0].1, captures[1].1);
+                    return Ok("Match restrictions, relations added");
+                } else {
+                    return Err("Doesn't match restrictions");
                 }
             } else {
                 dot_file.add_relation(table_name, table_end, captures[0].1, captures[1].1);
+                return Ok("Relation added");
             }
         }
     }
+    return Err("Not a relation");
+
 
 }
 
@@ -191,17 +196,19 @@ pub fn process_file(args : Args) -> String {
     let mut dot_file : DotFile = DotFile::new(args.get_filename_without_specials().as_str());
 
     // Generate content from the declared tables.
-    get_tables(args.get_filecontent()).iter().for_each(|element| convert_sql_to_dot(&mut dot_file, element, args.get_restrictions()));
+    get_tables(args.get_filecontent()).iter().for_each(|element| {let _ = convert_sql_to_dot(&mut dot_file, element, args.get_restrictions());});
 
     // Look after the other fks, declared on alter table statements.
     RE_ALTERED_TABLE.captures_iter(args.get_filecontent())
                     .for_each(|element|
-                        generate_relations(
-                            &mut dot_file,
-                            element.get(1).unwrap().as_str(),
-                            element.get(2).unwrap().as_str(),
-                            args.get_restrictions()
-                        )
+                        {
+                            let _ = generate_relations(
+                                &mut dot_file,
+                                element.get(1).unwrap().as_str(),
+                                element.get(2).unwrap().as_str(),
+                                args.get_restrictions()
+                            );
+                        }
                     );
 
     // Returns the content generated
