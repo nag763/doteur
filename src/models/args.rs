@@ -17,11 +17,14 @@ pub const POSSIBLE_DOTS_OUTPUT : [&str; 54] = ["bmp", "canon", "gv", "xdot", "xd
 /// the tool.
 #[derive(Clone)]
 pub struct Args {
+    /// Filename
     filename: String,
+    /// File content
     filecontent: String,
+    /// Output file name
     output_filename: String,
+    /// Restrictions to apply
     restrictions: Option<Restriction>,
-    first_depth : bool
 }
 
 impl Args {
@@ -41,7 +44,6 @@ impl Args {
                 filecontent: fs::read_to_string(path_str.as_str()).expect("Something went wrong while reading the file"),
                 output_filename: String::from("output.dot"),
                 restrictions: None,
-                first_depth: false
             }
         }
     }
@@ -110,24 +112,6 @@ impl Args {
     /// * `exclusions` - The exclusions to set
     pub fn set_exclusions(&mut self, exclusions : Vec<String>) {
         self.restrictions = Some(Restriction::new_exclusion(exclusions));
-    }
-
-    /// Gets first depth arg value
-    pub fn get_first_depth(&self) -> bool {
-        self.first_depth
-    }
-
-    /// Sets if the first depth should be compiled along the inclusions
-    ///
-    /// This means that if the table A refers the table B or vice versa with a foreign key,
-    /// the table B will still be rendered with this arg even if it doesn't match any of the
-    /// inclusive regex.
-    ///
-    /// # Arguments
-    ///
-    /// * `first_depth` - The value of first_depth
-    pub fn set_first_depth(&mut self, first_depth : bool) {
-        self.first_depth = first_depth
     }
 
 }

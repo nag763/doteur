@@ -182,8 +182,6 @@ fn generate_relations(dot_file : &mut DotFile, table_name : &str, input: &str, r
         }
     }
     Err("Not a relation")
-
-
 }
 
 /// Process the given file and return the output dot string

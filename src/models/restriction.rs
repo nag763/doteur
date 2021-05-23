@@ -39,7 +39,6 @@ impl Restriction {
         fn new(re_string : Vec<String>, re_search_type : ReSearchType) -> Restriction {
             let mut regexs : Vec<Regex> = Vec::new();
             re_string.iter().for_each(|element| if let Ok(value) = str_to_regex(element) { regexs.push(value) });
-
             Restriction {regexs, re_search_type}
         }
 

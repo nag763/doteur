@@ -22,9 +22,6 @@ fn main() {
         } else if matches.is_present("exclude") {
             args.set_exclusions(matches.values_of("exclude").unwrap().map(|s| s.to_string()).collect::<Vec<String>>());
         }
-        // TODO : Use first depth
-        args.set_first_depth(matches.is_present("first_depth"));
-
         let output_content : String = process_file(args.clone());
         let file_ext : &str = args.get_file_ext();
 
