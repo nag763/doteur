@@ -24,6 +24,7 @@ If you have any suggestion, or issue, please report it, it will help us to fix t
 		- [X] Tested
 	- Darwin
 		- [ ] Untested
+- <u>Docker image, continuous delivery :</u> https://hub.docker.com/r/nag763/doteur  
 
 #### How to install
 
@@ -54,15 +55,13 @@ You can still refer to the [graphviz download page](https://graphviz.org/downloa
 ```bash
 git clone https://github.com/nag763/doteur
 cd doteur
-cargo build --release
+cargo install --path .
 ```
 
 - Use the tool
 
 ```bash
-./doteur --help
-# if you installed it through github
-./target/release/doteur --help
+doteur --help
 ```
 
 3. Add it to your path
@@ -73,8 +72,7 @@ If you need to use it regularly, it is recommended to add the bin folder to your
 
 ```bash
 usr@pop-os:~$ doteur --help
-
-doteur 0.1
+doteur 0.2.0
 LABEYE Loïc
 Convert .sql files to .dot files
 
@@ -86,7 +84,9 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -o <output>        The output filename
+    -x, --exclude <exclude>...    exclude the given tables
+    -i, --include <include>...    include only the given tables
+    -o, --output <output>         The output filename
 
 ARGS:
     <FILENAME>    File of the sql name
@@ -112,3 +112,20 @@ The output will be in a png file.
 
 For the format supported, please refer to the graphviz [documentation](https://graphviz.org/doc/info/output.html)
 
+##### Export a .sql file to a .png, include only tables who have either the name hello or world
+
+```bash
+usr@pop-os:~$ doteur sample.sql -o output.png -i hello world
+```
+
+##### Export a .sql file to a .png, include only tables who starts with the name hello
+
+```bash
+usr@pop-os:~$ doteur sample.sql -o output.png -i hello*
+```
+
+##### Export a .sql file to a .png, exclude all tables who starts with the name hello
+
+```bash
+usr@pop-os:~$ doteur sample.sql -o output.png -x hello*
+```
