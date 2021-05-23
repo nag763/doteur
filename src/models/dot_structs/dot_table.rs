@@ -14,7 +14,7 @@ pub struct DotTable {
 
 impl fmt::Display for DotTable {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{0}\n{1}\n\n\t\t{2}\n", self.header, self.attributes.join("\n"), self.footer)
+        write!(f, "{0}\n{1}\n\n\t{2}\n", self.header, self.attributes.join("\n"), self.footer)
     }
 }
 

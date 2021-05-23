@@ -90,5 +90,5 @@ digraph {} {{\n
 /// * `key` - The key of the begin table
 /// * `refered` - The key of the end table
 fn generate_relation(table_name: &str, table_end: &str, key: &str, refered: &str) -> String {
-    format!("\t\t{0} -> {1} [label=\"Key {2} refers {3}\", arrowhead = \"dot\"]", table_name, table_end, key, refered)
+    format!("\t{0} -> {1} [label=\"Key {2} refers {3}\", arrowhead = \"dot\"]", table_name, table_end, key, refered)
 }
