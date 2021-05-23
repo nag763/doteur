@@ -5,6 +5,7 @@ rustup toolchain install stable-x86_64-pc-windows-gnu
 rm -rf target/*
 cargo build --release #Linux by default
 cargo build --release --target x86_64-pc-windows-gnu #Windows x64-86
+cargo doc
 
 rm -rf release
 mkdir release
@@ -19,10 +20,13 @@ cd target
 mv release doteur
 zip ../release/doteur_linux_86_64.zip ./doteur -r
 
+zip ../release/doteur_doc.zip ./doc -r
+
 cd ../release
 
 md5sum doteur_windows_86_64.zip > doteur_windows_86_64.zip.md5
 md5sum doteur_linux_86_64.zip > doteur_linux_86_64.zip.md5
+md5sum doteur_doc.zip > doteur_doc.zip.md5
 
 cd ..
 
