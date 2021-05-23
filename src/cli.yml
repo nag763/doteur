@@ -1,5 +1,5 @@
 name: "doteur"
-version: "0.1.2"
+version: "0.2.0"
 author: LABEYE Loïc
 about: Convert .sql files to .dot files
 args:
