@@ -49,13 +49,13 @@ impl Args {
                         {
                             let file_path : &PathBuf = &file.unwrap().path();
                             if Path::new(file_path).is_file() {
-                                fs::read_to_string(file_path).expect(format!("Something went wrong while reading the file : {}", file_path.as_path().to_str().unwrap_or_else(|| "**ISSUE**")).as_str())
+                                fs::read_to_string(file_path).unwrap_or_else(|_| panic!("Something went wrong while reading the file : {}", file_path.as_path().to_str().unwrap_or("**ISSUE**")))
                             } else {
                                 String::new()
                             }
                         }).collect::<Vec<String>>().join("\n")
                 } else {
-                    fs::read_to_string(path).expect(format!("Something went wrong while reading the file : {}", path).as_str())
+                    fs::read_to_string(path).unwrap_or_else(|_| panic!("Something went wrong while reading the file : {}", path))
                 }
             }).collect::<Vec<String>>().join("\n"),
             output_filename: String::from("output.dot"),
@@ -153,7 +153,7 @@ mod tests {
         }, "png", "set value with multifile");
 
         assert_eq!({
-            let mut args = Args::new(vec!["./examples/samplefile3.sql"]);
+            let mut args = Args::new(vec!["./examples"]);
             args.set_output_filename("./path/to/file/hello.png".to_string());
             args.clone().get_output_file_ext()
         }, "png", "set value");
