@@ -1,4 +1,3 @@
-
 <p align="center"><img src="https://github.com/nag763/doteur/blob/main/logo.png"></img></p>
 
 <h2 align="center">Doteur</h2>
@@ -72,16 +71,17 @@ If you need to use it regularly, it is recommended to add the bin folder to your
 
 ```bash
 usr@pop-os:~$ doteur --help
-doteur 0.2.0
+doteur 0.3.0
 LABEYE Loïc
 Convert .sql files to .dot files
 
 USAGE:
-    doteur [OPTIONS] <FILENAME>
+    doteur [FLAGS] [OPTIONS] <input>...
 
 FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
+        --dark-mode    render in dark mode
+    -h, --help         Prints help information
+    -V, --version      Prints version information
 
 OPTIONS:
     -x, --exclude <exclude>...    exclude the given tables
@@ -89,7 +89,7 @@ OPTIONS:
     -o, --output <output>         The output filename
 
 ARGS:
-    <FILENAME>    File of the sql name
+    <input>...    Name of the sql file, can also be a directory or several files
 ```
 
 #### Example usage
@@ -111,6 +111,12 @@ usr@pop-os:~$ doteur sample.sql -o output.png
 The output will be in a png file.
 
 For the format supported, please refer to the graphviz [documentation](https://graphviz.org/doc/info/output.html)
+
+##### Export a .sql file to a .png, render in dark mode
+
+```bash
+usr@pop-os:~$ doteur sample.sql -o output.png -x hello* --dark-mode
+```
 
 ##### Export a .sql file to a .png, include only tables who have either the name hello or world
 
