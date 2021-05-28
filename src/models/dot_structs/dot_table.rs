@@ -66,7 +66,7 @@ impl DotTable {
 fn generate_table_header(name: &str) -> String {
     format!("
     {0} [label=<
-        <TABLE BGCOLOR=\"gray92\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\">
+        <TABLE BGCOLOR=\"grey95\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\">
 
         <TR><TD COLSPAN=\"2\" CELLPADDING=\"5\" ALIGN=\"CENTER\" BGCOLOR=\"indigo\">
         <FONT FACE=\"Roboto\" COLOR=\"white\" POINT-SIZE=\"10\">
@@ -101,7 +101,7 @@ fn generate_attribute(title: &str, desc : &str) -> String {
 fn generate_fk_attribute(key : &str, fk_table : &str, fk_col : &str) -> String {
     format!("
         <TR><TD ALIGN=\"LEFT\" BORDER=\"0\">
-        <FONT FACE=\"Roboto\"><B>[FK] {0}</B></FONT>
+        <FONT FACE=\"Roboto\"><B>{0} \u{1F5DD}</B></FONT>
         </TD><TD ALIGN=\"LEFT\">
         <FONT FACE=\"Roboto\">Refers to <I>{1}[{2}]</I></FONT>
         </TD></TR>", key.trim_leading_trailing(), fk_table.trim_leading_trailing(), fk_col.trim_leading_trailing()
