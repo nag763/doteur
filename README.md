@@ -21,8 +21,7 @@ If you have any suggestion, or issue, please report it, it will help us to fix t
 		- [X] Tested
 	- Windows
 		- [X] Tested
-	- Darwin
-		- [ ] Untested
+		
 - <u>Docker image, continuous delivery :</u> https://hub.docker.com/r/nag763/doteur  
 
 #### How to use through Docker
