@@ -81,7 +81,7 @@ fn init_dot(filename: &str, dark_mode: bool) -> String {
             true => "bgcolor= black;",
             false => "",
     };
-    format!("//This file has been generated with sqltodot, enjoy!
+    format!("//This file has been generated with doteur, enjoy!
 digraph {0} {{\n
 
     {1}

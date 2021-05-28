@@ -21,7 +21,7 @@ If you have any suggestion, or issue, please report it, it will help us to fix t
 		- [X] Tested
 	- Windows
 		- [X] Tested
-		
+
 - <u>Docker image, continuous delivery :</u> https://hub.docker.com/r/nag763/doteur  
 
 #### How to use through Docker
@@ -70,7 +70,7 @@ cd doteur
 cargo install --path .
 ```
 
-- Use the tool
+2. Use the tool
 
 ```bash
 doteur --help
@@ -79,6 +79,12 @@ doteur --help
 3. Add it to your path
 
 If you need to use it regularly, it is recommended to add the bin folder to your path. For this, look on how to do it on your distro.
+
+On linux :
+
+```bash
+ln -s path/to/doteur /usr/sbin
+```
 
 #### Cli usage
 
