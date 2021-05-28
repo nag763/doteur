@@ -12,7 +12,7 @@ fn main() {
     let matches = App::from(yaml).get_matches();
 
 
-    let mut args : Args = Args::new(matches.value_of("FILENAME").expect("Please provide a filename. Use --help to see possibilities").to_string());
+    let mut args : Args = Args::new(matches.values_of("FILENAME").expect("Please provide a filename. Use --help to see possibilities").collect::<Vec<&str>>());
     if contains_tables(args.get_filecontent()) {
         if let Some(value) = matches.value_of("output") {
             args.set_output_filename(value.to_string());

@@ -34,14 +34,19 @@ impl Args {
     /// # Arguments
     ///
     /// * `path_str` - The path of the input file
-    pub fn new(path_str: String) -> Args {
-        let filename : String = Path::new(path_str.as_str()).file_name().expect("Incorrect file name").to_str().unwrap().to_string();
-        if Path::new(path_str.as_str()).is_dir() {
+    pub fn new(path_str: Vec<&str>) -> Args {
+        let filename : String;
+        if path_str.len() != 1 {
+            filename = String::from("multifilearg");
+        } else {
+            filename = Path::new(path_str.first().unwrap()).file_name().expect("Incorrect file name").to_str().unwrap().to_string();
+        }
+        if path_str.iter().any(|file| Path::new(file).is_dir()) {
             panic!("Directories aren't supported");
         } else {
             Args {
                 filename,
-                filecontent: fs::read_to_string(path_str.as_str()).expect("Something went wrong while reading the file"),
+                filecontent: path_str.iter().map(|file| fs::read_to_string(file).expect("Something went wrong while reading the file")).collect::<Vec<String>>().join("\n"),
                 output_filename: String::from("output.dot"),
                 restrictions: None,
             }
