@@ -1,6 +1,4 @@
 use std::fmt;
-use std::ffi::OsStr;
-use std::path::Path;
 
 use super::dot_table::{DotTable};
 
@@ -13,7 +11,9 @@ pub struct DotFile {
     /// The relations to include in the file
     relations: Vec<String>,
     /// The footer of the file
-    footer : String
+    footer : String,
+    /// Define if the graph has to be in dark mode
+    dark_mode: bool
 }
 
 impl fmt::Display for DotFile {
@@ -36,13 +36,15 @@ impl DotFile {
     /// # Arguments
     ///
     /// * `filename` - This will be set as the graph's filename
-    pub fn new(filename : &str) -> DotFile {
+    /// * `dark_mode` - Set if the file has to be in dark mode
+    pub fn new(filename : &str, dark_mode : bool) -> DotFile {
 
         DotFile {
-            header : init_dot(filename),
+            header : init_dot(filename, dark_mode),
             dot_tables: Vec::new(),
             relations: Vec::new(),
-            footer: String::from("}")
+            footer: String::from("}"),
+            dark_mode
         }
     }
 
@@ -64,7 +66,7 @@ impl DotFile {
     /// * `key` - The key of the begin table
     /// * `refered` - The key of the end table
     pub fn add_relation(&mut self, table_name: &str, table_end: &str, key: &str, refered: &str){
-        self.relations.push(generate_relation(table_name, table_end, key, refered))
+        self.relations.push(generate_relation(table_name, table_end, key, refered, self.dark_mode))
     }
 }
 
@@ -73,12 +75,20 @@ impl DotFile {
 /// # Arguments
 ///
 /// * `filename` - The name of the input file
-fn init_dot(filename: &str) -> String {
+/// * `dark_mode` - Changes the color of rendering
+fn init_dot(filename: &str, dark_mode: bool) -> String {
+    let bg_color : &str = match dark_mode {
+            true => "bgcolor= black;",
+            false => "",
+    };
     format!("//This file has been generated with sqltodot, enjoy!
-digraph {} {{\n
+digraph {0} {{\n
+
+    {1}
+
     node [\n
         shape = \"plaintext\"
-    ]\n\n", Path::new(filename).file_stem().unwrap_or_else(|| OsStr::new("sql")).to_str().unwrap_or("sql"))
+    ]\n\n", filename, bg_color)
 }
 
 /// Generate a dot relation with the given arguments
@@ -89,6 +99,10 @@ digraph {} {{\n
 /// * `table_end` - The table where the relation ends
 /// * `key` - The key of the begin table
 /// * `refered` - The key of the end table
-fn generate_relation(table_name: &str, table_end: &str, key: &str, refered: &str) -> String {
-    format!("\t{0} -> {1} [label=<<I>{2} \u{27A1} {3}</I>>, arrowhead = \"dot\", fontsize=\"12.0\"]", table_name, table_end, key, refered)
+fn generate_relation(table_name: &str, table_end: &str, key: &str, refered: &str, dark_mode: bool) -> String {
+    let color_scheme : &str = match dark_mode {
+        true => "fontcolor=white, color=white",
+        false => ""
+    };
+    format!("\t{0} -> {1} [label=<<I>{2} \u{27A1} {3}</I>>, arrowhead = \"dot\", fontsize=\"12.0\", {4}]", table_name, table_end, key, refered, color_scheme)
 }

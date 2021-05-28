@@ -9,7 +9,9 @@ pub struct DotTable {
     /// The attribute of the table
     attributes: Vec<String>,
     /// The footer of the table
-    footer: String
+    footer: String,
+    /// Changes the rendering of the file if true
+    dark_mode: bool
 }
 
 impl fmt::Display for DotTable {
@@ -25,12 +27,14 @@ impl DotTable {
     /// # Arguments
     ///
     /// * `table_name` - The table to render in dot
-    pub fn new(table_name: &str) -> DotTable {
-        let header : String = generate_table_header(table_name);
+    /// * `dark_mode` - Changes the rendering of the file if true
+    pub fn new(table_name: &str, dark_mode: bool) -> DotTable {
+        let header : String = generate_table_header(table_name, dark_mode);
         DotTable {
             header,
             attributes: Vec::new(),
-            footer: String::from("</TABLE> >]")
+            footer: String::from("</TABLE> >]"),
+            dark_mode
         }
     }
 
@@ -41,7 +45,7 @@ impl DotTable {
     /// * `title` - The title of the attribute
     /// * `desc` - The description of the attribute
     pub fn add_attribute(&mut self, title: &str, desc : &str) {
-        self.attributes.push(generate_attribute(title, desc));
+        self.attributes.push(generate_attribute(title, desc, self.dark_mode));
     }
 
 
@@ -53,7 +57,7 @@ impl DotTable {
     /// * `fk_table` - The refered table
     /// * `fk_col` - The refered key
     pub fn add_attribute_fk(&mut self, key: &str, fk_table : &str, fk_col : &str) {
-        self.attributes.push(generate_fk_attribute(key, fk_table, fk_col));
+        self.attributes.push(generate_fk_attribute(key, fk_table, fk_col, self.dark_mode));
     }
 
 }
@@ -62,16 +66,21 @@ impl DotTable {
 ///
 /// # Arguments
 ///
-/// * `name` - The name of the talbe
-fn generate_table_header(name: &str) -> String {
+/// * `name` - The name of the table
+/// * `dark_mode` - Changes the rendering of the table header if true
+fn generate_table_header(name: &str, dark_mode: bool) -> String {
+    let styles : (&str, &str) = match dark_mode {
+            true => ("grey20", "grey10"),
+            false => ("grey95", "indigo")
+    };
     format!("
     {0} [label=<
-        <TABLE BGCOLOR=\"grey95\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\">
+        <TABLE BGCOLOR=\"{1}\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\">
 
-        <TR><TD COLSPAN=\"2\" CELLPADDING=\"5\" ALIGN=\"CENTER\" BGCOLOR=\"indigo\">
-        <FONT FACE=\"Roboto\" COLOR=\"white\" POINT-SIZE=\"10\">
+        <TR><TD COLSPAN=\"2\" CELLPADDING=\"5\" ALIGN=\"CENTER\" BGCOLOR=\"{2}\">
+        <FONT FACE=\"Roboto\" COLOR=\"white\" POINT-SIZE=\"12\">
         <B>{0}</B>
-        </FONT></TD></TR>", name.trim_leading_trailing())
+        </FONT></TD></TR>", name.trim_leading_trailing(), styles.0, styles.1)
 }
 
 
@@ -81,13 +90,18 @@ fn generate_table_header(name: &str) -> String {
 ///
 /// * `title` - The name of the attribute
 /// * `desc` - The description of the attribute
-fn generate_attribute(title: &str, desc : &str) -> String {
+/// * `dark_mode` - Changes the rendering of the table header if true
+fn generate_attribute(title: &str, desc: &str, dark_mode: bool) -> String {
+    let font_color : &str = match dark_mode {
+            true => "white",
+            false => "black"
+    };
     format!("
         <TR><TD ALIGN=\"LEFT\" BORDER=\"0\">
-        <FONT FACE=\"Roboto\"><B>{0}</B></FONT>
+        <FONT COLOR=\"{0}\" FACE=\"Roboto\"><B>{1}</B></FONT>
         </TD><TD ALIGN=\"LEFT\">
-        <FONT FACE=\"Roboto\">{1}</FONT>
-        </TD></TR>", title.trim_leading_trailing(), desc.trim_leading_trailing()
+        <FONT COLOR=\"{0}\" FACE=\"Roboto\">{2}</FONT>
+        </TD></TR>", font_color, title.trim_leading_trailing(), desc.trim_leading_trailing()
     )
 }
 
@@ -98,12 +112,17 @@ fn generate_attribute(title: &str, desc : &str) -> String {
 /// * `key` - The key of the attribute in the table
 /// * `fk_table` - The refered table
 /// * `fk_col` - The refered key
-fn generate_fk_attribute(key : &str, fk_table : &str, fk_col : &str) -> String {
+/// * `dark_mode` - Changes the rendering of the table header if true
+fn generate_fk_attribute(key: &str, fk_table: &str, fk_col: &str, dark_mode: bool) -> String {
+    let font_color : &str = match dark_mode {
+            true => "white",
+            false => "black"
+    };
     format!("
         <TR><TD ALIGN=\"LEFT\" BORDER=\"0\">
-        <FONT FACE=\"Roboto\"><B>{0} \u{1F5DD}</B></FONT>
+        <FONT COLOR=\"{0}\" FACE=\"Roboto\"><B>{1} \u{1F5DD}</B></FONT>
         </TD><TD ALIGN=\"LEFT\">
-        <FONT FACE=\"Roboto\">Refers to <I>{1}[{2}]</I></FONT>
-        </TD></TR>", key.trim_leading_trailing(), fk_table.trim_leading_trailing(), fk_col.trim_leading_trailing()
+        <FONT FACE=\"Roboto\" COLOR=\"{0}\">Refers to <I>{2}[{3}]</I></FONT>
+        </TD></TR>", font_color,  key.trim_leading_trailing(), fk_table.trim_leading_trailing(), fk_col.trim_leading_trailing()
     )
 }

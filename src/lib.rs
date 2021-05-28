@@ -56,7 +56,8 @@ pub fn contains_tables(input: &str) -> bool {
 /// * `dot_file` - A mutable dot file
 /// * `input` - The content to convert
 /// * `restrictions` - The restriction to apply on the table
-fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Option<&Restriction>) -> Result<&'static str, &'static str> {
+/// * `dark_mode` - Changes the rendering of the output file
+fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Option<&Restriction>, dark_mode: bool) -> Result<&'static str, &'static str> {
     let table_name : String = RE_TABLE_NAME.captures(input)
                                   .unwrap()
                                   .get(1)
@@ -72,7 +73,7 @@ fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Optio
         }
     }
 
-    let mut dot_table : DotTable = DotTable::new(table_name.as_str());
+    let mut dot_table : DotTable = DotTable::new(table_name.as_str(), dark_mode);
 
     let begin_dec : usize;
     let end_dec : usize;
@@ -191,10 +192,10 @@ fn generate_relations(dot_file : &mut DotFile, table_name : &str, input: &str, r
 /// * `args` - The CLI args
 pub fn process_file(args : Args) -> String {
 
-    let mut dot_file : DotFile = DotFile::new(args.get_filename_without_specials().as_str());
+    let mut dot_file : DotFile = DotFile::new(args.get_filename_without_specials().as_str(), args.get_dark_mode());
 
     // Generate content from the declared tables.
-    get_tables(args.get_filecontent()).iter().for_each(|element| {let _ = convert_sql_to_dot(&mut dot_file, element, args.get_restrictions());});
+    get_tables(args.get_filecontent()).iter().for_each(|element| {let _ = convert_sql_to_dot(&mut dot_file, element, args.get_restrictions(), args.get_dark_mode());});
 
     // Look after the other fks, declared on alter table statements.
     RE_ALTERED_TABLE.captures_iter(args.get_filecontent())

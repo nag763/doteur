@@ -27,3 +27,6 @@ args:
                 multiple: true
                 conflicts_with:
                         - include
+        - dark_mode:
+                help: render in dark mode
+                long: dark-mode
