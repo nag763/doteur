@@ -1,4 +1,4 @@
-<p align="center"><img src="https://github.com/nag763/doteur/blob/main/logo.png"></img></p>
+y<p align="center"><img src="https://github.com/nag763/doteur/blob/main/logo.png"></img></p>
 
 <h2 align="center">Doteur</h2>
 <h4 align="center">A simple tool to draw your mysql relations from exports.</h4>
@@ -25,7 +25,21 @@ If you have any suggestion, or issue, please report it, it will help us to fix t
 		- [ ] Untested
 - <u>Docker image, continuous delivery :</u> https://hub.docker.com/r/nag763/doteur  
 
-#### How to install
+#### How to use through Docker
+
+To download the tool
+
+```bash
+docker pull nag763/doteur:latest
+```
+
+Then to use it, simply pass a folder with your sql files, and be careful to write all your outputs in the shared folder to ensure the files are available on your host machine once the image is destroyed.
+
+```bash
+docker run --rm -v ~/doteur/examples:/usr/src/doteur/shared -it nag763/doteur:latest bash
+```
+
+#### How to install it natively
 
 0. **Optional but highly recommended**
 
