@@ -1,5 +1,5 @@
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use super::restriction::{Restriction};
 
@@ -41,15 +41,25 @@ impl Args {
         } else {
             filename = Path::new(path_str.first().unwrap()).file_name().expect("Incorrect file name").to_str().unwrap().to_string();
         }
-        if path_str.iter().any(|file| Path::new(file).is_dir()) {
-            panic!("Directories aren't supported");
-        } else {
-            Args {
-                filename,
-                filecontent: path_str.iter().map(|file| fs::read_to_string(file).expect("Something went wrong while reading the file")).collect::<Vec<String>>().join("\n"),
-                output_filename: String::from("output.dot"),
-                restrictions: None,
-            }
+        Args {
+            filename,
+            filecontent: path_str.iter().map(|path| {
+                if Path::new(path).is_dir() {
+                    fs::read_dir(path).expect("Directory can't be read").map(|file|
+                        {
+                            let file_path : &PathBuf = &file.unwrap().path();
+                            if Path::new(file_path).is_file() {
+                                fs::read_to_string(file_path).expect(format!("Something went wrong while reading the file : {}", file_path.as_path().to_str().unwrap_or_else(|| "**ISSUE**")).as_str())
+                            } else {
+                                String::new()
+                            }
+                        }).collect::<Vec<String>>().join("\n")
+                } else {
+                    fs::read_to_string(path).expect(format!("Something went wrong while reading the file : {}", path).as_str())
+                }
+            }).collect::<Vec<String>>().join("\n"),
+            output_filename: String::from("output.dot"),
+            restrictions: None,
         }
     }
 
