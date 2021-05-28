@@ -14,13 +14,13 @@ args:
                 long: output
                 takes_value: true
         - include:
-                help: include only the given tables
+                help: Include only the given tables
                 short: i
                 long: include
                 takes_value: true
                 multiple: true
         - exclude:
-                help: exclude the given tables
+                help: Exclude the given tables
                 short: x
                 long: exclude
                 takes_value: true
@@ -28,5 +28,5 @@ args:
                 conflicts_with:
                         - include
         - dark_mode:
-                help: render in dark mode
+                help: Render in dark mode
                 long: dark-mode
