@@ -3,8 +3,8 @@ version: "0.2.0"
 author: LABEYE Loïc
 about: Convert .sql files to .dot files
 args:
-        - FILENAME:
-                help: File of the sql name
+        - input:
+                help: Name of the sql file, can also be a directory or several files
                 required: true
                 index: 1
                 multiple: true
