@@ -5,13 +5,12 @@ use std::fs;
 
 use models::args::{Args};
 use models::restriction::{Restriction};
-use models::add_traits::{Trim};
+use models::add_traits::{Trim, LastChar, SplitVec};
 
 use models::dot_structs::dot_table::{DotTable};
 use models::dot_structs::dot_file::{DotFile};
 
 #[macro_use] extern crate lazy_static;
-
 
 lazy_static! {
     ///Look after table defs.
@@ -22,10 +21,67 @@ lazy_static! {
     static ref RE_FK : Regex = Regex::new(r"(?i)\s*FOREIGN\s*KEY").unwrap();
     ///Check for the content in parenthesis.
     static ref RE_IN_PARENTHESES : Regex = Regex::new(r"[`]?(\w*)[`]?\s*(?:\(`?([^()`]+)`?\))").unwrap();
-    ///Split on coma.
-    static ref RE_SEP_COMA : Regex = Regex::new(r",\s").unwrap();
     ///Look after alter table statements.
     static ref RE_ALTERED_TABLE : Regex = Regex::new(r"\s*(?i)ALTER\s*TABLE\s*`?(\w*)`?\s*([^;]*)").unwrap();
+}
+
+
+/// Detect comas in a String
+///
+/// # Arguments
+///
+/// * `content` - content to detect comas in
+fn detect_comas(content : &str) -> Result<Vec<usize>, Vec<&str>> {
+    let mut indexes : Vec<usize> = Vec::new();
+    let mut buffer : String = String::new();
+    let mut errors : Vec<&str> = Vec::new();
+    content.chars().enumerate().for_each(|(i, c)|{
+        match c {
+            '(' => {
+                // If the parenthesis isn't inside a string
+                if buffer.is_empty() || buffer.get_last_char() != '`' {
+                    buffer.push(c);
+                }
+            },
+            ')' => {
+                if !buffer.is_empty() {
+                    let last_char : char = buffer.get_last_char();
+                    if last_char == '(' {
+                            buffer.pop();
+                    } else if last_char != '`' {
+                        errors.push("Parenthesis don't match");
+                    }
+                } else {
+                    errors.push("Closing parenthesis without opening parenthesis");
+                }
+            },
+            '`' => {
+                if !buffer.is_empty() {
+                    let last_char : char = buffer.get_last_char();
+                    if last_char == '`' {
+                        buffer.pop();
+                    } else if last_char == '(' {
+                        buffer.push(c);
+                    // If a back tick is neither a closure nor a declaration
+                    } else {
+                        errors.push("Malformed, single backtick");
+                    }
+                } else {
+                    buffer.push(c)
+                }
+            },
+            ',' => {
+                if buffer.is_empty() {
+                    indexes.push(i);
+                }
+            },
+            _ => ()
+        }
+    } );
+    match errors.is_empty() {
+        true => Ok(indexes),
+        false => Err(errors)
+    }
 }
 
 /// Get the tables from the input
@@ -87,15 +143,18 @@ fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Optio
         None => {dot_file.add_table(dot_table); return Ok("No attributes");}
     }
 
-    let lines : Vec<String> = RE_SEP_COMA
-        .split(input
-            .chars()
-            .take(end_dec)
-            .skip(begin_dec+1)
-            .collect::<String>()
-            .as_str())
-        .map(|s| s.to_string())
-        .collect::<Vec<String>>();
+    let attr_defs : String = input
+        .chars()
+        .take(end_dec)
+        .skip(begin_dec+1)
+        .collect::<String>();
+
+    let lines : Vec<&str>;
+
+    match detect_comas(attr_defs.as_str()) {
+        Ok(v) => lines = attr_defs.split_vec(v),
+        Err(_) => return Err("Attributes malformed"),
+    }
 
     lines.iter().for_each(|s| {let _ = generate_attributes(&mut dot_table, s); let _ = generate_relations(dot_file, &table_name, s, restrictions);});
     dot_file.add_table(dot_table);
