@@ -90,7 +90,7 @@ ln -s path/to/doteur /usr/sbin
 
 ```bash
 usr@pop-os:~$ doteur --help
-doteur 0.3.0
+doteur 0.3.1
 LABEYE Loïc
 Convert .sql files to .dot files
 
@@ -98,13 +98,13 @@ USAGE:
     doteur [FLAGS] [OPTIONS] <input>...
 
 FLAGS:
-        --dark-mode    render in dark mode
+        --dark-mode    Render in dark mode
     -h, --help         Prints help information
     -V, --version      Prints version information
 
 OPTIONS:
-    -x, --exclude <exclude>...    exclude the given tables
-    -i, --include <include>...    include only the given tables
+    -x, --exclude <exclude>...    Exclude the given tables
+    -i, --include <include>...    Include only the given tables
     -o, --output <output>         The output filename
 
 ARGS:
