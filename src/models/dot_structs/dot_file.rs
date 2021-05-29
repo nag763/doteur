@@ -104,5 +104,9 @@ fn generate_relation(table_name: &str, table_end: &str, key: &str, refered: &str
         true => "fontcolor=white, color=white",
         false => ""
     };
-    format!("\t{0} -> {1} [label=<<I>{2} \u{27A1} {3}</I>>, arrowhead = \"dot\", fontsize=\"12.0\", {4}]", table_name, table_end, key, refered, color_scheme)
+    let refer : &str = match cfg!(unix) {
+        true => "\u{27A1}",
+        _ => "refers"
+    };
+    format!("\t{0} -> {1} [label=<<I>{2} {3} {4}</I>>, arrowhead = \"dot\", fontsize=\"12.0\", {5}]", table_name, table_end, key, refer, refered, color_scheme)
 }

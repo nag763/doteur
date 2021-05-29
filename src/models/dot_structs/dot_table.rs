@@ -118,11 +118,15 @@ fn generate_fk_attribute(key: &str, fk_table: &str, fk_col: &str, dark_mode: boo
             true => "white",
             false => "black"
     };
+    let refer_sign : &str = match cfg!(unix) {
+        true => "\u{1F5DD}",
+        _ => "[FK]"
+    };
     format!("
         <TR><TD ALIGN=\"LEFT\" BORDER=\"0\">
-        <FONT COLOR=\"{0}\" FACE=\"Roboto\"><B>{1} \u{1F5DD}</B></FONT>
+        <FONT COLOR=\"{0}\" FACE=\"Roboto\"><B>{1} {2}</B></FONT>
         </TD><TD ALIGN=\"LEFT\">
-        <FONT FACE=\"Roboto\" COLOR=\"{0}\">Refers to <I>{2}[{3}]</I></FONT>
-        </TD></TR>", font_color,  key.trim_leading_trailing(), fk_table.trim_leading_trailing(), fk_col.trim_leading_trailing()
+        <FONT FACE=\"Roboto\" COLOR=\"{0}\">Refers to <I>{3}[{4}]</I></FONT>
+        </TD></TR>", font_color,  key.trim_leading_trailing(), refer_sign, fk_table.trim_leading_trailing(), fk_col.trim_leading_trailing()
     )
 }
