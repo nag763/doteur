@@ -1,6 +1,6 @@
 pub mod models;
 
-use regex::Regex;
+use regex::{Regex, Captures};
 use std::fs;
 
 use models::args::{Args};
@@ -16,7 +16,7 @@ lazy_static! {
     ///Look after table defs.
     static ref RE_TABLE_DEFS : Regex = Regex::new(r"(?i)\s*CREATE\s*TABLE[^;]*.").unwrap();
     ///Get table name.
-    static ref RE_TABLE_NAME : Regex = Regex::new(r"(?i)\s*CREATE\s*TABLE\s*(?:IF\s*NOT\s*EXISTS)?\s*[`]?(\w*).").unwrap();
+    static ref RE_TABLE_NAME : Regex = Regex::new(r"(?i)\s*CREATE\s*TABLE\s*(?:IF\s*NOT\s*EXISTS)?\s*[`]?(\w*)[`]?\s*\(([^;]*)\)").unwrap();
     ///Check if foreign key exists.
     static ref RE_FK : Regex = Regex::new(r"(?i)\s*FOREIGN\s*KEY").unwrap();
     ///Check for the content in parenthesis.
@@ -114,8 +114,9 @@ pub fn contains_tables(input: &str) -> bool {
 /// * `restrictions` - The restriction to apply on the table
 /// * `dark_mode` - Changes the rendering of the output file
 fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Option<&Restriction>, dark_mode: bool) -> Result<&'static str, &'static str> {
-    let table_name : String = RE_TABLE_NAME.captures(input)
-                                  .unwrap()
+
+    let captures : Captures = RE_TABLE_NAME.captures(input).unwrap();
+    let table_name : String = captures
                                   .get(1)
                                   .unwrap()
                                   .as_str()
@@ -131,29 +132,12 @@ fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Optio
 
     let mut dot_table : DotTable = DotTable::new(table_name.as_str(), dark_mode);
 
-    let begin_dec : usize;
-    let end_dec : usize;
-    // If the table is empty
-    match input.find('('){
-        Some(v) => begin_dec = v,
-        None => {dot_file.add_table(dot_table); return Ok("No attributes");}
-    }
-    match input.rfind(')') {
-        Some(v) => end_dec = v,
-        None => {dot_file.add_table(dot_table); return Ok("No attributes");}
-    }
-
-    let attr_defs : String = input
-        .chars()
-        .take(end_dec)
-        .skip(begin_dec+1)
-        .collect::<String>();
-
+    let attr_defs : String = captures.get(2).unwrap().as_str().trim_leading_trailing();
     let lines : Vec<&str>;
 
     match detect_comas(attr_defs.as_str()) {
         Ok(v) => lines = attr_defs.split_vec(v),
-        Err(_) => return Err("Attributes malformed"),
+        Err(_) => {dot_file.add_table(dot_table); return Err("Attributes malformed");},
     }
 
     lines.iter().for_each(|s| {let _ = generate_attributes(&mut dot_table, s); let _ = generate_relations(dot_file, &table_name, s, restrictions);});
