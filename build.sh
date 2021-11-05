@@ -1,11 +1,21 @@
 #!bin/sh
 
+if ! command -v rustup &> /dev/null
+then
+    echo "rustup could not be found, please ensure it is installed"
+    echo "Exiting..."
+    exit
+fi
+
 rustup toolchain install stable-x86_64-pc-windows-gnu
 
 rm -rf target/*
 cargo build --release #Linux by default
 cargo build --release --target x86_64-pc-windows-gnu #Windows x64-86
 cargo doc
+
+cp install.sh target/release/
+cp uninstall.sh target/release/
 
 rm -rf release
 mkdir release

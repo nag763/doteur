@@ -9,14 +9,14 @@ then
 fi
 
 
-if [ -x "$(command -v cargo)" ];
+if [ -x "$(command -v cargo)" ] && [[ -f "./Cargo.toml" ]];
 then
     cargo install --path .
 elif [[ -f "./doteur" ]];
 then
     if [ "$EUID" -ne 0 ];
     	then 
-		echo "Cargo isn't in your path, either install cargo or run this as sudo"
+		echo "Cargo isn't in your path or you aren't running this from the source directory, either install cargo or run this as sudo"
 		echo "Exiting ..."
 		exit
     else
