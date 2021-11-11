@@ -7,7 +7,7 @@ pub struct DotTable {
     /// The header of the table
     header: String,
     /// The attribute of the table
-    attributes: Vec<String>,
+    attributes: Vec<(String, String)>,
     /// The footer of the table
     footer: String,
     /// Changes the rendering of the file if true
@@ -16,7 +16,7 @@ pub struct DotTable {
 
 impl fmt::Display for DotTable {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{0}\n{1}\n\n\t{2}\n", self.header, self.attributes.join("\n"), self.footer)
+        write!(f, "{0}\n{1}\n\n\t{2}\n", self.header, self.attributes.clone().into_iter().map(|(_, value)| value).collect::<Vec<String>>().join("\n"), self.footer)
     }
 }
 
@@ -38,6 +38,51 @@ impl DotTable {
         }
     }
 
+    /// Returns the index of an attribute
+    ///
+    /// # Arguments
+    ///
+    /// * `attr_name` - name of the attribute
+    fn index_of_attribute(&mut self, attr_name: &str) -> Result<usize, &'static str> {
+        let filtered_key_map : Vec<(usize, String)> = self.attributes
+            .clone()
+            .into_iter()
+            .enumerate()
+            .map(|(i, (key, _))| (i, key))
+            .filter(|(_, key)| key == attr_name)
+            .collect();
+        match filtered_key_map.is_empty() {
+            true => Err("No such attribute"),
+            false => Ok(filtered_key_map.first().unwrap().0)
+        }
+    }
+
+    /// Replace an already existing attribute
+    ///
+    /// # Arguments
+    ///
+    /// * `attr_name` - name of the attribute
+    /// * `new_value` - new value of the attribute
+    fn replace_attribute(&mut self, attr_name: &str, new_value: String) -> Result<usize, &'static str>  {
+        match self.index_of_attribute(attr_name) {
+            Ok(index) => {let _ = std::mem::replace(&mut self.attributes[index], (attr_name.to_string(), new_value)); Ok(index)},
+            Err(err) => Err(err)
+        }
+    }
+
+    /// Replace the attribute if it already exists,
+    /// otherwise append the attribute
+    ///
+    /// # Arguments
+    ///
+    /// * `attr_name` - name of the attribute
+    /// * `value` - value of the attribute
+    fn push_or_replace_attribute(&mut self, attr_name: &str, value: String) {
+        if self.replace_attribute(attr_name, value.clone()).is_err() {
+            self.attributes.push((attr_name.to_string(), value));
+        }
+    }
+
     /// Adds an attribute to the table
     ///
     /// # Arguments
@@ -45,7 +90,7 @@ impl DotTable {
     /// * `title` - The title of the attribute
     /// * `desc` - The description of the attribute
     pub fn add_attribute(&mut self, title: &str, desc : &str) {
-        self.attributes.push(generate_attribute(title, desc, self.dark_mode));
+        self.attributes.push((title.to_string(), generate_attribute(title, desc, self.dark_mode)));
     }
 
 
@@ -57,7 +102,7 @@ impl DotTable {
     /// * `fk_table` - The refered table
     /// * `fk_col` - The refered key
     pub fn add_attribute_fk(&mut self, key: &str, fk_table : &str, fk_col : &str) {
-        self.attributes.push(generate_fk_attribute(key, fk_table, fk_col, self.dark_mode));
+        self.push_or_replace_attribute(key, generate_fk_attribute(key, fk_table, fk_col, self.dark_mode));
     }
 
 }
