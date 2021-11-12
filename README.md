@@ -60,15 +60,23 @@ You can still refer to the [graphviz download page](https://graphviz.org/downloa
 
 1. Download the tool
 
-- Via the release page.
+- Via cargo
+
+```
+cargo install doteur
+```
+
+- Via the [release page](https://github.com/nag763/doteur/releases/latest)
+
+- Via the [official website](https://doteur.net)
 
 - Via github
 
 ```bash
-git clone https://github.com/nag763/doteur
-cd doteur
-cargo install --path .
+cargo install --git https://github.com/nag763/doteur
 ```
+
+
 
 2. Use the tool
 
