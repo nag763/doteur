@@ -29,7 +29,7 @@ fn main() {
 
         if file_ext != "dot" {
             if  which("dot").is_err() {
-                panic!("The dot exe isn't in your path, we couldn't write the output.\nIf you work on linux, use your package manager to download graphviz.\nIf you work on windows, refer to the tutorial or download the tool via the official graphviz site.");
+                panic!("The dot exe isn't in your path, we couldn't write the output.\nIf you work on linux, use your package manager to download graphviz.\nIf you work on windows, refer to the tutorial or download the tool via the official graphviz site.\nGraphviz official download page : https://graphviz.org/download/\n");
             } else if !Args::ext_supported(file_ext) {
                 panic!("The given extension isn't supported. Please verify it is one of the following :\n\n{}", POSSIBLE_DOTS_OUTPUT.join(";"));
             } else {
