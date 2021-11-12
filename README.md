@@ -89,8 +89,8 @@ ln -s path/to/doteur /usr/sbin
 #### Cli usage
 
 ```bash
-usr@pop-os:~$ doteur --help
-doteur 0.3.1
+usr@linux:~$ doteur --help
+doteur 0.3.2
 LABEYE Loïc
 Convert .sql files to .dot files
 
