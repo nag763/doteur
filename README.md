@@ -16,13 +16,15 @@ If you have any suggestion, or issue, please report it, it will help us to fix t
 
 - <u>Author :</u> LABEYE Loïc
 - <u>Licence :</u> MIT
+- <u>Official website :</u> https://doteur.net
 - <u>Platforms available :</u>
 	- Linux
 		- [X] Tested
 	- Windows
 		- [X] Tested
-
+- <u>Github :</u> https://github.com/nag763/doteur
 - <u>Docker image, continuous delivery :</u> https://hub.docker.com/r/nag763/doteur  
+
 
 #### How to use through Docker
 
