@@ -7,3 +7,9 @@ WORKDIR /usr/src/doteur
 COPY . .
 
 RUN cargo install --path .
+
+RUN cp -r examples ..
+
+RUN rm -rf ./*
+
+RUN cp -r ../examples ./
