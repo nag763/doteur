@@ -23,6 +23,7 @@ If you have any suggestion, or issue, please report it, it will help us to fix t
 	- Windows
 		- [X] Tested
 - <u>Github :</u> https://github.com/nag763/doteur
+- <u>crates.io :</u> https://crates.io/crates/doteur
 - <u>Docker image, continuous delivery :</u> https://hub.docker.com/r/nag763/doteur  
 
 
