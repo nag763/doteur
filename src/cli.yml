@@ -1,7 +1,7 @@
 name: "doteur"
-version: "0.3.2"
-author: LABEYE Loïc
-about: Convert .sql files to .dot files
+version: "0.3.3"
+author: LABEYE Loïc <loic.labeye@pm.me>
+about: Convert .sql files to .dot files, render them if graphviz installed
 args:
         - input:
                 help: Name of the sql file, can also be a directory or several files

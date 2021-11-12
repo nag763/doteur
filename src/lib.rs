@@ -1,3 +1,16 @@
+//! # General information
+//! <p align="center"><img src="https://raw.githubusercontent.com/nag763/doteur/main/.github/assets/logo.png"></img></p>
+//! <h2 align="center">Doteur</h2>
+//! <h4 align="center">A simple tool to draw your mysql relations from exports.</h4>
+//! <p align="center"><img height ="480" width="640" src="https://raw.githubusercontent.com/nag763/doteur/main/.github/assets/sample.jpeg"></img></p>
+//! <u>Warning :</u> It is highly recommended to install <a href="https://graphviz.org/download/">graphviz</a> prior using this tool
+//! For more information, please refer to either :
+//! <ul>
+//! <li><a href="https://github.com/nag763/doteur"/>Github</a></li>
+//! <li><a href="https://doteur.net">The offical website</a></li>
+//! <li><a href="https://docker.com/nag763/doteur">The docker repo</a></li>
+//! </ul>
+
 pub mod models;
 
 use regex::{Regex, Captures};
