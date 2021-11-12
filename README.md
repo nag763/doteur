@@ -1,3 +1,4 @@
+![doteur-stars](https://img.shields.io/github/stars/nag763/doteur?style=social)![doteur-license](https://img.shields.io/crates/l/doteur)![github-issues](https://img.shields.io/github/issues/nag763/doteur))![crates-dl](https://img.shields.io/crates/dv/doteur)![docker-build](https://img.shields.io/docker/cloud/build/nag763/doteur)
 <p align="center"><img src="https://raw.githubusercontent.com/nag763/doteur/main/.github/assets/logo.png"></img></p>
 
 <h2 align="center">Doteur</h2>
