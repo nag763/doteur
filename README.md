@@ -1,4 +1,4 @@
-<p align="center"><img src="https://github.com/nag763/doteur/blob/main/logo.png"></img></p>
+<p align="center"><img src="https://raw.githubusercontent.com/nag763/doteur/main/logo.png"></img></p>
 
 <h2 align="center">Doteur</h2>
 <h4 align="center">A simple tool to draw your mysql relations from exports.</h4>
