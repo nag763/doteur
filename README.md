@@ -1,9 +1,9 @@
-<p align="center"><img src="https://raw.githubusercontent.com/nag763/doteur/main/logo.png"></img></p>
+<p align="center"><img src="https://raw.githubusercontent.com/nag763/doteur/main/.github/assets/logo.png"></img></p>
 
 <h2 align="center">Doteur</h2>
 <h4 align="center">A simple tool to draw your mysql relations from exports.</h4>
 
-<p align="center"><img height ="480" width="640" src="https://raw.githubusercontent.com/nag763/doteur/main/sample.jpeg"></img></p>
+<p align="center"><img height ="480" width="640" src="https://raw.githubusercontent.com/nag763/doteur/main/.github/assets/sample.jpeg"></img></p>
 
 
 #### Help us
