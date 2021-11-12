@@ -35,7 +35,7 @@ docker pull nag763/doteur:latest
 Then to use it, simply pass a folder with your sql files, and be careful to write all your outputs in the shared folder to ensure the files are available on your host machine once the image is destroyed.
 
 ```bash
-docker run --rm -v ~/doteur/examples:/usr/src/doteur/shared -it nag763/doteur:latest bash
+docker run --rm -v ${PATH_TO_YOUR_SQL_FOLDER}:/usr/src/doteur/shared -it nag763/doteur:latest bash
 ```
 
 #### How to install it natively
