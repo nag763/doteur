@@ -1,4 +1,9 @@
-![doteur-stars](https://img.shields.io/github/stars/nag763/doteur?style=social)![doteur-license](https://img.shields.io/crates/l/doteur)![github-issues](https://img.shields.io/github/issues/nag763/doteur)![crates-dl](https://img.shields.io/crates/dv/doteur)![docker-build](https://img.shields.io/docker/cloud/build/nag763/doteur)
+[![crates-dl](https://img.shields.io/crates/v/doteur)](https://crates.io/crates/doteur)
+[![doteur-stars](https://img.shields.io/github/stars/nag763/doteur?style=social)](https://github.com/nag763/doteur/stargazers)
+[![doteur-license](https://img.shields.io/crates/l/doteur)](https://github.com/nag763/doteur/blob/main/LICENCE.MD)
+[![github-issues](https://img.shields.io/github/issues/nag763/doteur)](https://github.com/nag763/doteur/issues)
+[![docker-build](https://img.shields.io/docker/cloud/build/nag763/doteur)](https://hub.docker.com/r/nag763/doteur)
+
 <p align="center"><img src="https://raw.githubusercontent.com/nag763/doteur/main/.github/assets/logo.png"></img></p>
 
 <h2 align="center">Doteur</h2>
@@ -146,7 +151,7 @@ For the format supported, please refer to the graphviz [documentation](https://g
 ##### Export a .sql file to a .png, render in dark mode
 
 ```bash
-usr@pop-os:~$ doteur sample.sql -o output.png -x hello* --dark-mode
+usr@pop-os:~$ doteur sample.sql -o output.png --dark-mode
 ```
 
 ##### Export a .sql file to a .png, include only tables who have either the name hello or world
@@ -155,13 +160,13 @@ usr@pop-os:~$ doteur sample.sql -o output.png -x hello* --dark-mode
 usr@pop-os:~$ doteur sample.sql -o output.png -i hello world
 ```
 
-##### Export a .sql file to a .png, include only tables who starts with the name hello
+##### Export a .sql file to a .png, include only tables that start with the name hello
 
 ```bash
 usr@pop-os:~$ doteur sample.sql -o output.png -i hello*
 ```
 
-##### Export a .sql file to a .png, exclude all tables who starts with the name hello
+##### Export a .sql file to a .png, exclude all tables that start with the name hello
 
 ```bash
 usr@pop-os:~$ doteur sample.sql -o output.png -x hello*
