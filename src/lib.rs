@@ -338,9 +338,9 @@ mod tests {
         assert_eq!(captures.name("distant_key").unwrap().as_str(), "PersonID", "normal");
 
         let captures2 : Captures = RE_FK_DEF.captures("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`)").unwrap();
-        assert_eq!(captures.name("table_key").unwrap().as_str(), "PersonID", "normal");
-        assert_eq!(captures.name("distant_table").unwrap().as_str(), "Persons", "normal");
-        assert_eq!(captures.name("distant_key").unwrap().as_str(), "PersonID", "normal");
+        assert_eq!(captures2.name("table_key").unwrap().as_str(), "PersonID", "normal");
+        assert_eq!(captures2.name("distant_table").unwrap().as_str(), "Persons", "normal");
+        assert_eq!(captures2.name("distant_key").unwrap().as_str(), "PersonID", "normal");
 
         let captures_with_on_delete_set_null : Captures = RE_FK_DEF.captures("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`) ON DELETE SET NULL").unwrap();
         assert_eq!(captures_with_on_delete_set_null.name("on_delete").unwrap().as_str(), "SET NULL", "normal");
@@ -350,6 +350,12 @@ mod tests {
 
         let captures_with_on_delete_restrict : Captures = RE_FK_DEF.captures("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`) ON DELETE RESTRICT").unwrap();
         assert_eq!(captures_with_on_delete_restrict.name("on_delete").unwrap().as_str(), "RESTRICT", "normal");
+
+        let captures_with_on_delete_restrict_and_leading_on_update : Captures = RE_FK_DEF.captures("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`) ON UPDATE SET NULL ON DELETE RESTRICT").unwrap();
+        assert_eq!(captures_with_on_delete_restrict_and_leading_on_update.name("on_delete").unwrap().as_str(), "RESTRICT", "normal");
+
+        let captures_with_on_delete_restrict_and_trailing_on_update : Captures = RE_FK_DEF.captures("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`) ON DELETE RESTRICT ON UPDATE CASCADE").unwrap();
+        assert_eq!(captures_with_on_delete_restrict_and_trailing_on_update.name("on_delete").unwrap().as_str(), "RESTRICT", "normal");
 
     }
 
