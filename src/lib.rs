@@ -33,7 +33,7 @@ lazy_static! {
     ///Check if foreign key exists.
     static ref RE_FK : Regex = Regex::new(r"(?i)\s*FOREIGN\s*KEY").unwrap();
     ///Check for the content in parenthesis.
-    static ref RE_FK_DEF : Regex = Regex::new(r####"(?i)FOREIGN\s*KEY\s*\(["`']?(?P<table_key>\w*)["`']?\)\s*REFERENCES\s*[`"']?(?P<distant_table>\w*)[`"']?\s*\([`'"]?(?P<distant_key>\w*)[`"']?\)\s*(?:ON\s*DELETE\s*)?(?P<on_delete>(SET\s*NULL|CASCADE|RESTRICT)?)"####).unwrap();
+    static ref RE_FK_DEF : Regex = Regex::new(r####"(?i)FOREIGN\s*KEY\s*\(["`']?(?P<table_key>\w*)["`']?\)\s*REFERENCES\s*[`"']?(?P<distant_table>\w*)[`"']?\s*\([`'"]?(?P<distant_key>\w*)[`"']?\)\s*(?:ON\s*UPDATE\s*(?:(?:SET\s*\w*|\w*))\s*)?(?:ON\s*DELETE\s*)?(?P<on_delete>(SET\s*NULL|CASCADE|RESTRICT)?)"####).unwrap();
     ///Look after alter table statements.
     static ref RE_ALTERED_TABLE : Regex = Regex::new(r"\s*(?i)ALTER\s*TABLE\s*`?(\w*)`?\s*([^;]*)").unwrap();
 }
