@@ -33,7 +33,7 @@ lazy_static! {
     ///Check if foreign key exists.
     static ref RE_FK : Regex = Regex::new(r"(?i)\s*FOREIGN\s*KEY").unwrap();
     ///Check for the content in parenthesis.
-    static ref RE_IN_PARENTHESES : Regex = Regex::new(r"[`]?(\w*)[`]?\s*(?:\(`?([^()`]+)`?\))").unwrap();
+    static ref RE_FK_DEF : Regex = Regex::new(r####"(?i)FOREIGN\s*KEY\s*\(["`']?(?P<table_key>\w*)["`']?\)\s*REFERENCES\s*[`"']?(?P<distant_table>\w*)[`"']?\s*\([`'"]?(?P<distant_key>\w*)[`"']?\)\s*(?:ON\s*DELETE\s*SET\s*)?(?P<on_delete>\w*)"####).unwrap();
     ///Look after alter table statements.
     static ref RE_ALTERED_TABLE : Regex = Regex::new(r"\s*(?i)ALTER\s*TABLE\s*`?(\w*)`?\s*([^;]*)").unwrap();
 }
@@ -200,10 +200,12 @@ fn generate_attributes(dot_table : &mut DotTable, attr: &str) -> Result<&'static
         dot_table.add_attribute(title.as_str(), rest.as_str());
         Ok("Attribute")
     } else if RE_FK.find_iter(attr).count() != 0 {
-        let captures : Vec<(&str, &str)> = RE_IN_PARENTHESES.captures_iter(attr)
-                                                .map(|matched| (matched.get(1).unwrap().as_str(), matched.get(2).unwrap().as_str()))
-                                                .collect::<Vec<(&str, &str)>>();
-        dot_table.add_attribute_fk(captures[0].1, captures[1].0, captures[1].1);
+        let captures : Captures = RE_FK_DEF.captures(attr).unwrap();
+        dot_table.add_attribute_fk(
+            captures.name("table_key").unwrap().as_str(), 
+            captures.name("distant_table").unwrap().as_str(), 
+            captures.name("distant_key").unwrap().as_str()
+        );
         Ok("FK Attribute")
     } else {
         Err("Not an attribute")
@@ -220,20 +222,23 @@ fn generate_attributes(dot_table : &mut DotTable, attr: &str) -> Result<&'static
 /// * `restrictive_regex` - The restrictions to apply
 fn generate_relations(dot_file : &mut DotFile, table_name : &str, input: &str, restrictive_regex : Option<&Restriction>) -> Result<&'static str, &'static str> {
     if RE_FK.find_iter(input).count() != 0 {
-        let captures : Vec<(&str, &str)> = RE_IN_PARENTHESES.captures_iter(input)
-                                                .map(|matched| (matched.get(1).unwrap().as_str(), matched.get(2).unwrap().as_str()))
-                                                .collect::<Vec<(&str, &str)>>();
-        if captures.len() == 2 {
-            let table_end : &str = captures[1].0;
+        let captures : Captures = RE_FK_DEF.captures(input).unwrap();
+        if captures.len() == 5 {
+            let table_end : &str = captures.name("distant_table").unwrap().as_str();
             if let Some(restriction) = restrictive_regex {
                 if vec![table_name ,table_end].iter().all(|element| restriction.clone().verify_table_name(element)){
-                    dot_file.add_relation(table_name, table_end, captures[0].1, captures[1].1);
+                    dot_file.add_relation(
+                        table_name, 
+                        table_end, 
+                        captures.name("table_key").unwrap().as_str(), 
+                        captures.name("distant_key").unwrap().as_str()
+                    );
                     return Ok("Match restrictions, relations added");
                 } else {
                     return Err("Doesn't match restrictions");
                 }
             } else {
-                dot_file.add_relation(table_name, table_end, captures[0].1, captures[1].1);
+                    dot_file.add_relation(table_name, table_end, captures.name("table_key").unwrap().as_str(), captures.name("distant_key").unwrap().as_str());
                 return Ok("Relation added");
             }
         }
@@ -320,17 +325,17 @@ mod tests {
 
     #[test]
     fn test_re_in_parenthesis() {
-        assert_eq!(RE_IN_PARENTHESES.find_iter("FOREIGN KEY (PersonID) REFERENCES Persons(PersonID)").count(), 2, "normal");
-        let matches : Vec<&str> = RE_IN_PARENTHESES.find_iter("FOREIGN KEY (PersonID) REFERENCES Persons(PersonID)").map(|s| s.as_str()).collect();
+        assert_eq!(RE_FK_DEF.find_iter("FOREIGN KEY (PersonID) REFERENCES Persons(PersonID)").count(), 2, "normal");
+        let matches : Vec<&str> = RE_FK_DEF.find_iter("FOREIGN KEY (PersonID) REFERENCES Persons(PersonID)").map(|s| s.as_str()).collect();
         assert_eq!(matches.get(0).unwrap(), &"KEY (PersonID)", "normal");
         assert_eq!(matches.get(1).unwrap(), &"Persons(PersonID)", "normal");
 
-        assert_eq!(RE_IN_PARENTHESES.find_iter("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`)").count(), 2, "normal with backquotes");
-        let matches2 : Vec<&str> = RE_IN_PARENTHESES.find_iter("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`)").map(|s| s.as_str()).collect();
+        assert_eq!(RE_FK_DEF.find_iter("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`)").count(), 2, "normal with backquotes");
+        let matches2 : Vec<&str> = RE_FK_DEF.find_iter("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`)").map(|s| s.as_str()).collect();
         assert_eq!(matches2.get(0).unwrap(), &"KEY (`PersonID`)", "normal with backquotes");
         assert_eq!(matches2.get(1).unwrap(), &"`Persons`(`PersonID`)", "normal with backquotes");
 
-        let captures = RE_IN_PARENTHESES.captures_iter("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`)").map(|matched| (matched.get(1).unwrap().as_str(), matched.get(2).unwrap().as_str())).collect::<Vec<(&str, &str)>>();
+        let captures = RE_FK_DEF.captures_iter("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`)").map(|matched| (matched.get(1).unwrap().as_str(), matched.get(2).unwrap().as_str())).collect::<Vec<(&str, &str)>>();
         assert_eq!(captures[0].0, "KEY", "normal with backquotes");
         assert_eq!(captures[0].1, "PersonID", "normal with backquotes");
         assert_eq!(captures[1].0, "Persons", "normal with backquotes");
