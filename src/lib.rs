@@ -33,7 +33,7 @@ lazy_static! {
     ///Check if foreign key exists.
     static ref RE_FK : Regex = Regex::new(r"(?i)\s*FOREIGN\s*KEY").unwrap();
     ///Check for the content in parenthesis.
-    static ref RE_FK_DEF : Regex = Regex::new(r####"(?i)FOREIGN\s*KEY\s*\(["`']?(?P<table_key>\w*)["`']?\)\s*REFERENCES\s*[`"']?(?P<distant_table>\w*)[`"']?\s*\([`'"]?(?P<distant_key>\w*)[`"']?\)\s*(?:ON\s*UPDATE\s*(?:(?:SET\s*\w*|\w*))\s*)?(?:ON\s*DELETE\s*)?(?P<on_delete>(SET\s*NULL|CASCADE|RESTRICT)?)"####).unwrap();
+    static ref RE_FK_DEF : Regex = Regex::new(r####"(?i)FOREIGN\s*KEY\s*\(["`']?(?P<table_key>\w*)["`']?\)\s*REFERENCES\s*[`"']?(?P<distant_table>\w*)[`"']?\s*\([`'"]?(?P<distant_key>\w*)[`"']?\)\s*(?:(?:ON\s*UPDATE\s*(?:(?:SET\s*\w*|\w*))\s*)?(?:ON\s*DELETE\s*)?(?P<on_delete>(SET\s*NULL|CASCADE|RESTRICT)))?"####).unwrap();
     ///Look after alter table statements.
     static ref RE_ALTERED_TABLE : Regex = Regex::new(r"\s*(?i)ALTER\s*TABLE\s*`?(\w*)`?\s*([^;]*)").unwrap();
 }
@@ -332,21 +332,25 @@ mod tests {
 
     #[test]
     fn test_re_in_parenthesis() {
-        assert_eq!(RE_FK_DEF.find_iter("FOREIGN KEY (PersonID) REFERENCES Persons(PersonID)").count(), 2, "normal");
-        let matches : Vec<&str> = RE_FK_DEF.find_iter("FOREIGN KEY (PersonID) REFERENCES Persons(PersonID)").map(|s| s.as_str()).collect();
-        assert_eq!(matches.get(0).unwrap(), &"KEY (PersonID)", "normal");
-        assert_eq!(matches.get(1).unwrap(), &"Persons(PersonID)", "normal");
+        let captures : Captures = RE_FK_DEF.captures("FOREIGN KEY (PersonID) REFERENCES Persons(PersonID)").unwrap();
+        assert_eq!(captures.name("table_key").unwrap().as_str(), "PersonID", "normal");
+        assert_eq!(captures.name("distant_table").unwrap().as_str(), "Persons", "normal");
+        assert_eq!(captures.name("distant_key").unwrap().as_str(), "PersonID", "normal");
 
-        assert_eq!(RE_FK_DEF.find_iter("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`)").count(), 2, "normal with backquotes");
-        let matches2 : Vec<&str> = RE_FK_DEF.find_iter("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`)").map(|s| s.as_str()).collect();
-        assert_eq!(matches2.get(0).unwrap(), &"KEY (`PersonID`)", "normal with backquotes");
-        assert_eq!(matches2.get(1).unwrap(), &"`Persons`(`PersonID`)", "normal with backquotes");
+        let captures2 : Captures = RE_FK_DEF.captures("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`)").unwrap();
+        assert_eq!(captures.name("table_key").unwrap().as_str(), "PersonID", "normal");
+        assert_eq!(captures.name("distant_table").unwrap().as_str(), "Persons", "normal");
+        assert_eq!(captures.name("distant_key").unwrap().as_str(), "PersonID", "normal");
 
-        let captures = RE_FK_DEF.captures_iter("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`)").map(|matched| (matched.get(1).unwrap().as_str(), matched.get(2).unwrap().as_str())).collect::<Vec<(&str, &str)>>();
-        assert_eq!(captures[0].0, "KEY", "normal with backquotes");
-        assert_eq!(captures[0].1, "PersonID", "normal with backquotes");
-        assert_eq!(captures[1].0, "Persons", "normal with backquotes");
-        assert_eq!(captures[1].1, "PersonID", "normal with backquotes");
+        let captures_with_on_delete_set_null : Captures = RE_FK_DEF.captures("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`) ON DELETE SET NULL").unwrap();
+        assert_eq!(captures_with_on_delete_set_null.name("on_delete").unwrap().as_str(), "SET NULL", "normal");
+
+        let captures_with_on_delete_cascade : Captures = RE_FK_DEF.captures("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`) ON DELETE CASCADE").unwrap();
+        assert_eq!(captures_with_on_delete_cascade.name("on_delete").unwrap().as_str(), "CASCADE", "normal");
+
+        let captures_with_on_delete_restrict : Captures = RE_FK_DEF.captures("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`) ON DELETE RESTRICT").unwrap();
+        assert_eq!(captures_with_on_delete_restrict.name("on_delete").unwrap().as_str(), "RESTRICT", "normal");
+
     }
 
     #[test]
