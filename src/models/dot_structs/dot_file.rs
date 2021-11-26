@@ -65,8 +65,8 @@ impl DotFile {
     /// * `table_end` - The table where the relation ends
     /// * `key` - The key of the begin table
     /// * `refered` - The key of the end table
-    pub fn add_relation(&mut self, table_name: &str, table_end: &str, key: &str, refered: &str){
-        self.relations.push(generate_relation(table_name, table_end, key, refered, self.dark_mode))
+    pub fn add_relation(&mut self, table_name: &str, table_end: &str, key: &str, refered: &str, on_delete: &str){
+        self.relations.push(generate_relation(table_name, table_end, key, refered, on_delete, self.dark_mode))
     }
 }
 
@@ -99,7 +99,7 @@ digraph {0} {{\n
 /// * `table_end` - The table where the relation ends
 /// * `key` - The key of the begin table
 /// * `refered` - The key of the end table
-fn generate_relation(table_name: &str, table_end: &str, key: &str, refered: &str, dark_mode: bool) -> String {
+fn generate_relation(table_name: &str, table_end: &str, key: &str, refered: &str, on_delete: &str, dark_mode: bool) -> String {
     let color_scheme : &str = match dark_mode {
         true => "fontcolor=white, color=white",
         false => ""
@@ -108,5 +108,11 @@ fn generate_relation(table_name: &str, table_end: &str, key: &str, refered: &str
         true => "\u{27A1}",
         _ => "refers"
     };
-    format!("\t{0} -> {1} [label=<<I>{2} {3} {4}</I>>, arrowhead = \"dot\", fontsize=\"12.0\", {5}]", table_name, table_end, key, refer, refered, color_scheme)
+    let arrowhead : &str = match on_delete.to_uppercase().as_str() {
+        "SET NULL" => "odot",
+        "CASCADE" => "dot",
+        _ => "tee"
+
+    };
+    format!("\t{0} -> {1} [label=<<I>{2} {3} {4}</I>>, arrowhead = \"{5}\", fontsize=\"12.0\", {6}]", table_name, table_end, key, refer, refered, arrowhead, color_scheme)
 }

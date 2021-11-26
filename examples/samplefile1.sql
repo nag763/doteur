@@ -39,7 +39,7 @@ CREATE TABLE `personne` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 ALTER TABLE Orders
-ADD FOREIGN KEY (PersonID) REFERENCES Persons(PersonID),
+ADD FOREIGN KEY (PersonID) REFERENCES Persons(PersonID) ON DELETE CASCADE,
 ADD FOREIGN KEY (PersonID) REFERENCES Persons(PersonID);
 ADD FOREIGN KEY(michel_id) REFERENCES personne(personne_id);
 
