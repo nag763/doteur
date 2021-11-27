@@ -153,18 +153,18 @@ mod tests {
     #[test]
     fn test_file_ext() {
         assert_eq!({
-            let args = Args::new(vec!["./examples/samplefile3.sql"]);
+            let args = Args::new(vec!["./samples/samplefile3.sql"]);
             args.clone().get_output_file_ext()
         }, "dot", "default value");
 
         assert_eq!({
-            let mut args = Args::new(vec!["./examples/samplefile3.sql", "./examples/samplefile1.sql"]);
+            let mut args = Args::new(vec!["./samples/samplefile3.sql", "./samples/samplefile1.sql"]);
             args.set_output_filename("hello.png".to_string());
             args.clone().get_output_file_ext()
         }, "png", "set value with multifile");
 
         assert_eq!({
-            let mut args = Args::new(vec!["./examples"]);
+            let mut args = Args::new(vec!["./samples"]);
             args.set_output_filename("./path/to/file/hello.png".to_string());
             args.clone().get_output_file_ext()
         }, "png", "set value");
