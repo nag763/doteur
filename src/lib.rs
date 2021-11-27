@@ -199,7 +199,7 @@ fn generate_attributes(dot_table : &mut DotTable, attr: &str) -> Result<&'static
         }
         dot_table.add_attribute(title.as_str(), rest.as_str());
         Ok("Attribute")
-    } else if RE_FK.find_iter(attr).count() != 0 {
+    } else if RE_FK_DEF.is_match(attr) {
         let captures : Captures = RE_FK_DEF.captures(attr).unwrap();
         dot_table.add_attribute_fk(
             captures.name("table_key").unwrap().as_str(), 
@@ -221,7 +221,7 @@ fn generate_attributes(dot_table : &mut DotTable, attr: &str) -> Result<&'static
 /// * `input` - Where the relations are written
 /// * `restrictive_regex` - The restrictions to apply
 fn generate_relations(dot_file : &mut DotFile, table_name : &str, input: &str, restrictive_regex : Option<&Restriction>) -> Result<&'static str, &'static str> {
-    if RE_FK.find_iter(input).count() != 0 {
+    if RE_FK_DEF.is_match(input) {
         let captures : Captures = RE_FK_DEF.captures(input).unwrap();
         if captures.len()!= 0 {
             let table_end : &str = captures.name("distant_table").unwrap().as_str();
@@ -232,7 +232,7 @@ fn generate_relations(dot_file : &mut DotFile, table_name : &str, input: &str, r
                         table_end, 
                         captures.name("table_key").unwrap().as_str(), 
                         captures.name("distant_key").unwrap().as_str(),
-                        captures.name("on_delete").unwrap().as_str()
+                        captures.name("on_delete").map_or("RESTRICT", |m| m.as_str())
                     );
                     return Ok("Match restrictions, relations added");
                 } else {
@@ -244,7 +244,7 @@ fn generate_relations(dot_file : &mut DotFile, table_name : &str, input: &str, r
                         table_end, 
                         captures.name("table_key").unwrap().as_str(), 
                         captures.name("distant_key").unwrap().as_str(),
-                        captures.name("on_delete").unwrap().as_str()
+                        captures.name("on_delete").map_or("RESTRICT", |m| m.as_str())
                     );
                 return Ok("Relation added");
             }
