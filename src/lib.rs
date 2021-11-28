@@ -237,8 +237,8 @@ fn generate_relations(dot_file : &mut DotFile, dot_table: Option<&mut DotTable>,
                     captures.name("distant_key").unwrap().as_str(),
                     captures.name("on_delete").map_or("RESTRICT", |m| m.as_str())
                 );
-                if dot_table.is_some() {
-                    dot_table.unwrap().add_attribute_fk(
+                if let Some(table) = dot_table {
+                    table.add_attribute_fk(
                         captures.name("table_key").unwrap().as_str(),
                         captures.name("distant_table").unwrap().as_str(),
                         captures.name("distant_key").unwrap().as_str()
@@ -357,6 +357,28 @@ mod tests {
         let captures2 = RE_ALTERED_TABLE.captures("ALTER TABLE `HELLO` ADD FOREIGN KEY (`PersonID`) REFERENCES `artists` (`id`) ;").unwrap();
         assert_eq!(captures2.get(1).unwrap().as_str(), "HELLO", "normal");
         assert_eq!(captures2.get(2).unwrap().as_str(), "ADD FOREIGN KEY (`PersonID`) REFERENCES `artists` (`id`) ", "normal");
+
+    }
+
+    #[test]
+    fn test_re_col_type() {
+        assert!(RE_COL_TYPE.is_match(" FOREIGN KEY (PersonID) REFERENCES artists (id) "), "fk def");
+        assert!(RE_COL_TYPE.is_match(" FOREIGN KEY (`PersonID`) REFERENCES `artists` (`id`) "), "fk def with backcomas");
+        assert!(RE_COL_TYPE.is_match(" CONSTRAINT FOREIGN KEY (PersonID) REFERENCES artists (id) "), "fk def with constraint");
+        assert!(RE_COL_TYPE.is_match(" CONSTRAINT FOREIGN KEY (`PersonID`) REFERENCES `artists` (`id`) "), "fk def with constraint and backcomas");
+        assert!(RE_COL_TYPE.is_match(" \nPRIMARY KEY (PersonID)"), "primary");
+        assert!(RE_COL_TYPE.is_match(" \nPRIMARY KEY (`PersonID`)"), "primary with backquotes");
+        assert!(RE_COL_TYPE.is_match(" \nCONSTRAINT  PRIMARY KEY (PersonID)"), "constraint with primary");
+        assert!(RE_COL_TYPE.is_match(" \nCONSTRAINT PRIMARY KEY (`PersonID`)"), "constraint with primary and backquotes");
+        assert!(RE_COL_TYPE.is_match(" \nUNIQUE KEY (PersonID)"), "unique");
+        assert!(RE_COL_TYPE.is_match(" \nUNIQUE KEY (`PersonID`)"), "unique with backquotes");
+        assert!(RE_COL_TYPE.is_match(" \nCONSTRAINT  UNIQUE KEY (PersonID)"), "unique with constraint");
+        assert!(RE_COL_TYPE.is_match(" \nCONSTRAINT UNIQUE KEY (`PersonID`)"), "unique with constraint and backquotes");
+        assert!(RE_COL_TYPE.is_match(" \nKEY `productLine` (`productLine`),"), "key def");
+        assert!(RE_COL_TYPE.is_match(" \nKEY `productLine` (productLine),"), "key def with back quotes");
+        assert!(RE_COL_TYPE.is_match(" \nINDEX `productLine` (`productLine`),"), "index with backquote");
+        assert!(RE_COL_TYPE.is_match(" \nINDEX `productLine` (productLine),"), "index with mixed backquotes");
+        assert!(!RE_COL_TYPE.is_match("`productCode` varchar(15) NOT NULL,"), "col def");
 
     }
 }
