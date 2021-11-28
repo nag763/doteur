@@ -30,8 +30,7 @@ lazy_static! {
     static ref RE_TABLE_DEFS : Regex = Regex::new(r"(?i)\s*CREATE\s*TABLE[^;]*.").unwrap();
     ///Get table name.
     static ref RE_TABLE_NAME : Regex = Regex::new(r"(?i)\s*CREATE\s*TABLE\s*(?:IF\s*NOT\s*EXISTS)?\s*[`]?(\w*)[`]?\s*\(([^;]*)\)").unwrap();
-    ///Check if foreign key exists.
-    static ref RE_FK : Regex = Regex::new(r"(?i)\s*FOREIGN\s*KEY").unwrap();
+    static ref RE_COL_TYPE : Regex = Regex::new(r####"(?i)\s*((?:FULLTEXT|SPATIAL)?\s*(?:INDEX|KEY))|(?:CONSTRAINT\s*[`'"]\w*[`'"])?\s*(?P<key_type>UNIQUE|FOREIGN|PRIMARY)"####).unwrap();
     ///Check for the content in parenthesis.
     static ref RE_FK_DEF : Regex = Regex::new(r####"(?i)FOREIGN\s*KEY\s*\(["`']?(?P<table_key>\w*)["`']?\)\s*REFERENCES\s*[`"']?(?P<distant_table>\w*)[`"']?\s*\([`'"]?(?P<distant_key>\w*)[`"']?\)\s*(?:(?:ON\s*UPDATE\s*(?:(?:SET\s*\w*|\w*))\s*)?(?:ON\s*DELETE\s*)?(?P<on_delete>(SET\s*NULL|CASCADE|RESTRICT)))?"####).unwrap();
     ///Look after alter table statements.
@@ -152,8 +151,21 @@ fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Optio
         Ok(v) => lines = attr_defs.split_vec(v),
         Err(_) => {dot_file.add_table(dot_table); return Err("Attributes malformed");},
     }
+    for line in lines {
+        if !RE_COL_TYPE.is_match(line) {
+            let _ = generate_attributes(&mut dot_table, line);
+        } else {
+            let col_type : Captures = RE_COL_TYPE.captures(line).unwrap();
+            if col_type.name("key_type").is_some() {
+                match col_type.name("key_type").unwrap().as_str().to_uppercase().as_str() {
+                    "FOREIGN" => {
+                        let _ = generate_relations(dot_file, Some(&mut dot_table), &table_name, line, restrictions); },
+                    _ => (),
 
-    lines.iter().for_each(|s| {let _ = generate_attributes(&mut dot_table, s); let _ = generate_relations(dot_file, &table_name, s, restrictions);});
+                }
+            }
+        }
+    }
     dot_file.add_table(dot_table);
     Ok("Attributes")
 }
@@ -177,7 +189,6 @@ pub fn write_output_to_file(content: &str, filename: &str) -> std::io::Result<()
 /// * `attr` - The attributes as string
 fn generate_attributes(dot_table : &mut DotTable, attr: &str) -> Result<&'static str, &'static str>{
     //If the attribute is not a key.
-    if !attr.to_lowercase().contains("key") {
         let title : String;
         let rest : String;
         let trimed : String = attr.trim_leading_trailing();
@@ -199,17 +210,6 @@ fn generate_attributes(dot_table : &mut DotTable, attr: &str) -> Result<&'static
         }
         dot_table.add_attribute(title.as_str(), rest.as_str());
         Ok("Attribute")
-    } else if RE_FK_DEF.is_match(attr) {
-        let captures : Captures = RE_FK_DEF.captures(attr).unwrap();
-        dot_table.add_attribute_fk(
-            captures.name("table_key").unwrap().as_str(), 
-            captures.name("distant_table").unwrap().as_str(), 
-            captures.name("distant_key").unwrap().as_str(),
-        );
-        Ok("FK Attribute")
-    } else {
-        Err("Not an attribute")
-    }
 }
 
 /// Generates the relations and write them into the DotFile
@@ -217,40 +217,39 @@ fn generate_attributes(dot_table : &mut DotTable, attr: &str) -> Result<&'static
 /// # Arguments
 ///
 /// * `dot_file` - Where the content should be written in
+/// * `dot_table` - Table to add the attribute if needed
 /// * `table_name` - The name of the table where the relations originates
 /// * `input` - Where the relations are written
 /// * `restrictive_regex` - The restrictions to apply
-fn generate_relations(dot_file : &mut DotFile, table_name : &str, input: &str, restrictive_regex : Option<&Restriction>) -> Result<&'static str, &'static str> {
+fn generate_relations(dot_file : &mut DotFile, dot_table: Option<&mut DotTable>, table_name : &str, input: &str, restrictive_regex : Option<&Restriction>) -> Result<&'static str, &'static str> {
     if RE_FK_DEF.is_match(input) {
         let captures : Captures = RE_FK_DEF.captures(input).unwrap();
-        if captures.len()!= 0 {
-            let table_end : &str = captures.name("distant_table").unwrap().as_str();
-            if let Some(restriction) = restrictive_regex {
-                if vec![table_name ,table_end].iter().all(|element| restriction.clone().verify_table_name(element)){
-                    dot_file.add_relation(
-                        table_name, 
-                        table_end, 
-                        captures.name("table_key").unwrap().as_str(), 
-                        captures.name("distant_key").unwrap().as_str(),
-                        captures.name("on_delete").map_or("RESTRICT", |m| m.as_str())
+        let table_end : &str = captures.name("distant_table").unwrap().as_str();
+        match restrictive_regex {
+            Some(restriction) if vec![table_name ,table_end].iter().any(|element| restriction.clone().verify_table_name(element)) => {
+                Err("Doesn't match restrictions")
+            },
+            _ => {
+                dot_file.add_relation(
+                    table_name, 
+                    table_end, 
+                    captures.name("table_key").unwrap().as_str(), 
+                    captures.name("distant_key").unwrap().as_str(),
+                    captures.name("on_delete").map_or("RESTRICT", |m| m.as_str())
+                );
+                if dot_table.is_some() {
+                    dot_table.unwrap().add_attribute_fk(
+                        captures.name("table_key").unwrap().as_str(),
+                        captures.name("distant_table").unwrap().as_str(),
+                        captures.name("distant_key").unwrap().as_str()
                     );
-                    return Ok("Match restrictions, relations added");
-                } else {
-                    return Err("Doesn't match restrictions");
                 }
-            } else {
-                    dot_file.add_relation(
-                        table_name, 
-                        table_end, 
-                        captures.name("table_key").unwrap().as_str(), 
-                        captures.name("distant_key").unwrap().as_str(),
-                        captures.name("on_delete").map_or("RESTRICT", |m| m.as_str())
-                    );
-                return Ok("Relation added");
+                Ok("Relation added")
             }
         }
+    } else {
+        Err("Not a relation")
     }
-    Err("Not a relation")
 }
 
 /// Process the given file and return the output dot string
@@ -271,6 +270,7 @@ pub fn process_file(args : Args) -> String {
                         {
                             let _ = generate_relations(
                                 &mut dot_file,
+                                None,
                                 element.get(1).unwrap().as_str(),
                                 element.get(2).unwrap().as_str(),
                                 args.get_restrictions()
@@ -315,19 +315,6 @@ mod tests {
         assert_eq!(RE_TABLE_NAME.captures("CREATE TABLE If NoT EXIsTS HELLO();").unwrap().get(1).unwrap().as_str(), "HELLO", "with backquotes and mixed");
         assert_eq!(RE_TABLE_NAME.captures("\t\nCREATE\t\n TABLE\t\n `HELLO`\t();").unwrap().get(1).unwrap().as_str(), "HELLO", "with separative sequences");
         assert_eq!(RE_TABLE_NAME.captures("\t\nCreATE\t\n TaBle\t\n `HeLlO`();").unwrap().get(1).unwrap().as_str(), "HeLlO", "mixed");
-    }
-
-    #[test]
-    fn test_re_fk() {
-        assert_eq!(RE_FK.find_iter("ADD FOREIGN KEY (PersonID) REFERENCES Persons(PersonID)").count(), 1, "normal");
-        assert_eq!(RE_FK.find_iter("ADD FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`)").count(), 1, "normal");
-        assert_eq!(RE_FK.find_iter("FOREIGN KEY (PersonID) REFERENCES Persons(PersonID);").count(), 1, "normal");
-        assert_eq!(RE_FK.find_iter("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`)").count(), 1, "normal");
-        assert_eq!(RE_FK.find_iter("\n\tFOREIGN\t\n \t\nKEY \n\t(`PersonID`) REFERENCES `Persons`(`PersonID`)").count(), 1, "with spaces");
-        assert_eq!(RE_FK.find_iter("\n\tForeIgN\t\n \t\nkeY (`PersonID`) REFERENCES `Persons`(`PersonID`)").count(), 1, "mixed");
-
-        assert_ne!(RE_FK.find_iter("ADD PRIMARY KEY (PersonID) REFERENCES Persons(PersonID)").count(), 1, "wrong key");
-        assert_ne!(RE_FK.find_iter("ADD UNIQUE KEY (PersonID) REFERENCES Persons(PersonID)").count(), 1, "wrong key");
     }
 
     #[test]

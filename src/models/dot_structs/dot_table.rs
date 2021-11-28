@@ -4,7 +4,6 @@ use super::super::add_traits::{Trim};
 
 /// A dot table is the corresponding rendering of a sql table in a dot file
 pub struct DotTable {
-    /// The header of the table
     header: String,
     /// The attribute of the table
     attributes: Vec<(String, String)>,

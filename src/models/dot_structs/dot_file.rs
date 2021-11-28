@@ -66,7 +66,7 @@ impl DotFile {
     /// * `key` - The key of the begin table
     /// * `refered` - The key of the end table
     pub fn add_relation(&mut self, table_name: &str, table_end: &str, key: &str, refered: &str, on_delete: &str){
-        self.relations.push(generate_relation(table_name, table_end, key, refered, on_delete, self.dark_mode))
+        self.relations.push(generate_relation(table_name, table_end, key, refered, on_delete, self.dark_mode));
     }
 }
 
