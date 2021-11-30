@@ -30,3 +30,6 @@ args:
         - dark_mode:
                 help: Render in dark mode
                 long: dark-mode
+        - legend:
+                help: Includes hint about the relations type at the bottom of the outpout file
+                long: legend

@@ -25,6 +25,8 @@ pub struct Args {
     output_filename: String,
     /// Restrictions to apply
     restrictions: Option<Restriction>,
+    /// Set if the legend has to be included
+    legend: bool,
     /// Set if the dark mode has to be activated
     dark_mode: bool
 }
@@ -62,6 +64,7 @@ impl Args {
             }).collect::<Vec<String>>().join("\n"),
             output_filename: String::from("output.dot"),
             restrictions: None,
+            legend: false,
             dark_mode: false
         }
     }
@@ -133,6 +136,14 @@ impl Args {
     /// * `exclusions` - The exclusions to set
     pub fn set_exclusions(&mut self, exclusions : Vec<String>) {
         self.restrictions = Some(Restriction::new_exclusion(exclusions));
+    }
+
+    pub fn get_legend(&self) -> bool {
+        self.legend
+    }
+
+    pub fn set_legend(&mut self, legend: bool) {
+        self.legend = legend;
     }
 
     pub fn get_dark_mode(&self) -> bool {

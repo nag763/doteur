@@ -259,7 +259,7 @@ fn generate_relations(dot_file : &mut DotFile, dot_table: Option<&mut DotTable>,
 /// * `args` - The CLI args
 pub fn process_file(args : Args) -> String {
 
-    let mut dot_file : DotFile = DotFile::new(args.get_filename_without_specials().as_str(), args.get_dark_mode());
+    let mut dot_file : DotFile = DotFile::new(args.get_filename_without_specials().as_str(), args.get_legend(), args.get_dark_mode());
 
     // Generate content from the declared tables.
     get_tables(args.get_filecontent()).iter().for_each(|element| {let _ = convert_sql_to_dot(&mut dot_file, element, args.get_restrictions(), args.get_dark_mode());});

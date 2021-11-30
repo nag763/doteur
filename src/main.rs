@@ -23,6 +23,8 @@ fn main() {
             args.set_exclusions(matches.values_of("exclude").unwrap().map(|s| s.to_string()).collect::<Vec<String>>());
         }
         args.set_dark_mode(matches.is_present("dark_mode"));
+        args.set_dark_mode(matches.is_present("dark_mode"));
+        args.set_legend(matches.is_present("legend"));
 
         let output_content : String = process_file(args.clone());
         let file_ext : &str = args.get_output_file_ext();

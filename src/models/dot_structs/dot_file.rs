@@ -36,11 +36,12 @@ impl DotFile {
     /// # Arguments
     ///
     /// * `filename` - This will be set as the graph's filename
+    /// * `legend` - If true the legend, will be included 
     /// * `dark_mode` - Set if the file has to be in dark mode
-    pub fn new(filename : &str, dark_mode : bool) -> DotFile {
+    pub fn new(filename : &str, legend: bool, dark_mode : bool) -> DotFile {
 
         DotFile {
-            header : init_dot(filename, dark_mode),
+            header : init_dot(filename, legend, dark_mode),
             dot_tables: Vec::new(),
             relations: Vec::new(),
             footer: String::from("}"),
@@ -75,12 +76,39 @@ impl DotFile {
 /// # Arguments
 ///
 /// * `filename` - The name of the input file
+/// * `legend` - If true, includes a legend for the graph
 /// * `dark_mode` - Changes the color of rendering
-fn init_dot(filename: &str, dark_mode: bool) -> String {
+fn init_dot(filename: &str, legend: bool, dark_mode: bool) -> String {
     let bg_color : &str = match dark_mode {
             true => "bgcolor= black;",
             false => "",
     };
+
+    let edge_color_scheme = match dark_mode {
+        true => "white",
+        false => "black"
+    };
+
+    let dot_legend : String = match legend {
+        false => String::new(),
+        true => format!("
+    {{
+        labelloc=\"b\"
+        labeljust=\"r\"                
+        rank=sink
+        rankdir=LR
+        d0 [style = invis];
+        d1 [style = invis];
+        p0 [style = invis];
+        p1 [style = invis];
+        s0 [style = invis];
+        s1 [style = invis];
+    }}
+    d0 -> d1 [label=composition arrowhead=dot color={0} fontcolor={0}]
+    p0 -> p1 [label=aggregation arrowhead=odot color={0} fontcolor={0}]
+    s0 -> s1 [label=association color={0} fontcolor={0}]", edge_color_scheme)
+    };
+
     format!("//This file has been generated with doteur, enjoy!
 digraph {0} {{\n
 
@@ -88,7 +116,9 @@ digraph {0} {{\n
 
     node [\n
         shape = \"plaintext\"
-    ]\n\n", filename, bg_color)
+    ]\n\n
+
+    {2}", filename, bg_color, dot_legend)
 }
 
 /// Generate a dot relation with the given arguments
@@ -111,7 +141,7 @@ fn generate_relation(table_name: &str, table_end: &str, key: &str, refered: &str
     let arrowhead : &str = match on_delete.to_uppercase().as_str() {
         "SET NULL" => "odot",
         "CASCADE" => "dot",
-        _ => "tee"
+        _ => "normal"
 
     };
     format!("\t{0} -> {1} [label=<<I>{2} {3} {4}</I>>, arrowhead = \"{5}\", fontsize=\"12.0\", {6}]", table_name, table_end, key, refer, refered, arrowhead, color_scheme)
