@@ -106,10 +106,10 @@ ln -s path/to/doteur /usr/sbin
 #### Cli usage
 
 ```bash
-usr@linux:~$ doteur --help
-doteur 0.3.2
-LABEYE Loïc
-Convert .sql files to .dot files
+usr@pop:~/doteur$ doteur --help
+doteur 0.3.3
+LABEYE Loïc <loic.labeye@pm.me>
+Convert .sql files to .dot files, render them if graphviz installed
 
 USAGE:
     doteur [FLAGS] [OPTIONS] <input>...
@@ -117,6 +117,7 @@ USAGE:
 FLAGS:
         --dark-mode    Render in dark mode
     -h, --help         Prints help information
+        --legend       Includes hint about the relations type at the bottom of the outpout file
     -V, --version      Prints version information
 
 OPTIONS:
