@@ -43,11 +43,11 @@ lazy_static! {
 /// # Arguments
 ///
 /// * `content` - content to detect comas in
-fn detect_comas(content : &str) -> Result<Vec<usize>, Vec<&str>> {
+fn detect_comas(content : &str) -> Result<Vec<usize>, &str> {
     let mut indexes : Vec<usize> = Vec::new();
     let mut buffer : String = String::new();
-    let mut errors : Vec<&str> = Vec::new();
-    content.chars().enumerate().for_each(|(i, c)|{
+    let mut error : Option<&str> = None;
+    for (i, c) in content.chars().enumerate() {
         match c {
             '(' => {
                 // If the parenthesis isn't inside a string
@@ -61,10 +61,12 @@ fn detect_comas(content : &str) -> Result<Vec<usize>, Vec<&str>> {
                     if last_char == '(' {
                             buffer.pop();
                     } else if last_char != '`' {
-                        errors.push("Parenthesis don't match");
+                        error = Some("Parenthesis don't match");
+                        break;
                     }
                 } else {
-                    errors.push("Closing parenthesis without opening parenthesis");
+                    error = Some("Closing parenthesis without opening parenthesis");
+                    break;
                 }
             },
             '`' => {
@@ -76,7 +78,8 @@ fn detect_comas(content : &str) -> Result<Vec<usize>, Vec<&str>> {
                         buffer.push(c);
                     // If a back tick is neither a closure nor a declaration
                     } else {
-                        errors.push("Malformed, single backtick");
+                        error = Some("Malformed, single backtick");
+                        break;
                     }
                 } else {
                     buffer.push(c)
@@ -89,10 +92,10 @@ fn detect_comas(content : &str) -> Result<Vec<usize>, Vec<&str>> {
             },
             _ => ()
         }
-    } );
-    match errors.is_empty() {
-        true => Ok(indexes),
-        false => Err(errors)
+    }
+    match error {
+        None => Ok(indexes),
+        Some(v) => Err(v)
     }
 }
 
