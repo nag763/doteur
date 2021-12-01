@@ -81,5 +81,44 @@ impl Attribute {
        } 
     }
 
+}
 
+pub trait KeyValueMap {
+    fn index_of_attribute(&mut self, attr_name: &str) -> Result<usize, &'static str>;
+    fn push_or_replace_attribute(&mut self, value: Attribute);
+}
+
+impl KeyValueMap for Vec<Attribute> {
+    
+    /// Returns the index of an attribute
+    ///
+    /// # Arguments
+    ///
+    /// * `attr_name` - name of the attribute
+    fn index_of_attribute(&mut self, attr_name: &str) -> Result<usize, &'static str> {
+        let index : Option<usize> = self
+            .into_iter()
+            .enumerate()
+            .filter(|(_, attr)| attr.name == attr_name)
+            .map(|(i, _)| i)
+            .last();
+
+        match index {
+            Some(v) => Ok(v),
+            None => Err("No such attribute"),
+        }
+    }
+
+    /// Replace the attribute if it already exists,
+    /// otherwise append the attribute
+    /// # Arguments
+    ///
+    /// * `attr_name` - name of the attribute
+    /// * `value` - value of the attribute
+    fn push_or_replace_attribute(&mut self, value: Attribute) {
+        match self.index_of_attribute(value.name.as_str()) {
+            Ok(index) => { let _ = std::mem::replace(&mut self[index], value); },
+            Err(_) => self.push(value)
+        };
+    }
 }
