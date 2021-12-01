@@ -12,7 +12,10 @@ exclude = [
     "release/*",
     ".github/*",
     "target/*",
-    "*.sh"
+    "*.sh",
+    "samples/",
+    "Dockerfile",
+
 ]
 
 [dependencies]
