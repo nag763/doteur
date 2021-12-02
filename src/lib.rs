@@ -31,8 +31,10 @@ lazy_static! {
     ///Get table name.
     static ref RE_TABLE_NAME : Regex = Regex::new(r"(?i)\s*CREATE\s*TABLE\s*(?:IF\s*NOT\s*EXISTS)?\s*[`]?(\w*)[`]?\s*\(([^;]*)\)").unwrap();
     static ref RE_COL_TYPE : Regex = Regex::new(r####"(?i)\s*((?:FULLTEXT|SPATIAL)?\s*(?:INDEX|KEY))|(?:CONSTRAINT\s*[`'"]\w*[`'"])?\s*(?P<key_type>UNIQUE|FOREIGN|PRIMARY)"####).unwrap();
+    static ref RE_COL_DEF : Regex = Regex::new(r####"(?i)\s*`?(?P<col_name>\w*)`?\s*(?P<col_def>.*)"####).unwrap();
     ///Check for the content in parenthesis.
     static ref RE_FK_DEF : Regex = Regex::new(r####"(?i)FOREIGN\s*KEY\s*\(["`']?(?P<table_key>\w*)["`']?\)\s*REFERENCES\s*[`"']?(?P<distant_table>\w*)[`"']?\s*\([`'"]?(?P<distant_key>\w*)[`"']?\)\s*(?:(?:ON\s*UPDATE\s*(?:(?:SET\s*\w*|\w*))\s*)?(?:ON\s*DELETE\s*)?(?P<on_delete>(SET\s*NULL|CASCADE|RESTRICT)))?"####).unwrap();
+    static ref RE_PK_DEF : Regex = Regex::new(r####"(?i)PRIMARY\s*KEY\s*[`]?(?:\w*)[`]?\s*\(`?(?P<col_name>\w*)`?\)"####).unwrap();
     ///Look after alter table statements.
     static ref RE_ALTERED_TABLE : Regex = Regex::new(r"\s*(?i)ALTER\s*TABLE\s*`?(\w*)`?\s*([^;]*)").unwrap();
 }
@@ -162,7 +164,11 @@ fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Optio
             if col_type.name("key_type").is_some() {
                 match col_type.name("key_type").unwrap().as_str().to_uppercase().as_str() {
                     "FOREIGN" => {
-                        let _ = generate_relations(dot_file, Some(&mut dot_table), &table_name, line, restrictions); },
+                        let _ = generate_relations(dot_file, Some(&mut dot_table), &table_name, line, restrictions); 
+                    },
+                    "PRIMARY" => {
+                        let _ = generate_primary(&mut dot_table, line);
+                    },
                     _ => (),
 
                 }
@@ -191,28 +197,26 @@ pub fn write_output_to_file(content: &str, filename: &str) -> std::io::Result<()
 /// * `dot_table` - A mutable DotTable object where the attributes will be written
 /// * `attr` - The attributes as string
 fn generate_attributes(dot_table : &mut DotTable, attr: &str) -> Result<&'static str, &'static str>{
-    //If the attribute is not a key.
-        let title : String;
-        let rest : String;
-        let trimed : String = attr.trim_leading_trailing();
-        //If it contains back coma, remove it.
-        if trimed.chars().collect::<Vec<char>>()[0] == '`' {
-            let splitted = trimed
-                .split('`')
-                .map(|s| s.to_string())
-                .collect::<Vec<String>>();
-            title = splitted[1].to_string();
-            rest = splitted[2].trim_leading_trailing();
-        } else {
-            let mut splitted = trimed
-                .split(' ')
-                .map(|s| s.to_string())
-                .collect::<Vec<String>>();
-            title = splitted.remove(0);
-            rest = splitted.join(" ");
+    let captures : Captures = RE_COL_DEF.captures(attr).unwrap();
+    dot_table.add_attribute(captures.name("col_name").unwrap().as_str(), captures.name("col_def").unwrap().as_str());
+    Ok("Attribute")
+}
+
+fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<&'static str, &'static str> {
+    let captures : Option<Captures> = RE_PK_DEF.captures(line);
+    if captures.is_some() {
+        return match captures.unwrap().name("col_name") {
+            Some(v) => {
+                match dot_table.add_pk_nature_to_attribute(v.as_str()) {
+                    Ok(_) => Ok("PK nature added"),
+                    Err(e) => Err(e)
+                }
+            },
+            None => Err("Not a PK")
         }
-        dot_table.add_attribute(title.as_str(), rest.as_str());
-        Ok("Attribute")
+    }
+    println!("Line : {} err with csv", line);
+    Err("Regex err with csv")
 }
 
 /// Generates the relations and write them into the DotFile

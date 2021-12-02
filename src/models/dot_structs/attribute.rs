@@ -52,6 +52,23 @@ impl fmt::Display for Attribute {
         </TD></TR>", font_color,  self.name.trim_leading_trailing(), refer_sign, self.foreign_table.as_ref().unwrap().trim_leading_trailing(), self.foreign_key.as_ref().unwrap().trim_leading_trailing()
                     )
             },
+            AttributeType::Pk => {
+                    let font_color : &str = match self.dark_mode {
+                        true => "white",
+                        false => "black"
+                    };
+                    let refer_sign : &str = match cfg!(unix) {
+                        true => "\u{1F511}",
+                        _ => "[PK]"
+                    };
+                    write!(f, "
+        <TR><TD ALIGN=\"LEFT\" BORDER=\"0\">
+        <FONT COLOR=\"{0}\" FACE=\"Roboto\"><B>{1} {2}</B></FONT>
+        </TD><TD ALIGN=\"LEFT\">
+        <FONT FACE=\"Roboto\" COLOR=\"{0}\">{3}</FONT>
+        </TD></TR>", font_color,  self.name.trim_leading_trailing(), refer_sign, self.associed_definition.as_ref().unwrap().trim_leading_trailing() 
+                    )
+            },
             _  => write!(f, "")
         }
     }
@@ -81,11 +98,31 @@ impl Attribute {
        } 
     }
 
+    pub fn new_pk(name: String, associed_definition: String, dark_mode: bool) -> Attribute {
+        Attribute {
+            name,
+            attribute_type: AttributeType::Pk,
+            associed_definition : Some(associed_definition),
+            foreign_table: None,
+            foreign_key: None,
+            dark_mode
+        }
+    }
+
+    pub fn add_pk_nature(&mut self) {
+        match self.attribute_type {
+            AttributeType::Fk => { self.attribute_type = AttributeType::PkFk; },
+            AttributeType::ColDef => { self.attribute_type = AttributeType::Pk },
+            _ => (),
+        };
+    }
+
 }
 
 pub trait KeyValueMap {
     fn index_of_attribute(&mut self, attr_name: &str) -> Result<usize, &'static str>;
     fn push_or_replace_attribute(&mut self, value: Attribute);
+    fn add_pk_nature_to_attribute(&mut self, attr_name : &str) -> Result<usize, &'static str>;
 }
 
 impl KeyValueMap for Vec<Attribute> {
@@ -120,5 +157,15 @@ impl KeyValueMap for Vec<Attribute> {
             Ok(index) => { let _ = std::mem::replace(&mut self[index], value); },
             Err(_) => self.push(value)
         };
+    }
+
+    fn add_pk_nature_to_attribute(&mut self, attr_name : &str) -> Result<usize, &'static str>{
+        match self.index_of_attribute(attr_name) {
+            Ok(index) => { 
+                self[index].add_pk_nature();
+                Ok(index)
+            },
+            Err(_) => Err("Index not found")
+        }
     }
 }

@@ -60,6 +60,10 @@ impl DotTable {
         self.attributes.push_or_replace_attribute(Attribute::new_fk(key.to_string(), fk_table.to_string(), fk_col.to_string(), self.dark_mode));
     }
 
+    pub fn add_pk_nature_to_attribute(&mut self, key: &str) -> Result<usize, &'static str>{
+        self.attributes.add_pk_nature_to_attribute(key)
+    }
+
 }
 
 /// Generate the .dot table header.
