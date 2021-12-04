@@ -57,7 +57,7 @@ impl fmt::Display for Attribute {
                         true => "white",
                         false => "black"
                     };
-                    let refer_sign : &str = match cfg!(unix) {
+                    let pk_sign : &str = match cfg!(unix) {
                         true => "\u{1F511}",
                         _ => "[PK]"
                     };
@@ -66,10 +66,30 @@ impl fmt::Display for Attribute {
         <FONT COLOR=\"{0}\" FACE=\"Roboto\"><B>{1} {2}</B></FONT>
         </TD><TD ALIGN=\"LEFT\">
         <FONT FACE=\"Roboto\" COLOR=\"{0}\">{3}</FONT>
-        </TD></TR>", font_color,  self.name.trim_leading_trailing(), refer_sign, self.associed_definition.as_ref().unwrap().trim_leading_trailing() 
+        </TD></TR>", font_color,  self.name.trim_leading_trailing(), pk_sign, self.associed_definition.as_ref().unwrap().trim_leading_trailing() 
                     )
             },
-            _  => write!(f, "")
+            AttributeType::PkFk => {
+                    let font_color : &str = match self.dark_mode {
+                        true => "white",
+                        false => "black"
+                    };
+                    let pk_sign : &str = match cfg!(unix) {
+                        true => "\u{1F511}",
+                        _ => "[PK]"
+                    };
+                    let refer_sign : &str = match cfg!(unix) {
+                        true => "\u{1F5DD}",
+                        _ => "[FK]"
+                    };
+                    write!(f, "
+        <TR><TD ALIGN=\"LEFT\" BORDER=\"0\">
+        <FONT COLOR=\"{0}\" FACE=\"Roboto\"><B>{1} {2}{3}</B></FONT>
+        </TD><TD ALIGN=\"LEFT\">
+        <FONT FACE=\"Roboto\" COLOR=\"{0}\">Refers to <I>{4}{5}]</I></FONT>
+        </TD></TR>", font_color,  self.name.trim_leading_trailing(), pk_sign, refer_sign, self.foreign_table.as_ref().unwrap().trim_leading_trailing(), self.foreign_key.as_ref().unwrap().trim_leading_trailing()
+                    )
+            },
         }
     }
 }
@@ -85,17 +105,6 @@ impl Attribute {
             foreign_key: None,
             dark_mode
         }
-    }
-
-    pub fn new_fk(name: String, foreign_table: String, foreign_key: String, dark_mode: bool) -> Attribute {
-       Attribute {
-           name,
-           attribute_type: AttributeType::Fk,
-           associed_definition : None,
-           foreign_table: Some(foreign_table),
-           foreign_key: Some(foreign_key),
-           dark_mode
-       } 
     }
 
     pub fn new_pk(name: String, associed_definition: String, dark_mode: bool) -> Attribute {
@@ -116,13 +125,29 @@ impl Attribute {
             _ => (),
         };
     }
-
+    
+    pub fn add_fk_nature(&mut self, foreign_table: String, foreign_key: String) {
+        match self.attribute_type {
+            AttributeType::Pk => { 
+                self.attribute_type = AttributeType::PkFk; 
+                self.foreign_table = Some(foreign_table);
+                self.foreign_key = Some(foreign_key);
+            },
+            AttributeType::ColDef => { 
+                self.attribute_type = AttributeType::Fk;
+                self.foreign_table = Some(foreign_table);
+                self.foreign_key = Some(foreign_key);
+            },
+            _ => (),
+        };
+    }
 }
 
 pub trait KeyValueMap {
     fn index_of_attribute(&mut self, attr_name: &str) -> Result<usize, &'static str>;
-    fn push_or_replace_attribute(&mut self, value: Attribute);
     fn add_pk_nature_to_attribute(&mut self, attr_name : &str) -> Result<usize, &'static str>;
+    fn add_fk_nature_to_attribute(&mut self, attr_name : &str, foreign_table: &str, foreign_key: &str) -> Result<usize, &'static str>;
+    fn push_or_replace_attribute(&mut self, value: Attribute);
 }
 
 impl KeyValueMap for Vec<Attribute> {
@@ -134,7 +159,7 @@ impl KeyValueMap for Vec<Attribute> {
     /// * `attr_name` - name of the attribute
     fn index_of_attribute(&mut self, attr_name: &str) -> Result<usize, &'static str> {
         let index : Option<usize> = self
-            .into_iter()
+            .iter_mut()
             .enumerate()
             .filter(|(_, attr)| attr.name == attr_name)
             .map(|(i, _)| i)
@@ -163,6 +188,17 @@ impl KeyValueMap for Vec<Attribute> {
         match self.index_of_attribute(attr_name) {
             Ok(index) => { 
                 self[index].add_pk_nature();
+                Ok(index)
+            },
+            Err(_) => Err("Index not found")
+    
+        }
+    }
+
+    fn add_fk_nature_to_attribute(&mut self, attr_name : &str, foreign_table: &str, foreign_key: &str) -> Result<usize, &'static str>{
+        match self.index_of_attribute(attr_name) {
+            Ok(index) => { 
+                self[index].add_fk_nature(foreign_key.to_string(), foreign_table.to_string());
                 Ok(index)
             },
             Err(_) => Err("Index not found")

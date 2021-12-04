@@ -32,7 +32,7 @@ DROP TABLE IF EXISTS `customers`;
 
 CREATE TABLE `customers` (
   `customerNumber` int(11) NOT NULL,
-  `customerName` varchar(50) NOT NULL,
+  `customerName` varchar(50) NOT NULL PRIMARY KEY,
   `contactLastName` varchar(50) NOT NULL,
   `contactFirstName` varchar(50) NOT NULL,
   `phone` varchar(50) NOT NULL,
@@ -44,7 +44,7 @@ CREATE TABLE `customers` (
   `country` varchar(50) NOT NULL,
   `salesRepEmployeeNumber` int(11) DEFAULT NULL,
   `creditLimit` decimal(10,2) DEFAULT NULL,
-  CONSTRAINT `hello`PRIMARY KEY (`customerNumber`),
+  CONSTRAINT `hello` PRIMARY KEY (`customerNumber`),
   KEY `salesRepEmployeeNumber` (`salesRepEmployeeNumber`),
   CONSTRAINT `customers_ibfk_1` FOREIGN KEY (`salesRepEmployeeNumber`) REFERENCES `employees` (`employeeNumber`) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;

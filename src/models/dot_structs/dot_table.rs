@@ -48,6 +48,9 @@ impl DotTable {
         self.attributes.push(Attribute::new_col_def(title.to_string(), desc.to_string(), self.dark_mode));
     }
 
+    pub fn add_attribute_pk(&mut self, key: &str, desc: &str) {
+        self.attributes.push_or_replace_attribute(Attribute::new_pk(key.to_string(), desc.to_string(), self.dark_mode));
+    }
 
     /// Adds a foreign key attribute
     ///
@@ -57,7 +60,7 @@ impl DotTable {
     /// * `fk_table` - The refered table
     /// * `fk_col` - The refered key
     pub fn add_attribute_fk(&mut self, key: &str, fk_table : &str, fk_col : &str) {
-        self.attributes.push_or_replace_attribute(Attribute::new_fk(key.to_string(), fk_table.to_string(), fk_col.to_string(), self.dark_mode));
+        let _ = self.attributes.add_fk_nature_to_attribute(key, fk_table, fk_col).is_err();
     }
 
     pub fn add_pk_nature_to_attribute(&mut self, key: &str) -> Result<usize, &'static str>{
