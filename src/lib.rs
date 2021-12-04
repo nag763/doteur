@@ -227,7 +227,7 @@ fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<&'static str
                     _ => {
                         match dot_table.add_pk_nature_to_attribute(&v.as_str().replace("`", "")) {
                             Ok(_) => Ok("PK nature added"),
-                            Err(e) => {println!("in err : {}", e); Err(e)}
+                            Err(e) =>Err(e)
                         }
                     }
                 }
