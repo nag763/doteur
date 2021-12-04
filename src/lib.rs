@@ -33,7 +33,7 @@ lazy_static! {
     static ref RE_COL_TYPE : Regex = Regex::new(r####"(?i)\s*((?:FULLTEXT|SPATIAL)?\s*(?:INDEX|KEY))|(?:CONSTRAINT\s*[`'"]\w*[`'"])?\s*(?P<key_type>UNIQUE|FOREIGN|PRIMARY)"####).unwrap();
     static ref RE_COL_DEF : Regex = Regex::new(r####"(?i)\s*`?(?P<col_name>\w*)`?\s*(?P<col_def>.*)"####).unwrap();
     ///Check for the content in parenthesis.
-    static ref RE_FK_DEF : Regex = Regex::new(r####"(?i)FOREIGN\s*KEY\s*\(["`']?(?P<table_key>\w*)["`']?\)\s*REFERENCES\s*[`"']?(?P<distant_table>\w*)[`"']?\s*\([`'"]?(?P<distant_key>\w*)[`"']?\)\s*(?:(?:ON\s*UPDATE\s*(?:(?:SET\s*\w*|\w*))\s*)?(?:ON\s*DELETE\s*)?(?P<on_delete>(SET\s*NULL|CASCADE|RESTRICT)))?"####).unwrap();
+    static ref RE_FK_DEF : Regex = Regex::new(r####"(?i)FOREIGN\s*KEY\s*\(["`']?(?P<table_key>[^\)]+)["`']?\)\s*REFERENCES\s*[`"']?(?P<distant_table>\w*)[`"']?\s*\([`'"]?(?P<distant_key>[^\)]+)[`"']?\)\s*(?:(?:ON\s*UPDATE\s*(?:(?:SET\s*\w*|\w*))\s*)?(?:ON\s*DELETE\s*)?(?P<on_delete>(SET\s*NULL|CASCADE|RESTRICT)))?"####).unwrap();
     static ref RE_PK_DEF : Regex = Regex::new(r####"(?i)PRIMARY\s*KEY\s*[`]?(?:\w*)[`]?\s*\((?P<col_name>[^\)]+)\)"####).unwrap();
     static ref RE_PK_IN_LINE : Regex = Regex::new(r####"(?i)\s*PRIMARY\s*KEY.*"####).unwrap();
     ///Look after alter table statements.
@@ -256,21 +256,69 @@ fn generate_relations(dot_file : &mut DotFile, dot_table: Option<&mut DotTable>,
                 Err("Doesn't match restrictions")
             },
             _ => {
-                dot_file.add_relation(
-                    table_name, 
-                    table_end, 
-                    captures.name("table_key").unwrap().as_str(), 
-                    captures.name("distant_key").unwrap().as_str(),
-                    captures.name("on_delete").map_or("RESTRICT", |m| m.as_str())
-                );
-                if let Some(table) = dot_table {
-                    table.add_attribute_fk(
-                        captures.name("table_key").unwrap().as_str(),
-                        captures.name("distant_table").unwrap().as_str(),
-                        captures.name("distant_key").unwrap().as_str()
-                    );
+                let table_key : String = captures.name("table_key").unwrap().as_str().to_string();
+                let distant_key : String = captures.name("distant_key").unwrap().as_str().to_string();
+                let relation_type : &str = captures.name("distant_key").unwrap().as_str();
+                return match detect_comas(table_key.as_str()) {
+                    Ok(comas_vec) if !comas_vec.is_empty() => {
+                        return match detect_comas(distant_key.as_str()) {
+                            Ok(second_coma_vec) if !second_coma_vec.is_empty() && second_coma_vec.len() == comas_vec.len() => {
+                                let vec_table_key : Vec<&str> = table_key.split_vec(comas_vec.clone());
+                                let vec_distant_key : Vec<&str> = table_key.split_vec(second_coma_vec);
+                                if let Some(table) = dot_table {
+                                    for i in 0..comas_vec.len() {
+                                        let curr_attr : String = str::replace(vec_table_key.get(i).unwrap(), "`", "");
+                                        let curr_refered_key : String = str::replace(vec_distant_key.get(i).unwrap(), "`", "");
+                                        dot_file.add_relation(
+                                            table_name,
+                                            table_end,
+                                            curr_attr.as_str(),
+                                            curr_refered_key.as_str(),
+                                            relation_type
+                                        );
+                                        table.add_attribute_fk(
+                                            curr_attr.as_str(),
+                                            table_end,
+                                            curr_refered_key.as_str()
+                                        );
+                                    }
+                                } else {
+                                    for i in 0..comas_vec.len() {
+                                        let curr_attr : String = str::replace(vec_table_key.get(i).unwrap(), "`", "");
+                                        let curr_refered_key : String = str::replace(vec_distant_key.get(i).unwrap(), "`", "");
+                                        dot_file.add_relation(
+                                            table_name,
+                                            table_end,
+                                            curr_attr.as_str(),
+                                            curr_refered_key.as_str(),
+                                            relation_type
+                                        );
+                                    }
+                                }
+                                Ok("Multiple keys processed")
+
+                            },
+                            _ => Err("Error in file format")
+                        }
+                    },
+                    _ => {
+                        dot_file.add_relation(
+                            table_name, 
+                            table_end, 
+                            str::replace(&table_key, "`", "").as_str(), 
+                            str::replace(&distant_key, "`", "").as_str(),
+                            relation_type
+                        );
+                        if let Some(table) = dot_table {
+                            table.add_attribute_fk(
+                                str::replace(&table_key, "`", "").as_str(),
+                                table_end,
+                                relation_type
+                            );
+                        }
+                        Ok("Relation added")
+                    }
                 }
-                Ok("Relation added")
             }
         }
     } else {
