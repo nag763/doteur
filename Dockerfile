@@ -4,6 +4,6 @@ RUN apt update; apt install graphviz -y
 
 WORKDIR /usr/src/doteur
 
-COPY ./examples .
+COPY ./ .
 
-RUN cargo install doteur
+RUN cargo install --path .
