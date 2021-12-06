@@ -86,7 +86,7 @@ impl fmt::Display for Attribute {
         <TR><TD ALIGN=\"LEFT\" BORDER=\"0\">
         <FONT COLOR=\"{0}\" FACE=\"Roboto\"><B>{1} {2}{3}</B></FONT>
         </TD><TD ALIGN=\"LEFT\">
-        <FONT FACE=\"Roboto\" COLOR=\"{0}\">Refers to <I>{4}{5}]</I></FONT>
+        <FONT FACE=\"Roboto\" COLOR=\"{0}\">Refers to <I>{4}[{5}]</I></FONT>
         </TD></TR>", font_color,  self.name.trim_leading_trailing(), pk_sign, refer_sign, self.foreign_table.as_ref().unwrap().trim_leading_trailing(), self.foreign_key.as_ref().unwrap().trim_leading_trailing()
                     )
             },
@@ -198,7 +198,7 @@ impl KeyValueMap for Vec<Attribute> {
     fn add_fk_nature_to_attribute(&mut self, attr_name : &str, foreign_table: &str, foreign_key: &str) -> Result<usize, &'static str>{
         match self.index_of_attribute(attr_name) {
             Ok(index) => { 
-                self[index].add_fk_nature(foreign_key.to_string(), foreign_table.to_string());
+                self[index].add_fk_nature(foreign_table.to_string(), foreign_key.to_string());
                 Ok(index)
             },
             Err(_) => Err("Index not found")
