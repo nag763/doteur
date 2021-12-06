@@ -8,6 +8,8 @@ pub trait Trim {
 pub trait Replacable {
     /// Replace all non ascii chars or digits by whitespaces.
     fn replace_specials(&self) -> String;
+    /// Replace all backquotes by whitespaces.
+    fn replace_bq(&self) -> String;
 }
 
 /// Gets the last char
@@ -37,11 +39,17 @@ impl Replacable for str {
     fn replace_specials(&self) -> String {
         self.chars().filter(|c| c.is_ascii_alphanumeric() || c.is_ascii_whitespace()).collect::<String>()
     }
+    fn replace_bq(&self) -> String {
+        str::replace(self, "`", "")
+    }
 }
 
 impl Replacable for String {
     fn replace_specials(&self) -> String {
         self.chars().filter(|c| c.is_ascii_alphanumeric() || c.is_ascii_whitespace()).collect::<String>()
+    }
+    fn replace_bq(&self) -> String {
+        str::replace(self, "`", "")
     }
 }
 
