@@ -398,11 +398,6 @@ mod tests {
         assert_eq!(captures.name("distant_table").unwrap().as_str(), "Persons", "normal");
         assert_eq!(captures.name("distant_key").unwrap().as_str(), "PersonID", "normal");
 
-        let captures2 : Captures = RE_FK_DEF.captures("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`)").unwrap();
-        assert_eq!(captures2.name("table_key").unwrap().as_str(), "PersonID", "normal");
-        assert_eq!(captures2.name("distant_table").unwrap().as_str(), "Persons", "normal");
-        assert_eq!(captures2.name("distant_key").unwrap().as_str(), "PersonID", "normal");
-
         let captures_with_on_delete_set_null : Captures = RE_FK_DEF.captures("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`) ON DELETE SET NULL").unwrap();
         assert_eq!(captures_with_on_delete_set_null.name("on_delete").unwrap().as_str(), "SET NULL", "normal");
 
