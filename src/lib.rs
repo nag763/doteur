@@ -14,6 +14,7 @@
 pub mod models;
 
 use regex::{Regex, Captures};
+use log::{info, warn, error, debug};
 use std::fs;
 
 use models::args::{Args};
@@ -139,6 +140,7 @@ fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Optio
                                   .unwrap()
                                   .as_str()
                                   .trim_leading_trailing();
+    debug!("Currently processing table {}", table_name);
 
 
     // TODO : first depth et si relations pas nulles
@@ -154,33 +156,59 @@ fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Optio
     let lines : Vec<&str>;
 
     match detect_comas(attr_defs.as_str()) {
-        Ok(v) => lines = attr_defs.split_vec(v),
-        Err(_) => {dot_file.add_table(dot_table); return Err("Attributes malformed");},
+        Ok(v) => {
+            debug!("Table {} splitted correctly, {} unclosed comas found", table_name, v.len());
+            lines = attr_defs.split_vec(v);
+        },
+        Err(e) => {
+            error!("Error in comas parsing for table : {0}\n{1}", table_name, e);
+            dot_file.add_table(dot_table); 
+            warn!("No attributes added for table {}", table_name);
+            return Err("Attributes malformed");
+        },
     }
     for line in lines {
         if !RE_COL_TYPE.is_match(line) {
-            let _ = generate_attributes(&mut dot_table, line);
+            debug!("Line {} is a column def", line);
+            match generate_attributes(&mut dot_table, line) {
+                Ok(m) => info!("Attribute processed correctly : {}", m),
+                Err(e) => error!("An error happened while processing line : {}", e)
+            }
         } else {
+            debug!("Line {} is not a column def", line);
             let col_type : Captures = RE_COL_TYPE.captures(line).unwrap();
             if col_type.name("key_type").is_some() {
                 match col_type.name("key_type").unwrap().as_str().to_uppercase().as_str() {
                     "FOREIGN" => {
-                        let _ = generate_relations(dot_file, Some(&mut dot_table), &table_name, line, restrictions); 
+                        debug!("Line {} has been found as a foreign key def", line);
+                        match generate_relations(dot_file, Some(&mut dot_table), &table_name, line, restrictions){
+                            Ok(m) => info!("FK processed correctly : {}", m),
+                            Err(e) => error!("An error happened while processing foreign key: {}", e),
+                        }
                     },
                     "PRIMARY" => {
                         if !RE_PK_DEF.is_match(line) {
-                            let _ = generate_attributes(&mut dot_table, line);
+                            debug!("Line {} has been found as a primary key def including a column def", line);
+                            match generate_attributes(&mut dot_table, line) {
+                                Ok(m) => info!("PK processed correctly : {}", m),
+                                Err(e) => error!("An error happened while processing primary key : {}", e)
+                            }
                         } else {
-                            let _ = generate_primary(&mut dot_table, line);
+                            debug!("Line {} has been found as a primary key def", line);
+                            match generate_primary(&mut dot_table, line) {
+                                Ok(m) => info!("PK processed correctly : {}", m),
+                                Err(e) => error!("An error happened while processing primary key : {}", e)
+                            }
                         }
                     },
-                    _ => (),
+                    _ => warn!("The line didn't match any known relation type"),
 
                 }
             }
         }
     }
     dot_file.add_table(dot_table);
+    info!("The table {} has been added to the file with success", table_name); 
     Ok("Attributes")
 }
 
@@ -258,7 +286,7 @@ fn generate_relations(dot_file : &mut DotFile, dot_table: Option<&mut DotTable>,
             _ => {
                 let table_key : String = captures.name("table_key").unwrap().as_str().replace_bq();
                 let distant_key : String = captures.name("distant_key").unwrap().as_str().replace_bq();
-                let relation_type : &str = captures.name("distant_key").unwrap().as_str();
+                let relation_type : &str = captures.name("on_delete").map_or("RESTRICT", |m| m.as_str());
                 return match detect_comas(table_key.as_str()) {
                     Ok(comas_vec) if !comas_vec.is_empty() => {
                         return match detect_comas(distant_key.as_str()) {
