@@ -18,7 +18,7 @@ use std::fs;
 
 use models::args::{Args};
 use models::restriction::{Restriction};
-use models::add_traits::{Trim, LastChar, SplitVec};
+use models::add_traits::{Trim, LastChar, SplitVec, Replacable};
 
 use models::dot_structs::dot_table::{DotTable};
 use models::dot_structs::dot_file::{DotFile};
@@ -219,13 +219,13 @@ fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<&'static str
             Some(v) => {
                 match detect_comas(v.as_str()) {
                     Ok(comas_vec) if !comas_vec.is_empty() => {
-                        if v.as_str().to_string().split_vec(comas_vec).iter().any(|attr| dot_table.add_pk_nature_to_attribute(&attr.replace("`", "")).is_err()) {
+                        if v.as_str().to_string().split_vec(comas_vec).iter().any(|attr| dot_table.add_pk_nature_to_attribute(attr.replace_bq().as_str()).is_err()) {
                             return Err("One or more errors for multiple PK attr def");
                         }
                         Ok("Multiple attributes set as PK")
                     },
                     _ => {
-                        match dot_table.add_pk_nature_to_attribute(&v.as_str().replace("`", "")) {
+                        match dot_table.add_pk_nature_to_attribute(v.as_str().replace_bq().as_str()) {
                             Ok(_) => Ok("PK nature added"),
                             Err(e) =>Err(e)
                         }
@@ -256,19 +256,19 @@ fn generate_relations(dot_file : &mut DotFile, dot_table: Option<&mut DotTable>,
                 Err("Doesn't match restrictions")
             },
             _ => {
-                let table_key : String = captures.name("table_key").unwrap().as_str().to_string();
-                let distant_key : String = captures.name("distant_key").unwrap().as_str().to_string();
+                let table_key : String = captures.name("table_key").unwrap().as_str().replace_bq();
+                let distant_key : String = captures.name("distant_key").unwrap().as_str().replace_bq();
                 let relation_type : &str = captures.name("distant_key").unwrap().as_str();
                 return match detect_comas(table_key.as_str()) {
                     Ok(comas_vec) if !comas_vec.is_empty() => {
                         return match detect_comas(distant_key.as_str()) {
                             Ok(second_coma_vec) if !second_coma_vec.is_empty() && second_coma_vec.len() == comas_vec.len() => {
                                 let vec_table_key : Vec<&str> = table_key.split_vec(comas_vec.clone());
-                                let vec_distant_key : Vec<&str> = table_key.split_vec(second_coma_vec);
+                                let vec_distant_key : Vec<&str> = distant_key.split_vec(second_coma_vec);
                                 if let Some(table) = dot_table {
                                     for i in 0..comas_vec.len() {
-                                        let curr_attr : String = str::replace(vec_table_key.get(i).unwrap(), "`", "");
-                                        let curr_refered_key : String = str::replace(vec_distant_key.get(i).unwrap(), "`", "");
+                                        let curr_attr : String = vec_table_key.get(i).unwrap().replace_bq();
+                                        let curr_refered_key : String = vec_distant_key.get(i).unwrap().replace_bq();
                                         dot_file.add_relation(
                                             table_name,
                                             table_end,
@@ -284,8 +284,8 @@ fn generate_relations(dot_file : &mut DotFile, dot_table: Option<&mut DotTable>,
                                     }
                                 } else {
                                     for i in 0..comas_vec.len() {
-                                        let curr_attr : String = str::replace(vec_table_key.get(i).unwrap(), "`", "");
-                                        let curr_refered_key : String = str::replace(vec_distant_key.get(i).unwrap(), "`", "");
+                                        let curr_attr : String = vec_table_key.get(i).unwrap().replace_bq();
+                                        let curr_refered_key : String = vec_distant_key.get(i).unwrap().replace_bq();
                                         dot_file.add_relation(
                                             table_name,
                                             table_end,
@@ -305,15 +305,15 @@ fn generate_relations(dot_file : &mut DotFile, dot_table: Option<&mut DotTable>,
                         dot_file.add_relation(
                             table_name, 
                             table_end, 
-                            str::replace(&table_key, "`", "").as_str(), 
-                            str::replace(&distant_key, "`", "").as_str(),
+                            table_key.replace_bq().as_str(), 
+                            distant_key.replace_bq().as_str(),
                             relation_type
                         );
                         if let Some(table) = dot_table {
                             table.add_attribute_fk(
-                                str::replace(&table_key, "`", "").as_str(),
+                                table_key.replace_bq().as_str(),
                                 table_end,
-                                relation_type
+                                distant_key.replace_bq().as_str(),
                             );
                         }
                         Ok("Relation added")
