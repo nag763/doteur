@@ -36,11 +36,11 @@ fn main() {
             } else if !Args::ext_supported(file_ext) {
                 panic!("The given extension isn't supported. Please verify it is one of the following :\n\n{}", POSSIBLE_DOTS_OUTPUT.join(";"));
             } else {
-                match write_output_to_file(output_content.as_str(), "output.dot") {
+                match write_output_to_file(output_content.as_str(), ".output.dot") {
                     Ok(_) => {
                         Command::new("dot")
                                 .arg(["-T", file_ext].join(""))
-                                .arg("output.dot")
+                                .arg(".output.dot")
                                 .arg(["-o", args.get_output_filename()].join(""))
                                 .spawn()
                                 .expect("An error happened while writing the output file");

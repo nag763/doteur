@@ -1,3 +1,4 @@
 /target
 output.dot
 /release
+.output.dot

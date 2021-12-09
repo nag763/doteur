@@ -30,7 +30,7 @@ lazy_static! {
     ///Look after table defs.
     static ref RE_TABLE_DEFS : Regex = Regex::new(r"(?i)\s*CREATE\s*TABLE[^;]*.").unwrap();
     ///Get table name.
-    static ref RE_TABLE_NAME : Regex = Regex::new(r"(?i)\s*CREATE\s*TABLE\s*(?:IF\s*NOT\s*EXISTS)?\s*[`]?(\w*)[`]?\s*\(([^;]*)\)").unwrap();
+    static ref RE_TABLE_NAME : Regex = Regex::new(r"(?i)\s*CREATE\s*TABLE\s*(?:IF\s*NOT\s*EXISTS)?\s*[`]?(?P<table_name>\w*)[`]?\s*\((?P<content>[^;]*)\)").unwrap();
     static ref RE_COL_TYPE : Regex = Regex::new(r####"(?i)\s*((?:FULLTEXT|SPATIAL)?\s*(?:INDEX|KEY))|(?:CONSTRAINT\s*[`'"]\w*[`'"])?\s*(?P<key_type>UNIQUE|FOREIGN|PRIMARY)"####).unwrap();
     static ref RE_COL_DEF : Regex = Regex::new(r####"(?i)\s*`?(?P<col_name>\w*)`?\s*(?P<col_def>.*)"####).unwrap();
     ///Check for the content in parenthesis.
@@ -38,7 +38,7 @@ lazy_static! {
     static ref RE_PK_DEF : Regex = Regex::new(r####"(?i)PRIMARY\s*KEY\s*[`]?(?:\w*)[`]?\s*\((?P<col_name>[^\)]+)\)"####).unwrap();
     static ref RE_PK_IN_LINE : Regex = Regex::new(r####"(?i)\s*PRIMARY\s*KEY.*"####).unwrap();
     ///Look after alter table statements.
-    static ref RE_ALTERED_TABLE : Regex = Regex::new(r"\s*(?i)ALTER\s*TABLE\s*`?(\w*)`?\s*([^;]*)").unwrap();
+    static ref RE_ALTERED_TABLE : Regex = Regex::new(r"\s*(?i)ALTER\s*TABLE\s*`?(?P<table_name>\w*)`?\s*(?P<altered_content>[^;]*)").unwrap();
 }
 
 
@@ -136,7 +136,7 @@ fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Optio
 
     let captures : Captures = RE_TABLE_NAME.captures(input).unwrap();
     let table_name : String = captures
-                                  .get(1)
+                                  .name("table_name")
                                   .unwrap()
                                   .as_str()
                                   .trim_leading_trailing();
@@ -152,7 +152,7 @@ fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Optio
 
     let mut dot_table : DotTable = DotTable::new(table_name.as_str(), dark_mode);
 
-    let attr_defs : String = captures.get(2).unwrap().as_str().trim_leading_trailing();
+    let attr_defs : String = captures.name("content").unwrap().as_str().trim_leading_trailing();
     let lines : Vec<&str>;
 
     match detect_comas(attr_defs.as_str()) {
@@ -374,8 +374,8 @@ pub fn process_file(args : Args) -> String {
                             let _ = generate_relations(
                                 &mut dot_file,
                                 None,
-                                element.get(1).unwrap().as_str(),
-                                element.get(2).unwrap().as_str(),
+                                element.name("table_name").unwrap().as_str(),
+                                element.name("altered_content").unwrap().as_str(),
                                 args.get_restrictions()
                             );
                         }
