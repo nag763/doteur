@@ -59,8 +59,8 @@ impl DotTable {
     /// * `key` - The key of the attribute in the table
     /// * `fk_table` - The refered table
     /// * `fk_col` - The refered key
-    pub fn add_attribute_fk(&mut self, key: &str, fk_table : &str, fk_col : &str) {
-        let _ = self.attributes.add_fk_nature_to_attribute(key, fk_table, fk_col).is_err();
+    pub fn add_attribute_fk(&mut self, key: &str, fk_table : &str, fk_col : &str)  -> Result<usize, &'static str> {
+        self.attributes.add_fk_nature_to_attribute(key, fk_table, fk_col)
     }
 
     pub fn add_pk_nature_to_attribute(&mut self, key: &str) -> Result<usize, &'static str>{

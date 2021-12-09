@@ -8,6 +8,7 @@ use doteur::{process_file, write_output_to_file, contains_tables};
 #[macro_use] extern crate clap;
 
 fn main() {
+    env_logger::init();
     let yaml = load_yaml!("cli.yml");
     let matches = App::from(yaml).get_matches();
 

@@ -191,7 +191,6 @@ impl KeyValueMap for Vec<Attribute> {
                 Ok(index)
             },
             Err(_) => Err("Index not found")
-    
         }
     }
 

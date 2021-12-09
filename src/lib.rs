@@ -234,11 +234,12 @@ fn generate_attributes(dot_table : &mut DotTable, attr: &str) -> Result<&'static
         let trimmed_line : &str = &RE_PK_IN_LINE.replace(attr, "");
         let captures : Captures = RE_COL_DEF.captures(trimmed_line).unwrap();
         dot_table.add_attribute_pk(captures.name("col_name").unwrap().as_str(), captures.name("col_def").unwrap().as_str());
+        Ok("PK detected")
     } else {
         let captures : Captures = RE_COL_DEF.captures(attr).unwrap();
         dot_table.add_attribute(captures.name("col_name").unwrap().as_str(), captures.name("col_def").unwrap().as_str());
-    };
-    Ok("Attribute")
+        Ok("COLUMN DEF detected")
+    }
 }
 
 fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<&'static str, &'static str> {
@@ -247,7 +248,7 @@ fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<&'static str
             Some(v) => {
                 match detect_comas(v.as_str()) {
                     Ok(comas_vec) if !comas_vec.is_empty() => {
-                        if v.as_str().to_string().split_vec(comas_vec).iter().any(|attr| dot_table.add_pk_nature_to_attribute(attr.replace_bq().as_str()).is_err()) {
+                        if v.as_str().to_string().split_vec(comas_vec).iter().any(|attr| dot_table.add_pk_nature_to_attribute(attr.replace_bq().trim_leading_trailing().as_str()).is_err()) {
                             return Err("One or more errors for multiple PK attr def");
                         }
                         Ok("Multiple attributes set as PK")
@@ -295,8 +296,8 @@ fn generate_relations(dot_file : &mut DotFile, dot_table: Option<&mut DotTable>,
                                 let vec_distant_key : Vec<&str> = distant_key.split_vec(second_coma_vec);
                                 if let Some(table) = dot_table {
                                     for i in 0..comas_vec.len() {
-                                        let curr_attr : String = vec_table_key.get(i).unwrap().replace_bq();
-                                        let curr_refered_key : String = vec_distant_key.get(i).unwrap().replace_bq();
+                                        let curr_attr : String = vec_table_key.get(i).unwrap().replace_bq().trim_leading_trailing();
+                                        let curr_refered_key : String = vec_distant_key.get(i).unwrap().replace_bq().trim_leading_trailing();
                                         dot_file.add_relation(
                                             table_name,
                                             table_end,
@@ -304,7 +305,7 @@ fn generate_relations(dot_file : &mut DotFile, dot_table: Option<&mut DotTable>,
                                             curr_refered_key.as_str(),
                                             relation_type
                                         );
-                                        table.add_attribute_fk(
+                                        let _ : Result<usize, &str> = table.add_attribute_fk(
                                             curr_attr.as_str(),
                                             table_end,
                                             curr_refered_key.as_str()
@@ -312,8 +313,8 @@ fn generate_relations(dot_file : &mut DotFile, dot_table: Option<&mut DotTable>,
                                     }
                                 } else {
                                     for i in 0..comas_vec.len() {
-                                        let curr_attr : String = vec_table_key.get(i).unwrap().replace_bq();
-                                        let curr_refered_key : String = vec_distant_key.get(i).unwrap().replace_bq();
+                                        let curr_attr : String = vec_table_key.get(i).unwrap().replace_bq().trim_leading_trailing();
+                                        let curr_refered_key : String = vec_distant_key.get(i).unwrap().replace_bq().trim_leading_trailing();
                                         dot_file.add_relation(
                                             table_name,
                                             table_end,
@@ -338,7 +339,7 @@ fn generate_relations(dot_file : &mut DotFile, dot_table: Option<&mut DotTable>,
                             relation_type
                         );
                         if let Some(table) = dot_table {
-                            table.add_attribute_fk(
+                            let _ : Result<usize, &str> = table.add_attribute_fk(
                                 table_key.replace_bq().as_str(),
                                 table_end,
                                 distant_key.replace_bq().as_str(),
