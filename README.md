@@ -172,3 +172,10 @@ usr@pop-os:~$ doteur sample.sql -o output.png -i hello*
 ```bash
 usr@pop-os:~$ doteur sample.sql -o output.png -x hello*
 ```
+##### See logs of a output
+
+```bash
+usr@pop-os:~$ RUST_LOG=ERROR doteur sample.sql
+```
+
+With available levels being `DEBUG`, `INFO`, `WARN`, `ERROR`
