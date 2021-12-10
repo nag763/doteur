@@ -54,7 +54,6 @@ lazy_static! {
 fn detect_comas(content : &str) -> Result<Vec<usize>, &str> {
     let mut indexes : Vec<usize> = Vec::new();
     let mut buffer : String = String::new();
-    let mut error : Option<&str> = None;
     for (i, c) in content.chars().enumerate() {
         match c {
             '(' => {
@@ -69,12 +68,10 @@ fn detect_comas(content : &str) -> Result<Vec<usize>, &str> {
                     if last_char == '(' {
                             buffer.pop();
                     } else if last_char != '`' {
-                        error = Some("Parenthesis don't match");
-                        break;
+                        return Err("Opened parenthesis never closed");
                     }
                 } else {
-                    error = Some("Closing parenthesis without opening parenthesis");
-                    break;
+                    return Err("Parenthesis closed without being opened");
                 }
             },
             '`' => {
@@ -86,8 +83,7 @@ fn detect_comas(content : &str) -> Result<Vec<usize>, &str> {
                         buffer.push(c);
                     // If a back tick is neither a closure nor a declaration
                     } else {
-                        error = Some("Malformed, single backtick");
-                        break;
+                        return Err("Malformed, single backtick");
                     }
                 } else {
                     buffer.push(c)
@@ -101,11 +97,9 @@ fn detect_comas(content : &str) -> Result<Vec<usize>, &str> {
             _ => ()
         }
     }
-    match error {
-        None => Ok(indexes),
-        Some(v) => Err(v)
-    }
+    Ok(indexes)
 }
+
 
 /// Get the tables from the input
 ///
@@ -125,8 +119,9 @@ fn get_tables(input: &str) -> Vec<&str> {
 ///
 /// * `input` - The content where sql table are stored
 pub fn contains_tables(input: &str) -> bool {
-    !get_tables(input).is_empty()
+    RE_TABLE_DEFS.is_match(input)
 }
+
 
 /// Convert a sql table to a dot table and store it in the given dot file
 ///
@@ -237,11 +232,11 @@ fn generate_attributes(dot_table : &mut DotTable, attr: &str) -> Result<&'static
     if RE_PK_IN_LINE.is_match(attr) {
         let trimmed_line : &str = &RE_PK_IN_LINE.replace(attr, "");
         let captures : Captures = RE_COL_DEF.captures(trimmed_line).unwrap();
-        dot_table.add_attribute_pk(captures.name("col_name").unwrap().as_str(), captures.name("col_def").unwrap().as_str());
+        dot_table.add_attribute_pk(captures.name("col_name").unwrap().as_str().replace_bq().trim_leading_trailing().as_str(), captures.name("col_def").unwrap().as_str());
         Ok("PK detected")
     } else {
         let captures : Captures = RE_COL_DEF.captures(attr).unwrap();
-        dot_table.add_attribute(captures.name("col_name").unwrap().as_str(), captures.name("col_def").unwrap().as_str());
+        dot_table.add_attribute(captures.name("col_name").unwrap().as_str().replace_bq().trim_leading_trailing().as_str(), captures.name("col_def").unwrap().as_str());
         Ok("COLUMN DEF detected")
     }
 }
@@ -258,7 +253,7 @@ fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<&'static str
                         Ok("Multiple attributes set as PK")
                     },
                     _ => {
-                        match dot_table.add_pk_nature_to_attribute(v.as_str().replace_bq().as_str()) {
+                        match dot_table.add_pk_nature_to_attribute(v.as_str().replace_bq().trim_leading_trailing().as_str()) {
                             Ok(_) => Ok("PK nature added"),
                             Err(e) =>Err(e)
                         }
@@ -293,6 +288,7 @@ fn generate_relations(dot_file : &mut DotFile, dot_table: Option<&mut DotTable>,
                 let distant_key : String = captures.name("distant_key").unwrap().as_str().replace_bq();
                 let relation_type : &str = captures.name("on_delete").map_or("RESTRICT", |m| m.as_str());
                 return match detect_comas(table_key.as_str()) {
+                    // Case where attributes are separated by comas
                     Ok(comas_vec) if !comas_vec.is_empty() => {
                         return match detect_comas(distant_key.as_str()) {
                             Ok(second_coma_vec) if !second_coma_vec.is_empty() && second_coma_vec.len() == comas_vec.len() => {
@@ -334,6 +330,7 @@ fn generate_relations(dot_file : &mut DotFile, dot_table: Option<&mut DotTable>,
                             _ => Err("Error in file format")
                         }
                     },
+                    // Single key processing
                     _ => {
                         dot_file.add_relation(
                             table_name, 
@@ -369,19 +366,29 @@ pub fn process_file(args : Args) -> String {
     let mut dot_file : DotFile = DotFile::new(args.get_filename_without_specials().as_str(), args.get_legend(), args.get_dark_mode());
 
     // Generate content from the declared tables.
-    get_tables(args.get_filecontent()).iter().for_each(|element| {let _ = convert_sql_to_dot(&mut dot_file, element, args.get_restrictions(), args.get_dark_mode());});
+    get_tables(args.get_filecontent()).iter().for_each(
+        |element| {
+            match convert_sql_to_dot(&mut dot_file, element, args.get_restrictions(), args.get_dark_mode()) {
+                Ok(m) => info!("File converted successfully in dot : {}", m),
+                Err(e) => error!("An error happened while processing the sql file : {}", e)
+            };
+        }
+    );
 
     // Look after the other fks, declared on alter table statements.
     RE_ALTERED_TABLE.captures_iter(args.get_filecontent())
                     .for_each(|element|
                         {
-                            let _ = generate_relations(
+                            match generate_relations(
                                 &mut dot_file,
                                 None,
                                 element.name("table_name").unwrap().as_str(),
                                 element.name("altered_content").unwrap().as_str(),
                                 args.get_restrictions()
-                            );
+                            ){
+                                Ok(m) => info!("Alter table processed correctly : {}", m),
+                                Err(e) => error!("Error while processing alter table : {}", e)
+                            }
                         }
                     );
 
