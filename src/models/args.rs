@@ -138,18 +138,30 @@ impl Args {
         self.restrictions = Some(Restriction::new_exclusion(exclusions));
     }
 
+    /// Returns the legend attribute
     pub fn get_legend(&self) -> bool {
         self.legend
     }
 
+    /// Sets the legend attribute
+    ///
+    /// # Arguments
+    ///
+    /// * `legend` - The new value
     pub fn set_legend(&mut self, legend: bool) {
         self.legend = legend;
     }
 
+    /// Returns the dark_mode attribute
     pub fn get_dark_mode(&self) -> bool {
         self.dark_mode
     }
 
+    /// Set the dark mode attribute
+    ///
+    /// # Arguments
+    ///
+    /// * `dark_mode` - The new dark mode value
     pub fn set_dark_mode(&mut self, dark_mode: bool){
         self.dark_mode = dark_mode;
     }

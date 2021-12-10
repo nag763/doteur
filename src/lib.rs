@@ -305,7 +305,7 @@ fn generate_relations(dot_file : &mut DotFile, dot_table: Option<&mut DotTable>,
                                             curr_refered_key.as_str(),
                                             relation_type
                                         );
-                                        let _ : Result<usize, &str> = table.add_attribute_fk(
+                                        let _ : Result<usize, &str> = table.add_fk_nature_to_attribute(
                                             curr_attr.as_str(),
                                             table_end,
                                             curr_refered_key.as_str()
@@ -340,7 +340,7 @@ fn generate_relations(dot_file : &mut DotFile, dot_table: Option<&mut DotTable>,
                             relation_type
                         );
                         if let Some(table) = dot_table {
-                            let _ : Result<usize, &str> = table.add_attribute_fk(
+                            let _ : Result<usize, &str> = table.add_fk_nature_to_attribute(
                                 table_key.replace_bq().as_str(),
                                 table_end,
                                 distant_key.replace_bq().as_str(),

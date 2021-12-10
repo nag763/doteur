@@ -6,9 +6,9 @@ pub trait Trim {
 
 /// Replace characters that can set issues for the dot file.
 pub trait Replacable {
-    /// Replace all non ascii chars or digits by whitespaces.
+    /// Remove all non ascii chars or digits.
     fn replace_specials(&self) -> String;
-    /// Replace all backquotes by whitespaces.
+    /// Remove all backquotes.
     fn replace_bq(&self) -> String;
 }
 
@@ -18,6 +18,7 @@ pub trait LastChar {
     fn get_last_char(&self) -> char;
 }
 
+/// Splits a string or str with a given vec
 pub trait SplitVec {
     /// Split the vec of usize
     fn split_vec(&self, indexes: Vec<usize>) -> Vec<&str>;
@@ -119,10 +120,13 @@ mod tests {
     #[test]
     fn replace_specials() {
         assert_eq!("h*ù$$âe🔎,;:!)l&²l<o".replace_specials(), "hello");
+       assert_eq!("\n\th ell o\t\n".replace_specials(), "\n\th ell o\t\n", "white spaces are preserved");
     }
 
     #[test]
-    fn replace_specials_preserves_whites_spaces() {
-        assert_eq!("\n\th ell o\t\n".replace_specials(), "\n\th ell o\t\n");
+    fn replace_backquotes() {
+        assert_eq!("\n\th ell o\t\n".replace_bq(), "\n\th ell o\t\n", "no bq no rmval");
+        assert_eq!("\n`\th `ell ``o\t`\n".replace_bq(), "\n\th ell o\t\n", "bq are removed");
+        assert_eq!("\n`\th \"ell \"\"''``'o\t`\n".replace_bq(), "\n\th \"ell \"\"'''o\t\n", "other quotes aren't removed");
     }
 }
