@@ -294,17 +294,21 @@ fn generate_relations(dot_file : &mut DotFile, dot_table: Option<&mut DotTable>,
                             Ok(second_coma_vec) if !second_coma_vec.is_empty() && second_coma_vec.len() == comas_vec.len() => {
                                 let vec_table_key : Vec<&str> = table_key.split_vec(comas_vec.clone());
                                 let vec_distant_key : Vec<&str> = distant_key.split_vec(second_coma_vec);
+                                let mut common = |i : usize| {
+                                    let curr_attr : String = vec_table_key.get(i).unwrap().replace_bq().trim_leading_trailing();
+                                    let curr_refered_key : String = vec_distant_key.get(i).unwrap().replace_bq().trim_leading_trailing();
+                                    dot_file.add_relation(
+                                        table_name,
+                                        table_end,
+                                        curr_attr.as_str(),
+                                        curr_refered_key.as_str(),
+                                        relation_type
+                                    );
+                                    (curr_attr, curr_refered_key)
+                                };
                                 if let Some(table) = dot_table {
                                     for i in 0..comas_vec.len() {
-                                        let curr_attr : String = vec_table_key.get(i).unwrap().replace_bq().trim_leading_trailing();
-                                        let curr_refered_key : String = vec_distant_key.get(i).unwrap().replace_bq().trim_leading_trailing();
-                                        dot_file.add_relation(
-                                            table_name,
-                                            table_end,
-                                            curr_attr.as_str(),
-                                            curr_refered_key.as_str(),
-                                            relation_type
-                                        );
+                                        let (curr_attr, curr_refered_key) : (String, String) = common(i);
                                         let _ : Result<usize, &str> = table.add_fk_nature_to_attribute(
                                             curr_attr.as_str(),
                                             table_end,
@@ -313,15 +317,7 @@ fn generate_relations(dot_file : &mut DotFile, dot_table: Option<&mut DotTable>,
                                     }
                                 } else {
                                     for i in 0..comas_vec.len() {
-                                        let curr_attr : String = vec_table_key.get(i).unwrap().replace_bq().trim_leading_trailing();
-                                        let curr_refered_key : String = vec_distant_key.get(i).unwrap().replace_bq().trim_leading_trailing();
-                                        dot_file.add_relation(
-                                            table_name,
-                                            table_end,
-                                            curr_attr.as_str(),
-                                            curr_refered_key.as_str(),
-                                            relation_type
-                                        );
+                                        common(i);
                                     }
                                 }
                                 Ok("Multiple keys processed")
