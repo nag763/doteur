@@ -27,20 +27,18 @@ use models::dot_structs::dot_file::{DotFile};
 #[macro_use] extern crate lazy_static;
 
 lazy_static! {
-    ///Look after table defs.
-    static ref RE_TABLE_DEFS : Regex = Regex::new(r"(?i)\s*CREATE\s*TABLE[^;]*.").unwrap();
     ///Get table name.
     static ref RE_TABLE_NAME : Regex = Regex::new(r"(?i)\s*CREATE\s*TABLE\s*(?:IF\s*NOT\s*EXISTS)?\s*[`]?(?P<table_name>\w*)[`]?\s*\((?P<content>[^;]*)\)").unwrap();
     ///Get column type
     static ref RE_COL_TYPE : Regex = Regex::new(r####"(?i)\s*((?:FULLTEXT|SPATIAL)?\s*(?:INDEX|KEY))|(?:CONSTRAINT\s*[`'"]\w*[`'"])?\s*(?P<key_type>UNIQUE|FOREIGN|PRIMARY)"####).unwrap();
     ///Get columns definitioon
     static ref RE_COL_DEF : Regex = Regex::new(r####"(?i)\s*`?(?P<col_name>\w*)`?\s*(?P<col_def>.*)"####).unwrap();
-    ///Check for the content in parenthesis.
-    static ref RE_FK_DEF : Regex = Regex::new(r####"(?i)FOREIGN\s*KEY\s*\((?P<table_key>[^\)]+)\)\s*REFERENCES\s*[`]?(?P<distant_table>\w*)[`]?\s*\((?P<distant_key>[^\)]+)\)\s*(?:(?:ON\s*UPDATE\s*(?:(?:SET\s*\w*|\w*))\s*)?(?:ON\s*DELETE\s*)?(?P<on_delete>(SET\s*NULL|CASCADE|RESTRICT)))?"####).unwrap();
     ///Check if input is a primary key
     static ref RE_PK_DEF : Regex = Regex::new(r####"(?i)PRIMARY\s*KEY\s*[`]?(?:\w*)[`]?\s*\((?P<col_name>[^\)]+)\)"####).unwrap();
-    ///Check if a PK is declared in the line 
+    ///Check if a PK is declared in the line
     static ref RE_PK_IN_LINE : Regex = Regex::new(r####"(?i)\s*PRIMARY\s*KEY.*"####).unwrap();
+    ///Check for the content in parenthesis.
+    static ref RE_FK_DEF : Regex = Regex::new(r####"(?i)FOREIGN\s*KEY\s*\((?P<table_key>[^\)]+)\)\s*REFERENCES\s*[`]?(?P<distant_table>\w*)[`]?\s*\((?P<distant_key>[^\)]+)\)\s*(?:(?:ON\s*UPDATE\s*(?:(?:SET\s*\w*|\w*))\s*)?(?:ON\s*DELETE\s*)?(?P<on_delete>(SET\s*NULL|CASCADE|RESTRICT)))?"####).unwrap();
     ///Look after alter table statements.
     static ref RE_ALTERED_TABLE : Regex = Regex::new(r"\s*(?i)ALTER\s*TABLE\s*`?(?P<table_name>\w*)`?\s*(?P<altered_content>[^;]*)").unwrap();
 }
@@ -107,7 +105,7 @@ fn detect_comas(content : &str) -> Result<Vec<usize>, &str> {
 ///
 /// * `input` - The content where sql table are stored
 fn get_tables(input: &str) -> Vec<&str> {
-    RE_TABLE_DEFS.find_iter(input)
+    RE_TABLE_NAME.find_iter(input)
             .map(|element| element.as_str())
             .collect::<Vec<&str>>()
 }
@@ -119,7 +117,7 @@ fn get_tables(input: &str) -> Vec<&str> {
 ///
 /// * `input` - The content where sql table are stored
 pub fn contains_tables(input: &str) -> bool {
-    RE_TABLE_DEFS.is_match(input)
+    RE_TABLE_NAME.is_match(input)
 }
 
 
@@ -161,7 +159,7 @@ fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Optio
         },
         Err(e) => {
             error!("Error in comas parsing for table : {0}\n{1}", table_name, e);
-            dot_file.add_table(dot_table); 
+            dot_file.add_table(dot_table);
             warn!("No attributes added for table {}", table_name);
             return Err("Attributes malformed");
         },
@@ -207,7 +205,7 @@ fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Optio
         }
     }
     dot_file.add_table(dot_table);
-    info!("The table {} has been added to the file with success", table_name); 
+    info!("The table {} has been added to the file with success", table_name);
     Ok("Attributes")
 }
 
@@ -232,11 +230,11 @@ fn generate_attributes(dot_table : &mut DotTable, attr: &str) -> Result<&'static
     if RE_PK_IN_LINE.is_match(attr) {
         let trimmed_line : &str = &RE_PK_IN_LINE.replace(attr, "");
         let captures : Captures = RE_COL_DEF.captures(trimmed_line).unwrap();
-        dot_table.add_attribute_pk(captures.name("col_name").unwrap().as_str().replace_bq().trim_leading_trailing().as_str(), captures.name("col_def").unwrap().as_str());
+        dot_table.add_attribute_pk(captures.name("col_name").unwrap().as_str().trim_leading_trailing().as_str(), captures.name("col_def").unwrap().as_str());
         Ok("PK detected")
     } else {
         let captures : Captures = RE_COL_DEF.captures(attr).unwrap();
-        dot_table.add_attribute(captures.name("col_name").unwrap().as_str().replace_bq().trim_leading_trailing().as_str(), captures.name("col_def").unwrap().as_str());
+        dot_table.add_attribute(captures.name("col_name").unwrap().as_str().trim_leading_trailing().as_str(), captures.name("col_def").unwrap().as_str());
         Ok("COLUMN DEF detected")
     }
 }
@@ -329,9 +327,9 @@ fn generate_relations(dot_file : &mut DotFile, dot_table: Option<&mut DotTable>,
                     // Single key processing
                     _ => {
                         dot_file.add_relation(
-                            table_name, 
-                            table_end, 
-                            table_key.replace_bq().as_str(), 
+                            table_name,
+                            table_end,
+                            table_key.replace_bq().as_str(),
                             distant_key.replace_bq().as_str(),
                             relation_type
                         );
@@ -398,41 +396,53 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_re_table_defs() {
-        assert_ne!(RE_TABLE_DEFS.find_iter("\nCREATE TABLE HELLO();").count(), 0, "with leading");
-        assert_ne!(RE_TABLE_DEFS.find_iter("\n\tCREATE TABLE HELLO();").count(), 0, "with leading");
-        assert_ne!(RE_TABLE_DEFS.find_iter("\nCREATE TABLE `HELLO`();").count(), 0, "with backquotes");
-        assert_ne!(RE_TABLE_DEFS.find_iter("\n\tCReaTe TabLe HELLO();").count(), 0, "non capital letters");
-        assert_ne!(RE_TABLE_DEFS.find_iter("CREATE TABLE   \t HELLO();").count(), 0, "several spaces between");
-        assert_ne!(RE_TABLE_DEFS.find_iter("\tCREATE\t\t TABLE   \t HELLO();").count(), 0, "several spaces between");
-        assert_ne!(RE_TABLE_DEFS.find_iter("CREATE \n\tTABLE \n \t HELLO();").count(), 0, "several backline between");
-        assert_ne!(RE_TABLE_DEFS.find_iter("CREATE \n\tTABLE \n \t HELLO();").count(), 0, "several backline between");
-        assert_ne!(RE_TABLE_DEFS.find_iter("CREATE TABLE IF NOT EXISTS HELLO();").count(), 0, "if not exists");
-
-        assert_eq!(RE_TABLE_DEFS.find_iter("CREATE TABL HELLO();").count(), 0, "typo");
-        assert_eq!(RE_TABLE_DEFS.find_iter("CRATE TABLE HELLO();").count(), 0, "typo");
-        assert_eq!(RE_TABLE_DEFS.find_iter("CREATE OR TABLE HELLO();").count(), 0, "wrong keyword");
-        assert_eq!(RE_TABLE_DEFS.find_iter("CREATE DATABASE HELLO();").count(), 0, "wrong keyword");
-        assert_eq!(RE_TABLE_DEFS.find_iter("DROP TABLE HELLO();").count(), 0, "wrong keyword");
-        assert_eq!(RE_TABLE_DEFS.find_iter("ALTER TABLE HELLO();").count(), 0, "wrong keyword");
-    }
-
-    #[test]
     fn test_re_table_name() {
-        assert_eq!(RE_TABLE_NAME.captures("CREATE TABLE HELLO();").unwrap().get(1).unwrap().as_str(), "HELLO", "normal");
-        assert_eq!(RE_TABLE_NAME.captures("CREATE TABLE `HELLO`();").unwrap().get(1).unwrap().as_str(), "HELLO", "with backquotes");
-        assert_eq!(RE_TABLE_NAME.captures("CREATE TABLE IF NOT EXISTS `HELLO`();").unwrap().get(1).unwrap().as_str(), "HELLO", "with backquotes");
-        assert_eq!(RE_TABLE_NAME.captures("CREATE TABLE If NoT EXIsTS HELLO();").unwrap().get(1).unwrap().as_str(), "HELLO", "with backquotes and mixed");
-        assert_eq!(RE_TABLE_NAME.captures("\t\nCREATE\t\n TABLE\t\n `HELLO`\t();").unwrap().get(1).unwrap().as_str(), "HELLO", "with separative sequences");
-        assert_eq!(RE_TABLE_NAME.captures("\t\nCreATE\t\n TaBle\t\n `HeLlO`();").unwrap().get(1).unwrap().as_str(), "HeLlO", "mixed");
+        assert!(RE_TABLE_NAME.is_match("\nCREATE TABLE HELLO();"), "with leading");
+        assert!(RE_TABLE_NAME.is_match("\n\tCREATE TABLE HELLO();"), "with leading");
+        assert!(RE_TABLE_NAME.is_match("\nCREATE TABLE `HELLO`();"), "with backquotes");
+        assert!(RE_TABLE_NAME.is_match("\n\tCReaTe TabLe HELLO();"), "non capital letters");
+        assert!(RE_TABLE_NAME.is_match("CREATE TABLE   \t HELLO();"), "several spaces between");
+        assert!(RE_TABLE_NAME.is_match("\tCREATE\t\t TABLE   \t HELLO();"), "several spaces between");
+        assert!(RE_TABLE_NAME.is_match("CREATE \n\tTABLE \n \t HELLO();"), "several backline between");
+        assert!(RE_TABLE_NAME.is_match("CREATE \n\tTABLE \n \t HELLO();"), "several backline between");
+        assert!(RE_TABLE_NAME.is_match("CREATE TABLE IF NOT EXISTS HELLO();"), "if not exists");
+
+        assert!(!RE_TABLE_NAME.is_match("CREATE TABL HELLO();"), "typo");
+        assert!(!RE_TABLE_NAME.is_match("CRATE TABLE HELLO();"), "typo");
+        assert!(!RE_TABLE_NAME.is_match("CREATE OR TABLE HELLO();"), "wrong keyword");
+        assert!(!RE_TABLE_NAME.is_match("CREATE DATABASE HELLO();"), "wrong keyword");
+        assert!(!RE_TABLE_NAME.is_match("DROP TABLE HELLO();"), "wrong keyword");
+        assert!(!RE_TABLE_NAME.is_match("ALTER TABLE HELLO();"), "wrong keyword");
+
+        assert_eq!(RE_TABLE_NAME.captures("CREATE TABLE HELLO();").unwrap().name("table_name").unwrap().as_str(), "HELLO", "normal");
+        assert_eq!(RE_TABLE_NAME.captures("CREATE TABLE `HELLO`();").unwrap().name("table_name").unwrap().as_str(), "HELLO", "with backquotes");
+        assert_eq!(RE_TABLE_NAME.captures("CREATE TABLE IF NOT EXISTS `HELLO`();").unwrap().name("table_name").unwrap().as_str(), "HELLO", "with backquotes");
+        assert_eq!(RE_TABLE_NAME.captures("CREATE TABLE If NoT EXIsTS HELLO();").unwrap().name("table_name").unwrap().as_str(), "HELLO", "with backquotes and mixed");
+        assert_eq!(RE_TABLE_NAME.captures("\t\nCREATE\t\n TABLE\t\n `HELLO`\t();").unwrap().name("table_name").unwrap().as_str(), "HELLO", "with separative sequences");
+        assert_eq!(RE_TABLE_NAME.captures("\t\nCreATE\t\n TaBle\t\n `HeLlO`();").unwrap().name("table_name").unwrap().as_str(), "HeLlO", "mixed");
     }
 
     #[test]
-    fn test_re_in_parenthesis() {
+    fn test_re_fk_def() {
         let captures : Captures = RE_FK_DEF.captures("FOREIGN KEY (PersonID) REFERENCES Persons(PersonID)").unwrap();
-        assert_eq!(captures.name("table_key").unwrap().as_str(), "PersonID", "normal");
-        assert_eq!(captures.name("distant_table").unwrap().as_str(), "Persons", "normal");
-        assert_eq!(captures.name("distant_key").unwrap().as_str(), "PersonID", "normal");
+        assert_eq!(captures.name("table_key").unwrap().as_str(), "PersonID", "single");
+        assert_eq!(captures.name("distant_table").unwrap().as_str(), "Persons", "single");
+        assert_eq!(captures.name("distant_key").unwrap().as_str(), "PersonID", "single");
+
+        let captures_with_bq : Captures = RE_FK_DEF.captures("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`)").unwrap();
+        assert_eq!(captures_with_bq.name("table_key").unwrap().as_str(), "`PersonID`", "single with bq");
+        assert_eq!(captures_with_bq.name("distant_table").unwrap().as_str(), "Persons", "single with bq");
+        assert_eq!(captures_with_bq.name("distant_key").unwrap().as_str(), "`PersonID`", "single with bq");
+
+        let captures_several : Captures = RE_FK_DEF.captures("FOREIGN KEY (keyA, keyB) REFERENCES Persons(keyC, keyD)").unwrap();
+        assert_eq!(captures_several.name("table_key").unwrap().as_str(), "keyA, keyB", "several");
+        assert_eq!(captures_several.name("distant_table").unwrap().as_str(), "Persons", "several");
+        assert_eq!(captures_several.name("distant_key").unwrap().as_str(), "keyC, keyD", "several");
+
+        let captures_several_with_bq : Captures = RE_FK_DEF.captures("FOREIGN KEY (`keyA`, `keyB`) REFERENCES `Persons`(`keyC`, `keyD`)").unwrap();
+        assert_eq!(captures_several_with_bq.name("table_key").unwrap().as_str(), "`keyA`, `keyB`", "several with bq");
+        assert_eq!(captures_several_with_bq.name("distant_table").unwrap().as_str(), "Persons", "several with bq");
+        assert_eq!(captures_several_with_bq.name("distant_key").unwrap().as_str(), "`keyC`, `keyD`", "several with bq");
 
         let captures_with_on_delete_set_null : Captures = RE_FK_DEF.captures("FOREIGN KEY (`PersonID`) REFERENCES `Persons`(`PersonID`) ON DELETE SET NULL").unwrap();
         assert_eq!(captures_with_on_delete_set_null.name("on_delete").unwrap().as_str(), "SET NULL", "normal");
@@ -452,21 +462,65 @@ mod tests {
     }
 
     #[test]
-    fn test_re_alter_table() {
-        assert_eq!(RE_ALTERED_TABLE.find_iter("ALTER TABLE HELLO ADD FOREIGN KEY (PersonID) REFERENCES artists (id) ;").count(), 1, "normal");
-        let captures = RE_ALTERED_TABLE.captures("ALTER \t\nTABLE HELLO ADD FOREIGN KEY (PersonID) REFERENCES artists (id) ;").unwrap();
-        assert_eq!(captures.get(1).unwrap().as_str(), "HELLO", "normal");
-        assert_eq!(captures.get(2).unwrap().as_str(), "ADD FOREIGN KEY (PersonID) REFERENCES artists (id) ", "normal");
+    fn test_pk_def() {
+        assert!(RE_PK_DEF.is_match("PRIMARY KeY (A) UNIQUE INDEX"));
+        assert!(RE_PK_DEF.is_match("PRIMARY KEY (MyPK, secondPK)"));
+        assert!(RE_PK_DEF.is_match("PRIMARY KEY
+         (FOO) UNIQUE INDEX"));
+        assert!(RE_PK_DEF.is_match("PRIMARY KeY (FOO, BAR) UNIQUE INDEX"));
+        assert!(RE_PK_DEF.is_match("PRIMARY KeY (FOO, BAR,  FOOBAR) UNIQUE INDEX"));
 
-        assert_eq!(RE_ALTERED_TABLE.find_iter("ALTER TABLE `HELLO` ADD FOREIGN KEY (`PersonID`) REFERENCES `artists` (`id`) ;").count(), 1, "normal");
+        assert!(!RE_PK_DEF.is_match("FOREIGN KEY (keyA, keyB) REFERENCES Persons(keyC, keyD)"));
+        assert!(!RE_PK_DEF.is_match("FOO KeY VARCHAR UNIQUE"));
+        assert!(!RE_PK_DEF.is_match("KEY (A) UNIQUE"));
+
+        assert_eq!(RE_PK_DEF.captures("PRIMARY KeY (A) UNIQUE INDEX").unwrap().name("col_name").unwrap().as_str(), "A", "unique key");
+        assert_eq!(RE_PK_DEF.captures("PRIMARY KEY (MyPK, secondPK)").unwrap().name("col_name").unwrap().as_str(), "MyPK, secondPK", "several keys");
+        assert_eq!(RE_PK_DEF.captures("PRIMARY KEY
+         (FOO) UNIQUE INDEX").unwrap().name("col_name").unwrap().as_str(), "FOO", "unique key");
+        assert_eq!(RE_PK_DEF.captures("PRIMARY KeY (FOO, BAR) UNIQUE INDEX").unwrap().name("col_name").unwrap().as_str(), "FOO, BAR", "several keys");
+        assert_eq!(RE_PK_DEF.captures("PRIMARY KeY (`FOO, BAR,  FOOBAR`) UNIQUE INDEX").unwrap().name("col_name").unwrap().as_str(), "`FOO, BAR,  FOOBAR`", "several keys behind bq");
+    }
+
+    #[test]
+    fn test_re_alter_table() {
+        assert!(RE_ALTERED_TABLE.is_match("ALTER TABLE HELLO ADD FOREIGN KEY (PersonID) REFERENCES artists (id) ;"), "normal");
+        let captures = RE_ALTERED_TABLE.captures("ALTER \t\nTABLE HELLO ADD FOREIGN KEY (PersonID) REFERENCES artists (id) ;").unwrap();
+        assert_eq!(captures.name("table_name").unwrap().as_str(), "HELLO", "normal");
+        assert_eq!(captures.name("altered_content").unwrap().as_str(), "ADD FOREIGN KEY (PersonID) REFERENCES artists (id) ", "normal");
+
+        assert!(RE_ALTERED_TABLE.is_match("ALTER TABLE `HELLO` ADD FOREIGN KEY (`PersonID`) REFERENCES `artists` (`id`) ;"), "normal");
         let captures2 = RE_ALTERED_TABLE.captures("ALTER TABLE `HELLO` ADD FOREIGN KEY (`PersonID`) REFERENCES `artists` (`id`) ;").unwrap();
-        assert_eq!(captures2.get(1).unwrap().as_str(), "HELLO", "normal");
-        assert_eq!(captures2.get(2).unwrap().as_str(), "ADD FOREIGN KEY (`PersonID`) REFERENCES `artists` (`id`) ", "normal");
+        assert_eq!(captures2.name("table_name").unwrap().as_str(), "HELLO", "normal");
+        assert_eq!(captures2.name("altered_content").unwrap().as_str(), "ADD FOREIGN KEY (`PersonID`) REFERENCES `artists` (`id`) ", "normal");
+    }
+
+    #[test]
+    fn test_re_col_def() {
+        assert!(RE_COL_DEF.is_match("foo INT(10) UNIQUE"), "normal key def");
+        assert!(RE_COL_DEF.is_match("foo VARCHAR(10) UNIQUE"), "normal key def");
+        assert!(RE_COL_DEF.is_match("foo TEXT INDEX"), "normal key def");
+        assert!(RE_COL_DEF.is_match("foo INT(10) UNIQUE"), "normal key def with pk");
+        assert!(RE_COL_DEF.is_match("foo VARCHAR(10) UNIQUE"), "normal key def with pk");
+        assert!(RE_COL_DEF.is_match("foo TEXT INDEX"), "normal key def with pk");
+        assert!(RE_COL_DEF.is_match("foo INT(10) UNIQUE"), "normal key def");
+
+        assert_eq!(RE_COL_DEF.captures("foo VARCHAR(10) UNIQUE").unwrap().name("col_name").unwrap().as_str(), "foo", "normal key def");
+        assert_eq!(RE_COL_DEF.captures("foo VARCHAR(10) UNIQUE").unwrap().name("col_def").unwrap().as_str(), "VARCHAR(10) UNIQUE", "normal key def");
+        assert_eq!(RE_COL_DEF.captures("foo TEXT INDEX").unwrap().name("col_name").unwrap().as_str(), "foo", "normal key def");
+        assert_eq!(RE_COL_DEF.captures("foo TEXT INDEX").unwrap().name("col_def").unwrap().as_str(), "TEXT INDEX", "normal key def");
+        assert_eq!(RE_COL_DEF.captures("foo INT(10) UNIQUE").unwrap().name("col_name").unwrap().as_str(), "foo", "normal key def with pk");
+        assert_eq!(RE_COL_DEF.captures("foo INT(10) UNIQUE").unwrap().name("col_def").unwrap().as_str(), "INT(10) UNIQUE", "normal key def with pk");
+        assert_eq!(RE_COL_DEF.captures("foo VARCHAR(10) UNIQUE").unwrap().name("col_name").unwrap().as_str(), "foo", "normal key def with pk");
+        assert_eq!(RE_COL_DEF.captures("foo VARCHAR(10) UNIQUE").unwrap().name("col_def").unwrap().as_str(), "VARCHAR(10) UNIQUE", "normal key def with pk");
+        assert_eq!(RE_COL_DEF.captures("`foo` TEXT INDEX").unwrap().name("col_name").unwrap().as_str(), "foo", "normal key def with pk");
+        assert_eq!(RE_COL_DEF.captures("`foo`   TEXT INDEX").unwrap().name("col_def").unwrap().as_str(), "TEXT INDEX", "normal key def with pk");
 
     }
 
     #[test]
     fn test_re_col_type() {
+        assert!(RE_COL_TYPE.is_match(" FOREIGN KEY (PersonID) REFERENCES artists (id) "), "fk def");
         assert!(RE_COL_TYPE.is_match(" FOREIGN KEY (PersonID) REFERENCES artists (id) "), "fk def");
         assert!(RE_COL_TYPE.is_match(" FOREIGN KEY (`PersonID`) REFERENCES `artists` (`id`) "), "fk def with backcomas");
         assert!(RE_COL_TYPE.is_match(" CONSTRAINT FOREIGN KEY (PersonID) REFERENCES artists (id) "), "fk def with constraint");
@@ -483,6 +537,17 @@ mod tests {
         assert!(RE_COL_TYPE.is_match(" \nKEY `productLine` (productLine),"), "key def with back quotes");
         assert!(RE_COL_TYPE.is_match(" \nINDEX `productLine` (`productLine`),"), "index with backquote");
         assert!(RE_COL_TYPE.is_match(" \nINDEX `productLine` (productLine),"), "index with mixed backquotes");
+
+        assert_eq!(RE_COL_TYPE.captures(" FOREIGN KEY (PersonID) REFERENCES artists (id) ").unwrap().name("key_type").unwrap().as_str(), "FOREIGN", "fk def");
+        assert_eq!(RE_COL_TYPE.captures(" FOREIGN KEY (PersonID) REFERENCES artists (id) ").unwrap().name("key_type").unwrap().as_str(), "FOREIGN", "fk def");
+        assert_eq!(RE_COL_TYPE.captures(" FOREIGN KEY (`PersonID`) REFERENCES `artists` (`id`) ").unwrap().name("key_type").unwrap().as_str(), "FOREIGN", "fk def with backcomas");
+        assert_eq!(RE_COL_TYPE.captures(" CONSTRAINT FOREIGN KEY (PersonID) REFERENCES artists (id) ").unwrap().name("key_type").unwrap().as_str(), "FOREIGN", "fk def with constraint");
+        assert_eq!(RE_COL_TYPE.captures(" CONSTRAINT FOREIGN KEY (`PersonID`) REFERENCES `artists` (`id`) ").unwrap().name("key_type").unwrap().as_str(), "FOREIGN", "fk def with constraint and backcomas");
+        assert_eq!(RE_COL_TYPE.captures(" \nPRIMARY KEY (PersonID)").unwrap().name("key_type").unwrap().as_str(), "PRIMARY", "primary");
+        assert_eq!(RE_COL_TYPE.captures(" \nPRIMARY KEY (`PersonID`)").unwrap().name("key_type").unwrap().as_str(), "PRIMARY", "primary with backquotes");
+        assert_eq!(RE_COL_TYPE.captures(" \nCONSTRAINT  PRIMARY KEY (PersonID)").unwrap().name("key_type").unwrap().as_str(), "PRIMARY", "constraint with primary");
+        assert_eq!(RE_COL_TYPE.captures(" \nCONSTRAINT PRIMARY KEY (`PersonID`)").unwrap().name("key_type").unwrap().as_str(), "PRIMARY", "constraint with primary and backquotes");
+
         assert!(!RE_COL_TYPE.is_match("`productCode` varchar(15) NOT NULL,"), "col def");
 
     }
