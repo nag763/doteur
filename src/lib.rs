@@ -166,32 +166,32 @@ fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Optio
     }
     for line in lines {
         if !RE_COL_TYPE.is_match(line) {
-            debug!("Line {} is a column def", line);
+            debug!("Line {} is a column def", line.trim_leading_trailing());
             match generate_attributes(&mut dot_table, line) {
                 Ok(m) => info!("Attribute processed correctly : {}", m),
                 Err(e) => error!("An error happened while processing line : {}", e)
             }
         } else {
-            debug!("Line {} is not a column def", line);
+            debug!("Line {} is not a column def", line.trim_leading_trailing());
             let col_type : Captures = RE_COL_TYPE.captures(line).unwrap();
             if col_type.name("key_type").is_some() {
                 match col_type.name("key_type").unwrap().as_str().to_uppercase().as_str() {
                     "FOREIGN" => {
-                        debug!("Line {} has been found as a foreign key def", line);
+                        debug!("Line {} has been found as a foreign key def", line.trim_leading_trailing());
                         match generate_relations(dot_file, Some(&mut dot_table), &table_name, line, restrictions){
-                            Ok(m) => info!("FK processed correctly : {}", m),
+                            Ok(m) => info!("FK processed correctly : {}", m.trim_leading_trailing()),
                             Err(e) => error!("An error happened while processing foreign key: {}", e),
                         }
                     },
                     "PRIMARY" => {
                         if !RE_PK_DEF.is_match(line) {
-                            debug!("Line {} has been found as a primary key def including a column def", line);
+                            debug!("Line {} has been found as a primary key def including a column def", line.trim_leading_trailing());
                             match generate_attributes(&mut dot_table, line) {
                                 Ok(m) => info!("PK processed correctly : {}", m),
                                 Err(e) => error!("An error happened while processing primary key : {}", e)
                             }
                         } else {
-                            debug!("Line {} has been found as a primary key def", line);
+                            debug!("Line {} has been found as a primary key def", line.trim_leading_trailing());
                             match generate_primary(&mut dot_table, line) {
                                 Ok(m) => info!("PK processed correctly : {}", m),
                                 Err(e) => error!("An error happened while processing primary key : {}", e)
