@@ -50,12 +50,15 @@ lazy_static! {
 ///
 /// * `content` - content to detect comas in
 fn detect_comas(content : &str) -> Result<Vec<usize>, &str> {
+    if content.is_empty() {
+        return Err("Empty input");
+    }
     let mut indexes : Vec<usize> = Vec::new();
     let mut buffer : String = String::new();
     for (i, c) in content.chars().enumerate() {
         match c {
             '(' => {
-                // If the parenthesis isn't inside a string
+                // If the parenthesis aren't inside a string
                 if buffer.is_empty() || buffer.get_last_char() != '`' {
                     buffer.push(c);
                 }
@@ -95,7 +98,10 @@ fn detect_comas(content : &str) -> Result<Vec<usize>, &str> {
             _ => ()
         }
     }
-    Ok(indexes)
+    match buffer.is_empty() {
+        true => Ok(indexes),
+        false => Err("Malformed, some symbols aren't closed properly")
+    }
 }
 
 
@@ -137,10 +143,9 @@ fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Optio
                                   .unwrap()
                                   .as_str()
                                   .trim_leading_trailing();
+
     debug!("Currently processing table {}", table_name);
 
-
-    // TODO : first depth et si relations pas nulles
     if let Some(restriction) = restrictions {
         if !restriction.clone().verify_table_name(table_name.as_str()) {
             return Err("Table doesn't match the restrictions");
@@ -394,6 +399,32 @@ pub fn process_file(args : Args) -> String {
 mod tests {
 
     use super::*;
+
+    #[test]
+    fn test_detect_comas() {
+        assert!(detect_comas("").is_err(), "empty input");
+        assert!(detect_comas("`,)()").is_err(), "malformed");
+        assert!(detect_comas("`,").is_err(), "malformed");
+        assert!(detect_comas("(,))").is_err(), "malformed");
+        assert!(detect_comas("\",)\"\"").is_err(), "malformed");
+        assert!(detect_comas(".,())").is_err(), "malformed");
+        assert!(detect_comas("```,").is_err(), "malformed");
+        assert!(detect_comas("Mytext,`(My text),").is_err(), "malformed");
+
+        assert!(detect_comas("coma1, coma2, coma3").is_ok(), "comas");
+        assert!(detect_comas(" , ").is_ok(), "comas");
+        assert!(detect_comas(",").is_ok(), "comas");
+        assert!(detect_comas("`coma1` , coma2").is_ok(), "comas");
+        assert!(detect_comas("(`coma1`) , coma2").is_ok(), "comas");
+        assert!(detect_comas("`coma1` , (coma2)").is_ok(), "comas");
+
+        assert_eq!(detect_comas("coma1, coma2, coma3").unwrap(), vec![5, 12], "comas");
+        assert_eq!(detect_comas(" , ").unwrap(), vec![1], "comas");
+        assert_eq!(detect_comas(",").unwrap(), vec![0], "comas");
+        assert_eq!(detect_comas("`coma1` , coma2").unwrap(), vec![8], "comas");
+        assert_eq!(detect_comas("(`coma1`) , coma2").unwrap(), vec![10], "comas");
+        assert_eq!(detect_comas("`coma1` , (coma2)").unwrap(), vec![8], "comas");
+    }
 
     #[test]
     fn test_re_table_name() {
