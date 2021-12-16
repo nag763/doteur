@@ -73,7 +73,7 @@ impl SplitVec for String {
             return vec![self];
         }
         let mut cleaned_indexes : Vec<usize> = indexes.into_iter().unique().collect();
-        cleaned_indexes.sort();
+        cleaned_indexes.sort_unstable();
         if self_len <= cleaned_indexes.len() {
             panic!("A string can't be splitted more times than it has characters");
         } else if self_len <= cleaned_indexes.len() {
