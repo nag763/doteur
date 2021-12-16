@@ -211,7 +211,7 @@ fn convert_sql_to_dot(dot_file : &mut DotFile, input: &str, restrictions : Optio
     }
     dot_file.add_table(dot_table);
     info!("The table {} has been added to the file with success", table_name);
-    Ok("Attributes")
+    Ok("Table parsed")
 }
 
 /// Write the output to the given file
