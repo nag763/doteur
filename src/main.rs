@@ -3,7 +3,7 @@ use std::process::Command;
 use which::which;
 
 use doteur::models::args::{Args, POSSIBLE_DOTS_OUTPUT};
-use doteur::{process_file, write_output_to_file, contains_tables};
+use doteur::{process_file, process_connection, write_output_to_file, contains_tables};
 
 #[macro_use] extern crate clap;
 
@@ -12,8 +12,25 @@ fn main() {
     let yaml = load_yaml!("cli.yml");
     let matches = App::from(yaml).get_matches();
 
+    let mut args : Args;
+    let input : Vec<&str> = matches.values_of("input").expect("Please provide a filename or a url. Use --help to see possibilities").collect::<Vec<&str>>();
 
-    let mut args : Args = Args::new(matches.values_of("input").expect("Please provide a filename. Use --help to see possibilities").collect::<Vec<&str>>());
+    if matches.is_present("url") {
+        
+        if input.len() != 1 {
+            panic!("Please ensure that if the url argument is present that only one url is passed");
+        }
+        match Args::new_from_url(input[0]) {
+            Ok(v) => args = v,
+            Err(e) => panic!("An  error happened while parsing the URL for remote connection : {}", e)
+        }
+        if let Err(e) = process_connection(&mut args){
+            panic!("An error happened while trying to connect to database : {}", e);
+        }
+    } else {
+       args = Args::new_from_files(input); 
+    }
+
     if contains_tables(args.get_filecontent()) {
         if let Some(value) = matches.value_of("output") {
             args.set_output_filename(value.to_string());

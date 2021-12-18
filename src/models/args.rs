@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::{Path, PathBuf};
+use mysql::{Opts, UrlError};
 
 use super::restriction::{Restriction};
 
@@ -18,7 +19,9 @@ pub const POSSIBLE_DOTS_OUTPUT : [&str; 54] = ["bmp", "canon", "gv", "xdot", "xd
 #[derive(Clone)]
 pub struct Args {
     /// Filename
-    filename: String,
+    filename: Option<String>,
+    /// Connection options for database
+    opts : Option<Opts>,
     /// File content
     filecontent: String,
     /// Output file name
@@ -37,8 +40,8 @@ impl Args {
     ///
     /// # Arguments
     ///
-    /// * `path_str` - The path of the input file
-    pub fn new(path_str: Vec<&str>) -> Args {
+    /// * `path_str` - The path of the input
+    pub fn new_from_files(path_str: Vec<&str>) -> Args {
         let filename : String;
         if path_str.len() != 1 {
             filename = String::from("multifilearg");
@@ -46,7 +49,7 @@ impl Args {
             filename = Path::new(path_str.first().unwrap()).file_name().expect("Incorrect file name").to_str().unwrap().to_string();
         }
         Args {
-            filename,
+            filename : Some(filename),
             filecontent: path_str.iter().map(|path| {
                 if Path::new(path).is_dir() {
                     fs::read_dir(path).expect("Directory can't be read").map(|file|
@@ -63,6 +66,7 @@ impl Args {
                 }
             }).collect::<Vec<String>>().join("\n"),
             output_filename: String::from("output.dot"),
+            opts : None,
             restrictions: None,
             legend: false,
             dark_mode: false
@@ -70,9 +74,37 @@ impl Args {
     }
 
 
+    /// Returns a args object for the given filename
+    ///
+    /// # Arguments
+    ///
+    /// * `url` - The path of the input
+    pub fn new_from_url(url: &str) -> Result<Args, UrlError> {
+        let opts : Opts;
+        match Opts::from_url(url){
+            Ok(v) => opts = v,
+            Err(e) => { return Err(e); }
+        }
+        Ok(
+            Args {
+                filename : None,
+                filecontent: String::new(),
+                output_filename: String::from("output.dot"),
+                opts: Some(opts),
+                restrictions: None,
+                legend: false,
+                dark_mode: false
+            }
+        )
+    }
+
+
     /// Returns the filename without the non ascii digits and chars
     pub fn get_filename_without_specials(&self) -> String {
-        self.filename.chars().filter(|c| c.is_ascii_alphanumeric() || c.is_ascii_whitespace()).collect::<String>()
+        match &self.filename {
+            Some(v) => v.chars().filter(|c| c.is_ascii_alphanumeric() || c.is_ascii_whitespace()).collect::<String>(),
+            None => "doteur".to_string()
+        }
     }
 
     /// Returns the file extension
@@ -94,6 +126,10 @@ impl Args {
         self.filecontent.as_str()
     }
 
+    pub fn set_filecontent(&mut self, filecontent: String) {
+        self.filecontent = filecontent;
+    }
+
     /// Get the output file name
     pub fn get_output_filename(&self) -> &str {
         self.output_filename.as_str()
@@ -106,6 +142,10 @@ impl Args {
     /// * `output_filename` - The name of the output file
     pub fn set_output_filename(&mut self, output_filename : String) {
         self.output_filename = output_filename;
+    }
+
+    pub fn get_opts(&self) -> Option<&Opts> {
+        self.opts.as_ref()
     }
 
     /// Get restrictions
@@ -176,18 +216,18 @@ mod tests {
     #[test]
     fn test_file_ext() {
         assert_eq!({
-            let args = Args::new(vec!["./samples/samplefile3.sql"]);
+            let args = Args::new_from_files(vec!["./samples/samplefile3.sql"]);
             args.clone().get_output_file_ext()
         }, "dot", "default value");
 
         assert_eq!({
-            let mut args = Args::new(vec!["./samples/samplefile3.sql", "./samples/samplefile1.sql"]);
+            let mut args = Args::new_from_files(vec!["./samples/samplefile3.sql", "./samples/samplefile1.sql"]);
             args.set_output_filename("hello.png".to_string());
             args.clone().get_output_file_ext()
         }, "png", "set value with multifile");
 
         assert_eq!({
-            let mut args = Args::new(vec!["./samples"]);
+            let mut args = Args::new_from_files(vec!["./samples"]);
             args.set_output_filename("./path/to/file/hello.png".to_string());
             args.clone().get_output_file_ext()
         }, "png", "set value");
