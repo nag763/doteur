@@ -5,7 +5,7 @@ about: Convert .sql files to .dot files, render them if graphviz installed
 args:
         - input:
                 help: Name of the sql file or database location if url arg is passed, can also be a directory or several files
-                required: true
+                required: false
                 index: 1
                 multiple: true
         - output:
@@ -16,6 +16,9 @@ args:
         - url:
                 help: Specificate that the input is a url (i.e. mysql://usr:password@localhost:3306/database)
                 long: url
+        - interactive:
+                help: Starts an interactive dialog to connect to a remote database
+                long: it
         - include:
                 help: Include only the given tables
                 short: i

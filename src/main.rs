@@ -1,6 +1,7 @@
 use clap::App;
 use std::process::Command;
 use which::which;
+use dialoguer::{Input, Password};
 
 use doteur::models::args::{Args, POSSIBLE_DOTS_OUTPUT};
 use doteur::{process_file, process_connection, write_output_to_file, contains_tables};
@@ -13,22 +14,59 @@ fn main() {
     let matches = App::from(yaml).get_matches();
 
     let mut args : Args;
-    let input : Vec<&str> = matches.values_of("input").expect("Please provide a filename or a url. Use --help to see possibilities").collect::<Vec<&str>>();
+    if matches.is_present("interactive") {
+        let db_url : String = Input::new()
+            .with_prompt("Database url or ip")
+            .default("localhost".into())
+            .interact_text()
+            .unwrap();
 
-    if matches.is_present("url") {
-        
-        if input.len() != 1 {
-            panic!("Please ensure that if the url argument is present that only one url is passed");
-        }
-        match Args::new_from_url(input[0]) {
+        let db_port : u16 = Input::new()
+            .with_prompt("Database port")
+            .default(3306)
+            .interact_text()
+            .unwrap();
+
+        let db_name : String = Input::new()
+            .with_prompt("Database name")
+            .interact_text()
+            .unwrap();
+
+        let db_user : String = Input::new()
+            .with_prompt("Database user")
+            .interact_text()
+            .unwrap();
+
+        let db_password : String = Password::new()
+            .with_prompt("Database user's password")
+            .interact()
+            .unwrap();
+
+
+        match Args::new_connect_with_params(db_url, db_port, db_name, db_user, db_password) {
             Ok(v) => args = v,
             Err(e) => panic!("An  error happened while parsing the URL for remote connection : {}", e)
-        }
+        }                  
         if let Err(e) = process_connection(&mut args){
             panic!("An error happened while trying to connect to database : {}", e);
         }
     } else {
-       args = Args::new_from_files(input); 
+        let input : Vec<&str> = matches.values_of("input").expect("Please provide a filename or a url.\nYou can also use the -it argument to start an interactive dialog and connect to an existing database.\nUse --help to see possibilities").collect::<Vec<&str>>();
+        if matches.is_present("url") {
+                               
+            if input.len() != 1 {
+                panic!("Please ensure that if the url argument is present that only one url is passed");
+            }                  
+            match Args::new_from_url(input[0]) {
+                Ok(v) => args = v,
+                Err(e) => panic!("An  error happened while parsing the URL for remote connection : {}", e)
+            }                  
+            if let Err(e) = process_connection(&mut args){
+                panic!("An error happened while trying to connect to database : {}", e);
+            }
+        } else {
+           args = Args::new_from_files(input); 
+        }
     }
 
     if contains_tables(args.get_filecontent()) {

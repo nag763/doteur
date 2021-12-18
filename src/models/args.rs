@@ -1,6 +1,6 @@
 use std::fs;
 use std::path::{Path, PathBuf};
-use mysql::{Opts, UrlError};
+use mysql::{Opts, OptsBuilder, UrlError};
 
 use super::restriction::{Restriction};
 
@@ -98,6 +98,34 @@ impl Args {
         )
     }
 
+    /// Returns a args object for the given parameters
+    ///
+    /// # Arguments
+    /// 
+    /// * `db_url` - Database url or ip
+    /// * `db_port` - Database remote port
+    /// * `db_name` - Database remote schema name
+    /// * `db_user` - Database remote user
+    /// * `db_password` - Database remote user's password
+    pub fn new_connect_with_params(db_url: String, db_port: u16, db_name: String, db_user: String, db_password: String) -> Result<Args, UrlError> {
+        let opts_builder : OptsBuilder = 
+            OptsBuilder::new().ip_or_hostname(Some(db_url))
+                              .tcp_port(db_port)
+                              .db_name(Some(db_name))
+                              .user(Some(db_user))
+                              .pass(Some(db_password));
+        Ok(
+            Args {
+                filename : None,
+                filecontent: String::new(),
+                output_filename: String::from("output.dot"),
+                opts: Some(Opts::from(opts_builder)),
+                restrictions: None,
+                legend: false,
+                dark_mode: false
+            }
+        )
+    }
 
     /// Returns the filename without the non ascii digits and chars
     pub fn get_filename_without_specials(&self) -> String {
