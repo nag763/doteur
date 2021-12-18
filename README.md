@@ -111,12 +111,14 @@ LABEYE Loïc <loic.labeye@pm.me>
 Convert .sql files to .dot files, render them if graphviz installed
 
 USAGE:
-    doteur [FLAGS] [OPTIONS] <input>...
+    doteur [FLAGS] [OPTIONS] [--] [input]...
 
 FLAGS:
         --dark-mode    Render in dark mode
     -h, --help         Prints help information
+        --it           Starts an interactive dialog to connect to a remote database
         --legend       Includes hint about the relations type at the bottom of the outpout file
+        --url          Specificate that the input is a url (i.e. mysql://usr:password@localhost:3306/database)
     -V, --version      Prints version information
 
 OPTIONS:
@@ -125,7 +127,8 @@ OPTIONS:
     -o, --output <output>         The output filename
 
 ARGS:
-    <input>...    Name of the sql file, can also be a directory or several files
+    <input>...    Name of the sql file or database location if url arg is passed, can also be a directory or several
+                  files
 ```
 
 #### Example usage
@@ -144,9 +147,26 @@ The output will be in the output.dot
 usr@pop-os:~$ doteur sample.sql -o output.png
 ```
 
-The output will be in a png file.
-
 For the format supported, please refer to the graphviz [documentation](https://graphviz.org/doc/info/output.html)
+
+##### Connect to a remote database without a dialog and export the file as .png
+
+```bash
+usr@ubuntu:~/doteur$ doteur mysql://newuser:password@localhost:3306/foo --url -o output.png
+```
+
+##### Connect to a remote database with dialog and export the file as .png
+
+```bash
+usr@ubuntu:~/doteur$ doteur --it -o output.png
+Database url or ip: localhost
+Database port: 3306
+Database name: foo
+Database user: username
+Database password: [hidden]
+```
+
+The output will be in a png file.
 
 ##### Export a .sql file to a .png, render in dark mode
 
@@ -171,6 +191,7 @@ usr@pop-os:~$ doteur sample.sql -o output.png -i hello*
 ```bash
 usr@pop-os:~$ doteur sample.sql -o output.png -x hello*
 ```
+
 ##### See logs of a output
 
 ```bash
