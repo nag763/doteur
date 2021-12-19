@@ -8,6 +8,7 @@ homepage = "https://doteur.net"
 description = "Tool to automate the visualisation of UML dependencies from a SQL file"
 repository = "https://github.com/nag763/doteur/"
 readme = "README.md"
+categories =["command-line-utilities", "rendering", "visualization"]
 exclude = [
     "release/*",
     ".github/*",
