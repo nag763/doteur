@@ -60,7 +60,7 @@ fn run_main() -> Result<(), Box<dyn std::error::Error>>{
     } else {
         let input : Vec<&str> = match matches.values_of("input") {
             Some(v) => v.collect(),
-            None => return Err("Please provide a filename or a url.\nYou can also use the -it argument to start an interactive dialog and connect to an existing database.\nUse --help to see possibilities".into())
+            None => return Err("Please provide a filename or a url. You can also use the --it argument to start an interactive dialog and connect to an existing database.".into())
         };
         if matches.is_present("url") {
                                
@@ -91,7 +91,7 @@ fn run_main() -> Result<(), Box<dyn std::error::Error>>{
 
         if file_ext != "dot" {
             if  which("dot").is_err() {
-                Err("The dot exe isn't in your path, we couldn't write the output.\nIf you work on linux, use your package manager to download graphviz.\nIf you work on windows, refer to the tutorial or download the tool via the official graphviz site.\nGraphviz official download page : https://graphviz.org/download/\n".into())
+                Err("The dot exe isn't in your path, we couldn't write the output.If you work on linux, use your package manager to download graphviz.If you work on windows, refer to the tutorial or download the tool via the official graphviz site.Graphviz official download page : https://graphviz.org/download/.".into())
             } else if !Args::ext_supported(file_ext) {
                 Err(format!("The given extension isn't supported. Please verify it is one of the following :\n\n{}", POSSIBLE_DOTS_OUTPUT.join(";")).into())
             } else {
