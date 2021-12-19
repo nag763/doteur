@@ -16,6 +16,9 @@ pub enum ReSearchType {
 ///
 /// * `input` - The string to transform into regex.
 fn str_to_regex(input : &str) -> Result<regex::Regex, regex::Error> {
+    if input.is_empty() {
+        return Err(regex::Error::Syntax("Can't create an empty regex".to_string()));
+    }
     let regex : Regex = Regex::new(format!("^{}$", input.replace('*', ".*")).as_str())?;
     Ok(regex)
 }

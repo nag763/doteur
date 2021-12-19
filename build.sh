@@ -7,8 +7,6 @@ then
     exit
 fi
 
-rustup toolchain install stable-x86_64-pc-windows-gnu
-
 rm -rf target/*
 cargo build --release #Linux by default
 cargo build --release --target x86_64-pc-windows-gnu #Windows x64-86
