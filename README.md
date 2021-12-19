@@ -106,7 +106,7 @@ ln -s path/to/doteur /usr/sbin
 #### Cli usage
 
 ```bash
-doteur 0.4.0
+doteur 0.4.1
 LABEYE Loïc <loic.labeye@pm.me>
 Convert .sql files to .dot files, render them if graphviz installed
 

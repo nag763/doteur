@@ -16,11 +16,8 @@ pub enum ReSearchType {
 ///
 /// * `input` - The string to transform into regex.
 fn str_to_regex(input : &str) -> Result<regex::Regex, regex::Error> {
-    if !input.is_empty() {
-        Regex::new(format!("^{}$", input.replace('*', ".*")).as_str())
-    } else {
-        Err(regex::Error::Syntax(String::from("Can't create an empty regex")))
-    }
+    let regex : Regex = Regex::new(format!("^{}$", input.replace('*', ".*")).as_str())?;
+    Ok(regex)
 }
 
 /// A restriction represents a condition to render or not the given table.
