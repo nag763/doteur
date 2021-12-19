@@ -1,8 +1,9 @@
 use std::fs;
 use std::path::{Path, PathBuf};
-use mysql::{Opts, OptsBuilder, UrlError};
+use mysql::{Opts, OptsBuilder};
 
 use super::restriction::{Restriction};
+use super::super::process_connection;
 
 /// Possible dot output formats.
 pub const POSSIBLE_DOTS_OUTPUT : [&str; 54] = ["bmp", "canon", "gv", "xdot", "xdot1.2", "xdot1.4",
@@ -41,36 +42,39 @@ impl Args {
     /// # Arguments
     ///
     /// * `path_str` - The path of the input
-    pub fn new_from_files(path_str: Vec<&str>) -> Args {
+    pub fn new_from_files(path_str: Vec<&str>) -> Result<Args, Box<dyn std::error::Error>> {
         let filename : String;
         if path_str.len() != 1 {
             filename = String::from("multifilearg");
         } else {
-            filename = Path::new(path_str.first().unwrap()).file_name().expect("Incorrect file name").to_str().unwrap().to_string();
+            filename = match Path::new(path_str[0]).file_name() {
+                Some(v) => v.to_str().unwrap().to_string(),
+                None => return Err("No file found for given input".into()),
+            };
         }
-        Args {
-            filename : Some(filename),
-            filecontent: path_str.iter().map(|path| {
-                if Path::new(path).is_dir() {
-                    fs::read_dir(path).expect("Directory can't be read").map(|file|
-                        {
-                            let file_path : &PathBuf = &file.unwrap().path();
-                            if Path::new(file_path).is_file() {
-                                fs::read_to_string(file_path).unwrap_or_else(|_| panic!("Something went wrong while reading the file : {}", file_path.as_path().to_str().unwrap_or("**ISSUE**")))
-                            } else {
-                                String::new()
-                            }
-                        }).collect::<Vec<String>>().join("\n")
-                } else {
-                    fs::read_to_string(path).unwrap_or_else(|_| panic!("Something went wrong while reading the file : {}", path))
+        let mut filecontent : Vec<String> = vec![];
+        for path in path_str.iter() {
+            if Path::new(path).is_dir() {
+                for subpath in fs::read_dir(path)? {
+                        let file_path : &PathBuf = &subpath.unwrap().path();
+                        // Ignore subdirs
+                        if Path::new(file_path).is_file() {
+                            filecontent.push(fs::read_to_string(file_path)?);
+                        }
                 }
-            }).collect::<Vec<String>>().join("\n"),
+            } else {
+                filecontent.push(fs::read_to_string(path)?);
+            }
+        }
+        Ok(Args {
+            filename : Some(filename),
+            filecontent: filecontent.join("\n"),
             output_filename: String::from("output.dot"),
             opts : None,
             restrictions: None,
             legend: false,
             dark_mode: false
-        }
+        })
     }
 
 
@@ -79,13 +83,9 @@ impl Args {
     /// # Arguments
     ///
     /// * `url` - The path of the input
-    pub fn new_from_url(url: &str) -> Result<Args, UrlError> {
-        let opts : Opts;
-        match Opts::from_url(url){
-            Ok(v) => opts = v,
-            Err(e) => { return Err(e); }
-        }
-        Ok(
+    pub fn new_from_url(url: &str) -> Result<Args, mysql::Error> {
+        let opts : Opts = Opts::from_url(url)?;
+        let mut args : Args =
             Args {
                 filename : None,
                 filecontent: String::new(),
@@ -94,8 +94,9 @@ impl Args {
                 restrictions: None,
                 legend: false,
                 dark_mode: false
-            }
-        )
+            };
+        process_connection(&mut args)?;
+        Ok(args)
     }
 
     /// Returns a args object for the given parameters
@@ -107,24 +108,25 @@ impl Args {
     /// * `db_name` - Database remote schema name
     /// * `db_user` - Database remote user
     /// * `db_password` - Database remote user's password
-    pub fn new_connect_with_params(db_url: String, db_port: u16, db_name: String, db_user: String, db_password: String) -> Result<Args, UrlError> {
+    pub fn new_connect_with_params(db_url: String, db_port: u16, db_name: String, db_user: String, db_password: String) -> Result<Args, mysql::Error> {
         let opts_builder : OptsBuilder = 
             OptsBuilder::new().ip_or_hostname(Some(db_url))
                               .tcp_port(db_port)
                               .db_name(Some(db_name))
                               .user(Some(db_user))
                               .pass(Some(db_password));
-        Ok(
-            Args {
-                filename : None,
-                filecontent: String::new(),
-                output_filename: String::from("output.dot"),
-                opts: Some(Opts::from(opts_builder)),
-                restrictions: None,
-                legend: false,
-                dark_mode: false
-            }
-        )
+        let mut args : Args =
+        Args {
+            filename : None,
+            filecontent: String::new(),
+            output_filename: String::from("output.dot"),
+            opts: Some(Opts::from(opts_builder)),
+            restrictions: None,
+            legend: false,
+            dark_mode: false
+        };
+        process_connection(&mut args)?;
+        Ok(args)
     }
 
     /// Returns the filename without the non ascii digits and chars
@@ -232,40 +234,6 @@ impl Args {
     /// * `dark_mode` - The new dark mode value
     pub fn set_dark_mode(&mut self, dark_mode: bool){
         self.dark_mode = dark_mode;
-    }
-
-}
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-
-    #[test]
-    fn test_file_ext() {
-        assert_eq!({
-            let args = Args::new_from_files(vec!["./samples/samplefile3.sql"]);
-            args.clone().get_output_file_ext()
-        }, "dot", "default value");
-
-        assert_eq!({
-            let mut args = Args::new_from_files(vec!["./samples/samplefile3.sql", "./samples/samplefile1.sql"]);
-            args.set_output_filename("hello.png".to_string());
-            args.clone().get_output_file_ext()
-        }, "png", "set value with multifile");
-
-        assert_eq!({
-            let mut args = Args::new_from_files(vec!["./samples"]);
-            args.set_output_filename("./path/to/file/hello.png".to_string());
-            args.clone().get_output_file_ext()
-        }, "png", "set value");
-    }
-
-    #[test]
-    fn test_file_in_list() {
-        assert!(POSSIBLE_DOTS_OUTPUT.iter().all(|e| Args::ext_supported(e)), "normal use cases");
-        assert!(!Args::ext_supported("dot"), "normal use case, we don't handle the dot files to the graphviz tool");
-        assert!(!Args::ext_supported("file.png"), "normal use case, only the extension should be given");
     }
 
 }
