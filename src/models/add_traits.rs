@@ -12,6 +12,10 @@ pub trait Replacable {
     fn replace_specials(&self) -> String;
     /// Remove all backquotes.
     fn replace_bq(&self) -> String;
+    /// Remove all hooks.
+    fn replace_hooks(&self) -> String;
+    /// Remove all hooks and backquotes.
+    fn replace_enclosing(&self) -> String;
 }
 
 /// Gets the last char
@@ -49,6 +53,12 @@ impl Replacable for str {
     fn replace_bq(&self) -> String {
         str::replace(self, "`", "")
     }
+    fn replace_hooks(&self) -> String {
+        str::replace(str::replace(self, "[", "").as_str(), "]", "")
+    }
+    fn replace_enclosing(&self) -> String {
+        self.replace_hooks().replace_bq()
+    }
 }
 
 impl Replacable for String {
@@ -57,6 +67,12 @@ impl Replacable for String {
     }
     fn replace_bq(&self) -> String {
         str::replace(self, "`", "")
+    }
+    fn replace_hooks(&self) -> String {
+        str::replace(str::replace(self, "[", "").as_str(), "]", "")
+    }
+    fn replace_enclosing(&self) -> String {
+        self.replace_hooks().replace_bq()
     }
 }
 

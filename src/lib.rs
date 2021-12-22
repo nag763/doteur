@@ -32,19 +32,19 @@ extern crate lazy_static;
 
 lazy_static! {
     ///Get table name.
-    static ref RE_TABLE_NAME : Regex = Regex::new(r"(?i)\s*CREATE\s*TABLE\s*(?:IF\s*NOT\s*EXISTS)?\s*[`]?(?P<table_name>\w*)[`]?\s*\((?P<content>[^;]*)\)").unwrap();
+    static ref RE_TABLE_NAME : Regex = Regex::new(r####"(?i)\s*CREATE\s*TABLE\s*(?:IF\s*NOT\s*EXISTS)?\s*[`"]?(?P<table_name>\w*)[`"]?\s*\((?P<content>[^;]*)\)"####).unwrap();
     ///Get column type
     static ref RE_COL_TYPE : Regex = Regex::new(r####"(?i)\s*((?:FULLTEXT|SPATIAL)?\s*(?:INDEX|KEY))|(?:CONSTRAINT\s*[`'"]\w*[`'"])?\s*(?P<key_type>UNIQUE|FOREIGN|PRIMARY)"####).unwrap();
     ///Get columns definitioon
-    static ref RE_COL_DEF : Regex = Regex::new(r####"(?i)\s*`?(?P<col_name>\w*)`?\s*(?P<col_def>.*)"####).unwrap();
+    static ref RE_COL_DEF : Regex = Regex::new(r####"(?i)\s*[`\[]?(?P<col_name>\w*)[`\]]?\s*(?P<col_def>.*)"####).unwrap();
     ///Check if input is a primary key
-    static ref RE_PK_DEF : Regex = Regex::new(r####"(?i)PRIMARY\s*KEY\s*[`]?(?:\w*)[`]?\s*\((?P<col_name>[^\)]+)\)"####).unwrap();
+    static ref RE_PK_DEF : Regex = Regex::new(r####"(?i)PRIMARY\s*KEY\s*["`]?(?:\w*)[`"]?\s*\((?P<col_name>[^\)]+)\)"####).unwrap();
     ///Check if a PK is declared in the line
     static ref RE_PK_IN_LINE : Regex = Regex::new(r####"(?i)\s*PRIMARY\s*KEY.*"####).unwrap();
     ///Check for the content in parenthesis.
-    static ref RE_FK_DEF : Regex = Regex::new(r####"(?i)FOREIGN\s*KEY\s*\((?P<table_key>[^\)]+)\)\s*REFERENCES\s*[`]?(?P<distant_table>\w*)[`]?\s*\((?P<distant_key>[^\)]+)\)\s*(?:(?:ON\s*UPDATE\s*(?:(?:SET\s*\w*|\w*))\s*)?(?:ON\s*DELETE\s*)?(?P<on_delete>(SET\s*NULL|CASCADE|RESTRICT)))?"####).unwrap();
+    static ref RE_FK_DEF : Regex = Regex::new(r####"(?i)FOREIGN\s*KEY\s*\((?P<table_key>[^\)]+)\)\s*REFERENCES\s*[`"]?(?P<distant_table>\w*)["`]?\s*\((?P<distant_key>[^\)]+)\)\s*(?:(?:ON\s*UPDATE\s*(?:(?:SET\s*\w*|\w*))\s*)?(?:ON\s*DELETE\s*)?(?P<on_delete>(SET\s*NULL|CASCADE|RESTRICT|NO\s*ACTION|SET\s*DEFAULT)))?"####).unwrap();
     ///Look after alter table statements.
-    static ref RE_ALTERED_TABLE : Regex = Regex::new(r"\s*(?i)ALTER\s*TABLE\s*`?(?P<table_name>\w*)`?\s*(?P<altered_content>[^;]*)").unwrap();
+    static ref RE_ALTERED_TABLE : Regex = Regex::new(r####"\s*(?i)ALTER\s*TABLE\s*[`"]?(?P<table_name>\w*)[`"]?\s*(?P<altered_content>[^;]*)"####).unwrap();
 }
 
 /// Detect comas in a String
@@ -312,9 +312,10 @@ fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<&'static str
                             .split_vec(comas_vec)
                             .iter()
                             .any(|attr| {
+                                warn!("PK det : {}",  attr.replace_enclosing().trim_leading_trailing().as_str());
                                 dot_table
                                     .add_pk_nature_to_attribute(
-                                        attr.replace_bq().trim_leading_trailing().as_str(),
+                                        attr.replace_enclosing().trim_leading_trailing().as_str(),
                                     )
                                     .is_err()
                             })
@@ -325,7 +326,7 @@ fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<&'static str
                     }
                     _ => {
                         match dot_table.add_pk_nature_to_attribute(
-                            v.as_str().replace_bq().trim_leading_trailing().as_str(),
+                            v.as_str().replace_enclosing().trim_leading_trailing().as_str(),
                         ) {
                             Ok(_) => Ok("PK nature added"),
                             Err(e) => Err(e),
@@ -367,9 +368,9 @@ fn generate_relations(
                 Err("Doesn't match restrictions")
             }
             _ => {
-                let table_key: String = captures.name("table_key").unwrap().as_str().replace_bq();
+                let table_key: String = captures.name("table_key").unwrap().as_str().replace_enclosing();
                 let distant_key: String =
-                    captures.name("distant_key").unwrap().as_str().replace_bq();
+                    captures.name("distant_key").unwrap().as_str().replace_enclosing();
                 let relation_type: &str = captures
                     .name("on_delete")
                     .map_or("RESTRICT", |m| m.as_str());
@@ -389,12 +390,12 @@ fn generate_relations(
                                     let curr_attr: String = vec_table_key
                                         .get(i)
                                         .unwrap()
-                                        .replace_bq()
+                                        .replace_enclosing()
                                         .trim_leading_trailing();
                                     let curr_refered_key: String = vec_distant_key
                                         .get(i)
                                         .unwrap()
-                                        .replace_bq()
+                                        .replace_enclosing()
                                         .trim_leading_trailing();
                                     dot_file.add_relation(
                                         table_name,
@@ -431,15 +432,15 @@ fn generate_relations(
                         dot_file.add_relation(
                             table_name,
                             table_end,
-                            table_key.replace_bq().as_str(),
-                            distant_key.replace_bq().as_str(),
+                            table_key.replace_enclosing().as_str(),
+                            distant_key.replace_enclosing().as_str(),
                             relation_type,
                         );
                         if let Some(table) = dot_table {
                             let _: Result<usize, &str> = table.add_fk_nature_to_attribute(
-                                table_key.replace_bq().as_str(),
+                                table_key.replace_enclosing().as_str(),
                                 table_end,
-                                distant_key.replace_bq().as_str(),
+                                distant_key.replace_enclosing().as_str(),
                             );
                         }
                         Ok("Relation added")
