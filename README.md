@@ -118,7 +118,8 @@ FLAGS:
     -h, --help         Prints help information
         --it           Starts an interactive dialog to connect to a remote database
         --legend       Includes hint about the relations type at the bottom of the outpout file
-        --url          Specificate that the input is a url (i.e. mysql://usr:password@localhost:3306/database)
+        --sqlite       Specificate that the input is a sqlite3 database
+        --url          Specificate that the input is an URL (i.e. mysql://usr:password@localhost:3306/database)
     -V, --version      Prints version information
 
 OPTIONS:
@@ -127,8 +128,7 @@ OPTIONS:
     -o, --output <output>         The output filename
 
 ARGS:
-    <input>...    Name of the sql file or database location if url arg is passed, can also be a directory or several
-                  files
+    <input>...    Name of the sql file or database location if url arg is passed, can also be a directory or several files
 ```
 
 #### Example usage
@@ -168,6 +168,11 @@ Database password: [hidden]
 
 The output will be in a png file.
 
+##### Connect to a sqlite3 database without a dialog and export the file as .png
+
+```bash
+doteur db.sqlite3 --sqlite -o output.png
+```
 ##### Export a .sql file to a .png, render in dark mode
 
 ```bash
