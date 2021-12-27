@@ -14,11 +14,14 @@ args:
                 long: output
                 takes_value: true
         - url:
-                help: Specificate that the input is a url (i.e. mysql://usr:password@localhost:3306/database)
+                help: Specificate that the input is an URL (i.e. mysql://usr:password@localhost:3306/database)
                 long: url
         - interactive:
                 help: Starts an interactive dialog to connect to a remote database
                 long: it
+        - sqlite:
+                help: Specificate that the input is a sqlite3 database
+                long: sqlite
         - include:
                 help: Include only the given tables
                 short: i

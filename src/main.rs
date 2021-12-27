@@ -9,6 +9,7 @@ use doteur::{process_file, write_output_to_file, contains_tables};
 #[macro_use] extern crate clap;
 
 fn main() {
+    env_logger::init();
     std::process::exit(match run_main() {
         Ok(_) => 0,
         Err(err) => {
@@ -22,7 +23,6 @@ fn main() {
 }
 
 fn run_main() -> Result<(), Box<dyn std::error::Error>>{
-    env_logger::init();
     let yaml = load_yaml!("cli.yml");
     let matches = App::from(yaml).get_matches();
 
@@ -68,6 +68,11 @@ fn run_main() -> Result<(), Box<dyn std::error::Error>>{
                 return Err("Please ensure that if the url argument is present that only one url is passed".into());
             }                  
             args = Args::new_from_url(input[0])?;
+        } else if matches.is_present("sqlite") {
+            if input.len() != 1 {
+                return Err("Please ensure that only one sqlite database path is passed as argument".into());
+            }
+            args = Args::new_from_sqlite(input[0])?;
         } else {
            args = Args::new_from_files(input)?;
         }

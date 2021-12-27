@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use mysql::{Opts, OptsBuilder};
 
 use super::restriction::{Restriction};
-use super::super::process_connection;
+use super::super::{process_mysql_connection, process_sqlite_connection};
 
 /// Possible dot output formats.
 pub const POSSIBLE_DOTS_OUTPUT : [&str; 54] = ["bmp", "canon", "gv", "xdot", "xdot1.2", "xdot1.4",
@@ -23,6 +23,8 @@ pub struct Args {
     filename: Option<String>,
     /// Connection options for database
     opts : Option<Opts>,
+    /// Sqlite Path
+    sqlite_path: Option<String>,
     /// File content
     filecontent: String,
     /// Output file name
@@ -71,6 +73,7 @@ impl Args {
             filecontent: filecontent.join("\n"),
             output_filename: String::from("output.dot"),
             opts : None,
+            sqlite_path: None,
             restrictions: None,
             legend: false,
             dark_mode: false
@@ -91,11 +94,12 @@ impl Args {
                 filecontent: String::new(),
                 output_filename: String::from("output.dot"),
                 opts: Some(opts),
+                sqlite_path: None,
                 restrictions: None,
                 legend: false,
                 dark_mode: false
             };
-        process_connection(&mut args)?;
+        process_mysql_connection(&mut args)?;
         Ok(args)
     }
 
@@ -121,11 +125,33 @@ impl Args {
             filecontent: String::new(),
             output_filename: String::from("output.dot"),
             opts: Some(Opts::from(opts_builder)),
+            sqlite_path: None,
             restrictions: None,
             legend: false,
             dark_mode: false
         };
-        process_connection(&mut args)?;
+        process_mysql_connection(&mut args)?;
+        Ok(args)
+    }
+
+    /// Returns a args object for the given sqlite path
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - The path to the sqlite file
+    pub fn new_from_sqlite(path: &str) -> Result<Args, rusqlite::Error> {
+        let mut args : Args =
+            Args {
+                filename : None,
+                filecontent: String::new(),
+                output_filename: String::from("output.dot"),
+                opts: None,
+                sqlite_path: Some(path.to_string()),
+                restrictions: None,
+                legend: false,
+                dark_mode: false
+            };
+        process_sqlite_connection(&mut args)?;
         Ok(args)
     }
 
@@ -181,6 +207,10 @@ impl Args {
     /// Get restrictions
     pub fn get_restrictions(&self) -> Option<&Restriction> {
         self.restrictions.as_ref()
+    }
+
+    pub fn get_sqlite_path(&self) -> Option<&String> {
+        self.sqlite_path.as_ref()
     }
 
     /// Sets the restrictions in inclusive way

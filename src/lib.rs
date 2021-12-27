@@ -27,6 +27,7 @@ use models::dot_structs::dot_table::DotTable;
 use mysql::Pool;
 use mysql::prelude::Queryable;
 
+use rusqlite::{Connection, Result};
 #[macro_use]
 extern crate lazy_static;
 
@@ -34,7 +35,7 @@ lazy_static! {
     ///Get table name.
     static ref RE_TABLE_NAME : Regex = Regex::new(r####"(?i)\s*CREATE\s*TABLE\s*(?:IF\s*NOT\s*EXISTS)?\s*[`"]?(?P<table_name>\w*)[`"]?\s*\((?P<content>[^;]*)\)"####).unwrap();
     ///Get column type
-    static ref RE_COL_TYPE : Regex = Regex::new(r####"(?i)\s*((?:FULLTEXT|SPATIAL)?\s*(?:INDEX|KEY))|(?:CONSTRAINT\s*[`'"]\w*[`'"])?\s*(?P<key_type>UNIQUE|FOREIGN|PRIMARY)"####).unwrap();
+    static ref RE_COL_TYPE : Regex = Regex::new(r####"(?i)\s*((?:FULLTEXT|SPATIAL)?\s*(?:INDEX|KEY))|(?:CONSTRAINT\s*[`'"]\w*[`'"])?\s*(?P<key_type>UNIQUE|FOREIGN|PRIMARY)\s+"####).unwrap();
     ///Get columns definitioon
     static ref RE_COL_DEF : Regex = Regex::new(r####"(?i)\s*[`\[]?(?P<col_name>\w*)[`\]]?\s*(?P<col_def>.*)"####).unwrap();
     ///Check if input is a primary key
@@ -459,7 +460,7 @@ fn generate_relations(
  *
  * * `args` - User command lines arguments 
  */
-pub fn process_connection(args: &mut Args) -> Result<(), mysql::Error> {
+pub fn process_mysql_connection(args: &mut Args) -> Result<(), mysql::Error> {
 
     let mut tables : Vec<String> = vec![]; 
     let mut file : String = String::new();
@@ -475,7 +476,29 @@ pub fn process_connection(args: &mut Args) -> Result<(), mysql::Error> {
         }
     }
     info!("Query made successfully with remote database, {} tables found", tables.len());
+
     args.set_filecontent(file);
+    Ok(())
+}
+
+/** Connect to sqlite database and process tables
+ *
+ * # Arguments
+ *
+ * * `args` - User command lines arguments 
+ */
+pub fn process_sqlite_connection(args: &mut Args) -> Result<(), rusqlite::Error> {
+    let conn = Connection::open_with_flags(args.get_sqlite_path().unwrap(), rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)?;
+    info!("Connection with database {} done", "foo");
+    let mut stmt = conn.prepare("SELECT sql FROM sqlite_master WHERE sql IS NOT NULL;")?;
+    let mut rows = stmt.query([])?;
+    info!("Query to sqlite db done");
+    let mut schemas : Vec<String> = vec![];
+    while let Some(row) = rows.next()? {
+        schemas.push(row.get(0)?);
+    }
+    args.set_filecontent(schemas.join(";\n"));
+    info!("Schema parsed successfully from sqlite3 database");
     Ok(())
 }
 
