@@ -2,3 +2,5 @@
 output.dot
 /release
 .output.dot
+**/.output.dot
+**/output.dot

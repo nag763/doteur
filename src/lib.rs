@@ -35,9 +35,9 @@ lazy_static! {
     ///Get table name.
     static ref RE_TABLE_NAME : Regex = Regex::new(r####"(?i)\s*CREATE\s*TABLE\s*(?:IF\s*NOT\s*EXISTS)?\s*[`"]?(?P<table_name>\w*)[`"]?\s*\((?P<content>[^;]*)\)"####).unwrap();
     ///Get column type
-    static ref RE_COL_TYPE : Regex = Regex::new(r####"(?i)\s*((?:FULLTEXT|SPATIAL)?\s*(?:INDEX|KEY))|(?:CONSTRAINT\s*[`'"]\w*[`'"])?\s*(?P<key_type>UNIQUE|FOREIGN|PRIMARY)\s+"####).unwrap();
+    static ref RE_COL_TYPE : Regex = Regex::new(r####"(?i)\s*((?:FULLTEXT|SPATIAL)?\s+(?:INDEX|KEY|CHECK))|(?:CONSTRAINT\s*[`'"]\w*[`'"])?\s*(?P<key_type>UNIQUE|FOREIGN|PRIMARY)\s+"####).unwrap();
     ///Get columns definitioon
-    static ref RE_COL_DEF : Regex = Regex::new(r####"(?i)\s*[`\[]?(?P<col_name>\w*)[`\]]?\s*(?P<col_def>.*)"####).unwrap();
+    static ref RE_COL_DEF : Regex = Regex::new(r####"(?i)\s*(?P<col_name>(?:[`"\[]{1}[^`"\]]+[`"\]]{1})|(?:\w*))\s*(?P<col_def>.*)"####).unwrap();
     ///Check if input is a primary key
     static ref RE_PK_DEF : Regex = Regex::new(r####"(?i)PRIMARY\s*KEY\s*["`]?(?:\w*)[`"]?\s*\((?P<col_name>[^\)]+)\)"####).unwrap();
     ///Check if a PK is declared in the line
@@ -282,6 +282,7 @@ fn generate_attributes(dot_table: &mut DotTable, attr: &str) -> Result<&'static 
                 .name("col_name")
                 .unwrap()
                 .as_str()
+                .replace_enclosing()
                 .trim_leading_trailing()
                 .as_str(),
             captures.name("col_def").unwrap().as_str(),
@@ -294,6 +295,7 @@ fn generate_attributes(dot_table: &mut DotTable, attr: &str) -> Result<&'static 
                 .name("col_name")
                 .unwrap()
                 .as_str()
+                .replace_enclosing()
                 .trim_leading_trailing()
                 .as_str(),
             captures.name("col_def").unwrap().as_str(),
@@ -313,12 +315,12 @@ fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<&'static str
                             .split_vec(comas_vec)
                             .iter()
                             .any(|attr| {
-                                warn!("PK det : {}",  attr.replace_enclosing().trim_leading_trailing().as_str());
-                                dot_table
-                                    .add_pk_nature_to_attribute(
-                                        attr.replace_enclosing().trim_leading_trailing().as_str(),
-                                    )
-                                    .is_err()
+                                let cleaned_attr : String =  attr.replace_enclosing().trim_leading_trailing();
+                                info!("PK det : {}",  cleaned_attr.as_str());
+                                if let Err(e) = dot_table.add_pk_nature_to_attribute(cleaned_attr.as_str()) {
+                                    error!("E : {}, Key : |{}|", e, cleaned_attr);
+                                }
+                                dot_table.add_pk_nature_to_attribute(cleaned_attr.as_str()).is_err()
                             })
                         {
                             return Err("One or more errors for multiple PK attr def");
@@ -1076,7 +1078,7 @@ mod tests {
                 .name("col_name")
                 .unwrap()
                 .as_str(),
-            "foo",
+            "`foo`",
             "normal key def with pk"
         );
         assert_eq!(

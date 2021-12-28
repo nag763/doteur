@@ -14,6 +14,8 @@ pub trait Replacable {
     fn replace_bq(&self) -> String;
     /// Remove all hooks.
     fn replace_hooks(&self) -> String;
+    /// Remove all double quotes.
+    fn replace_dq(&self) -> String;
     /// Remove all hooks and backquotes.
     fn replace_enclosing(&self) -> String;
 }
@@ -53,11 +55,14 @@ impl Replacable for str {
     fn replace_bq(&self) -> String {
         str::replace(self, "`", "")
     }
+    fn replace_dq(&self) -> String {
+        str::replace(self, "\"", "")
+    }
     fn replace_hooks(&self) -> String {
         str::replace(str::replace(self, "[", "").as_str(), "]", "")
     }
     fn replace_enclosing(&self) -> String {
-        self.replace_hooks().replace_bq()
+        self.replace_hooks().replace_bq().replace_dq()
     }
 }
 
@@ -68,11 +73,14 @@ impl Replacable for String {
     fn replace_bq(&self) -> String {
         str::replace(self, "`", "")
     }
+    fn replace_dq(&self) -> String {
+        str::replace(self, "\"", "")
+    }
     fn replace_hooks(&self) -> String {
         str::replace(str::replace(self, "[", "").as_str(), "]", "")
     }
     fn replace_enclosing(&self) -> String {
-        self.replace_hooks().replace_bq()
+        self.replace_hooks().replace_bq().replace_dq()
     }
 }
 
