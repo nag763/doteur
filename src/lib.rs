@@ -46,6 +46,8 @@ lazy_static! {
     static ref RE_FK_DEF : Regex = Regex::new(r####"(?i)FOREIGN\s*KEY\s*\((?P<table_key>[^\)]+)\)\s*REFERENCES\s*[`"'\[]?(?P<distant_table>\w*)["`'\]]?\s*\((?P<distant_key>[^\)]+)\)\s*(?:(?:ON\s*UPDATE\s*(?:(?:SET\s*\w*|\w*))\s*)?(?:ON\s*DELETE\s*)?(?P<on_delete>(SET\s*NULL|CASCADE|RESTRICT|NO\s*ACTION|SET\s*DEFAULT)))?"####).unwrap();
     ///Look after alter table statements.
     static ref RE_ALTERED_TABLE : Regex = Regex::new(r####"\s*(?i)ALTER\s*TABLE\s*['`"\[]?(?P<table_name>\w*)[`"'\]]?\s*(?P<altered_content>[^;]*)"####).unwrap();
+    ///Regex to remove comments
+    static ref RE_COMMENTS : Regex = Regex::new(r####"(?:[-]{2}|[#]{1}).*$|(?:(?:\\\*)[^\*\/]+(?:\*\/))"####).unwrap();
 }
 
 /// Detect comas in a String
@@ -516,8 +518,10 @@ pub fn process_file(args: Args) -> String {
         args.get_dark_mode(),
     );
 
+    let cleaned_content : &str = &RE_COMMENTS.replace(args.get_filecontent(), "");
+
     // Generate content from the declared tables.
-    get_tables(args.get_filecontent())
+    get_tables(cleaned_content)
         .iter()
         .for_each(|element| {
             match convert_sql_to_dot(
@@ -533,7 +537,7 @@ pub fn process_file(args: Args) -> String {
 
     // Look after the other fks, declared on alter table statements.
     RE_ALTERED_TABLE
-        .captures_iter(args.get_filecontent())
+        .captures_iter(cleaned_content)
         .for_each(|element| {
             match generate_relations(
                 &mut dot_file,
