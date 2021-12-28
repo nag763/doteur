@@ -320,7 +320,6 @@ fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<&'static str
                                 let cleaned_attr : String =  attr.replace_enclosing().trim_leading_trailing();
                                 info!("PK det : {}",  cleaned_attr.as_str());
                                 if let Err(e) = dot_table.add_pk_nature_to_attribute(cleaned_attr.as_str()) {
-                                    error!("E : {}, Key : |{}|", e, cleaned_attr);
                                 }
                                 dot_table.add_pk_nature_to_attribute(cleaned_attr.as_str()).is_err()
                             })
