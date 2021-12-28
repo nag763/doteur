@@ -47,7 +47,7 @@ lazy_static! {
     ///Look after alter table statements.
     static ref RE_ALTERED_TABLE : Regex = Regex::new(r####"\s*(?i)ALTER\s*TABLE\s*['`"\[]?(?P<table_name>\w*)[`"'\]]?\s*(?P<altered_content>[^;]*)"####).unwrap();
     ///Regex to remove comments
-    static ref RE_COMMENTS : Regex = Regex::new(r####"(?:[-]{2}|[#]{1}).*$|(?:(?:\\\*)[^\*\/]+(?:\*\/))"####).unwrap();
+    static ref RE_COMMENTS : Regex = Regex::new(r####"(?:[-]{2}|[#]{1}).*$|(?:(?:\\\*)[^\*/]+(?:\*/))"####).unwrap();
 }
 
 /// Detect comas in a String
@@ -156,7 +156,7 @@ fn convert_sql_to_dot(
 
     if let Some(restriction) = restrictions {
         if !restriction.clone().verify_table_name(table_name.as_str()) {
-            return Err("Table doesn't match the restrictions");
+            return Ok("Table doesn't match the restrictions");
         }
     }
 
@@ -370,7 +370,7 @@ fn generate_relations(
                     .iter()
                     .any(|element| restriction.clone().verify_table_name(element)) =>
             {
-                Err("Doesn't match restrictions")
+                Ok("Doesn't match restrictions")
             }
             _ => {
                 let table_key: String = captures.name("table_key").unwrap().as_str().replace_enclosing();
