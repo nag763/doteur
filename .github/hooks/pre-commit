@@ -1,0 +1,12 @@
+#!/bin/bash
+
+echo "Running format checker"
+cargo fmt --all -- --check || { echo 'Format is incorrect' ; exit 1; }
+
+echo "Running clippy checker"
+cargo clippy || { echo 'Linter found errors' ; exit 1; }
+
+echo "Running common tests"
+cargo test || { echo 'Tests are either outdated or incorrect' ; exit 1; }
+
+echo "Code ready for commit mate !"
