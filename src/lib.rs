@@ -24,8 +24,8 @@ use models::restriction::Restriction;
 use models::dot_structs::dot_file::DotFile;
 use models::dot_structs::dot_table::DotTable;
 
-use mysql::Pool;
 use mysql::prelude::Queryable;
+use mysql::Pool;
 
 use rusqlite::{Connection, Result};
 #[macro_use]
@@ -316,9 +316,13 @@ fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<&'static str
                             .to_string()
                             .split_vec(comas_vec)
                             .iter()
-                            .any(|attr| 
-                                dot_table.add_pk_nature_to_attribute(attr.replace_enclosing().trim_leading_trailing().as_str()).is_err()
-                            )
+                            .any(|attr| {
+                                dot_table
+                                    .add_pk_nature_to_attribute(
+                                        attr.replace_enclosing().trim_leading_trailing().as_str(),
+                                    )
+                                    .is_err()
+                            })
                         {
                             return Err("One or more errors for multiple PK attr def");
                         }
@@ -326,7 +330,10 @@ fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<&'static str
                     }
                     _ => {
                         match dot_table.add_pk_nature_to_attribute(
-                            v.as_str().replace_enclosing().trim_leading_trailing().as_str(),
+                            v.as_str()
+                                .replace_enclosing()
+                                .trim_leading_trailing()
+                                .as_str(),
                         ) {
                             Ok(_) => Ok("PK nature added"),
                             Err(e) => Err(e),
@@ -368,9 +375,16 @@ fn generate_relations(
                 Ok("Doesn't match restrictions")
             }
             _ => {
-                let table_key: String = captures.name("table_key").unwrap().as_str().replace_enclosing();
-                let distant_key: String =
-                    captures.name("distant_key").unwrap().as_str().replace_enclosing();
+                let table_key: String = captures
+                    .name("table_key")
+                    .unwrap()
+                    .as_str()
+                    .replace_enclosing();
+                let distant_key: String = captures
+                    .name("distant_key")
+                    .unwrap()
+                    .as_str()
+                    .replace_enclosing();
                 let relation_type: &str = captures
                     .name("on_delete")
                     .map_or("RESTRICT", |m| m.as_str());
@@ -457,24 +471,31 @@ fn generate_relations(
  *
  * # Arguments
  *
- * * `args` - User command lines arguments 
+ * * `args` - User command lines arguments
  */
 pub fn process_mysql_connection(args: &mut Args) -> Result<(), mysql::Error> {
-
-    let mut tables : Vec<String> = vec![]; 
-    let mut file : String = String::new();
+    let mut tables: Vec<String> = vec![];
+    let mut file: String = String::new();
     let pool = Pool::new(args.get_opts().unwrap().clone()).unwrap();
     let mut conn = pool.get_conn().unwrap();
     info!("Connection successfull with remote database");
-    conn.query_map(
-    r"SHOW TABLES;",|table_name : String| tables.push(table_name)).unwrap();
+    conn.query_map(r"SHOW TABLES;", |table_name: String| {
+        tables.push(table_name)
+    })
+    .unwrap();
     for table in tables.iter() {
-        if let Err(e) = conn.query_map(format!("SHOW CREATE TABLE {0};", table), |(_, script) : (String, String)| file.push_str(format!("{};\n", script).as_str())){
+        if let Err(e) = conn.query_map(
+            format!("SHOW CREATE TABLE {0};", table),
+            |(_, script): (String, String)| file.push_str(format!("{};\n", script).as_str()),
+        ) {
             error!("An error happened while querying remote database");
             return Err(e);
         }
     }
-    info!("Query made successfully with remote database, {} tables found", tables.len());
+    info!(
+        "Query made successfully with remote database, {} tables found",
+        tables.len()
+    );
 
     args.set_filecontent(file);
     Ok(())
@@ -484,15 +505,18 @@ pub fn process_mysql_connection(args: &mut Args) -> Result<(), mysql::Error> {
  *
  * # Arguments
  *
- * * `args` - User command lines arguments 
+ * * `args` - User command lines arguments
  */
 pub fn process_sqlite_connection(args: &mut Args) -> Result<(), rusqlite::Error> {
-    let conn = Connection::open_with_flags(args.get_sqlite_path().unwrap(), rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)?;
+    let conn = Connection::open_with_flags(
+        args.get_sqlite_path().unwrap(),
+        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
+    )?;
     info!("Connection with database {} done", "foo");
     let mut stmt = conn.prepare("SELECT sql FROM sqlite_master WHERE sql IS NOT NULL;")?;
     let mut rows = stmt.query([])?;
     info!("Query to sqlite db done");
-    let mut schemas : Vec<String> = vec![];
+    let mut schemas: Vec<String> = vec![];
     while let Some(row) = rows.next()? {
         schemas.push(row.get(0)?);
     }
@@ -513,22 +537,20 @@ pub fn process_file(args: Args) -> String {
         args.get_dark_mode(),
     );
 
-    let cleaned_content : &str = &RE_COMMENTS.replace(args.get_filecontent(), "");
+    let cleaned_content: &str = &RE_COMMENTS.replace(args.get_filecontent(), "");
 
     // Generate content from the declared tables.
-    get_tables(cleaned_content)
-        .iter()
-        .for_each(|element| {
-            match convert_sql_to_dot(
-                &mut dot_file,
-                element,
-                args.get_restrictions(),
-                args.get_dark_mode(),
-            ) {
-                Ok(m) => info!("File converted successfully in dot : {}", m),
-                Err(e) => error!("An error happened while processing the sql file : {}", e),
-            };
-        });
+    get_tables(cleaned_content).iter().for_each(|element| {
+        match convert_sql_to_dot(
+            &mut dot_file,
+            element,
+            args.get_restrictions(),
+            args.get_dark_mode(),
+        ) {
+            Ok(m) => info!("File converted successfully in dot : {}", m),
+            Err(e) => error!("An error happened while processing the sql file : {}", e),
+        };
+    });
 
     // Look after the other fks, declared on alter table statements.
     RE_ALTERED_TABLE

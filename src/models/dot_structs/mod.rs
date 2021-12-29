@@ -1,3 +1,3 @@
-pub mod dot_table;
-pub mod dot_file;
 mod attribute;
+pub mod dot_file;
+pub mod dot_table;
