@@ -306,44 +306,57 @@ fn generate_attributes(dot_table: &mut DotTable, attr: &str) -> Result<&'static 
     }
 }
 
+/// Generate the attributes as primary and write them into the table
+///
+/// # Arguments
+///
+/// * `dot_table` - A mutable DotTable object where the attributes will be written
+/// * `line` - The line as string
 fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<&'static str, &'static str> {
-    match RE_PK_DEF.captures(line) {
-        Some(captures) => {
-            return match captures.name("col_name") {
-                Some(v) => match detect_comas(v.as_str()) {
-                    Ok(comas_vec) if !comas_vec.is_empty() => {
-                        if v.as_str()
-                            .to_string()
-                            .split_vec(comas_vec)
-                            .iter()
-                            .any(|attr| {
-                                dot_table
-                                    .add_pk_nature_to_attribute(
-                                        attr.replace_enclosing().trim_leading_trailing().as_str(),
-                                    )
-                                    .is_err()
-                            })
-                        {
-                            return Err("One or more errors for multiple PK attr def");
-                        }
-                        Ok("Multiple attributes set as PK")
-                    }
-                    _ => {
-                        match dot_table.add_pk_nature_to_attribute(
-                            v.as_str()
-                                .replace_enclosing()
-                                .trim_leading_trailing()
-                                .as_str(),
-                        ) {
-                            Ok(_) => Ok("PK nature added"),
-                            Err(e) => Err(e),
-                        }
-                    }
-                },
-                None => Err("Not a PK"),
+    // Assert that the line matches regex and get the captures
+    let captures: Captures = match RE_PK_DEF.captures(line) {
+        Some(captures) => captures,
+        None => return Err("Regex input err"),
+    };
+    // Check that the group column name has been captured, and detect the comas within
+    let (col_name, comas_detected): (&str, Result<Vec<usize>, &str>) =
+        match captures.name("col_name") {
+            Some(v) => (v.as_str(), detect_comas(v.as_str())),
+            None => return Err("Not a PK"),
+        };
+    match comas_detected {
+        //If severeal comas are detected
+        Ok(comas_vec) if !comas_vec.is_empty() => {
+            if col_name
+                .to_string()
+                .split_vec(comas_vec)
+                .iter()
+                .any(|attr| {
+                    dot_table
+                        .add_pk_nature_to_attribute(
+                            attr.replace_enclosing().trim_leading_trailing().as_str(),
+                        )
+                        .is_err()
+                })
+            {
+                Err("One or more errors for multiple PK attr def")
+            } else {
+                Ok("Multiple attributes set as PK")
             }
         }
-        None => Err("Regex input err"),
+        // If no comas are detected
+        _ => {
+            if let Err(e) = dot_table.add_pk_nature_to_attribute(
+                col_name
+                    .replace_enclosing()
+                    .trim_leading_trailing()
+                    .as_str(),
+            ) {
+                Err(e)
+            } else {
+                Ok("PK nature added")
+            }
+        }
     }
 }
 
