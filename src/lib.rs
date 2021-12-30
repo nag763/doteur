@@ -376,108 +376,109 @@ fn generate_relations(
     input: &str,
     restrictive_regex: Option<&Restriction>,
 ) -> Result<&'static str, &'static str> {
-    if RE_FK_DEF.is_match(input) {
-        let captures: Captures = RE_FK_DEF.captures(input).unwrap();
-        let table_end: &str = captures.name("distant_table").unwrap().as_str();
-        match restrictive_regex {
-            Some(restriction)
-                if vec![table_name, table_end]
-                    .iter()
-                    .any(|element| restriction.clone().verify_table_name(element)) =>
-            {
-                Ok("Doesn't match restrictions")
-            }
-            _ => {
-                let table_key: String = captures
-                    .name("table_key")
-                    .unwrap()
-                    .as_str()
-                    .replace_enclosing();
-                let distant_key: String = captures
-                    .name("distant_key")
-                    .unwrap()
-                    .as_str()
-                    .replace_enclosing();
-                let relation_type: &str = captures
-                    .name("on_delete")
-                    .map_or("RESTRICT", |m| m.as_str());
-                return match detect_comas(table_key.as_str()) {
-                    // Case where attributes are separated by comas
-                    Ok(comas_vec) if !comas_vec.is_empty() => {
-                        return match detect_comas(distant_key.as_str()) {
-                            Ok(second_coma_vec)
-                                if !second_coma_vec.is_empty()
-                                    && second_coma_vec.len() == comas_vec.len() =>
-                            {
-                                let vec_table_key: Vec<&str> =
-                                    table_key.split_vec(comas_vec.clone());
-                                let vec_distant_key: Vec<&str> =
-                                    distant_key.split_vec(second_coma_vec);
-                                let mut common = |i: usize| {
-                                    let curr_attr: String = vec_table_key
-                                        .get(i)
-                                        .unwrap()
-                                        .replace_enclosing()
-                                        .trim_leading_trailing();
-                                    let curr_refered_key: String = vec_distant_key
-                                        .get(i)
-                                        .unwrap()
-                                        .replace_enclosing()
-                                        .trim_leading_trailing();
-                                    dot_file.add_relation(
-                                        table_name,
-                                        table_end,
-                                        curr_attr.as_str(),
-                                        curr_refered_key.as_str(),
-                                        relation_type,
-                                    );
-                                    (curr_attr, curr_refered_key)
-                                };
-                                if let Some(table) = dot_table {
-                                    for i in 0..comas_vec.len() {
-                                        let (curr_attr, curr_refered_key): (String, String) =
-                                            common(i);
-                                        let _: Result<usize, &str> = table
-                                            .add_fk_nature_to_attribute(
-                                                curr_attr.as_str(),
-                                                table_end,
-                                                curr_refered_key.as_str(),
-                                            );
-                                    }
-                                } else {
-                                    for i in 0..comas_vec.len() {
-                                        common(i);
-                                    }
-                                }
-                                Ok("Multiple keys processed")
-                            }
-                            _ => Err("Error in file format"),
-                        }
-                    }
-                    // Single key processing
-                    _ => {
+    // If the regex doesn't match the input, early return
+    if !RE_FK_DEF.is_match(input) {
+        return Err("Not a relation");
+    }
+    // If the table names doesn't fall into set restrictions, early return
+    let captures: Captures = RE_FK_DEF.captures(input).unwrap();
+    let table_end: &str = captures.name("distant_table").unwrap().as_str();
+    if let Some(restriction) = restrictive_regex {
+        if vec![table_name, table_end]
+            .iter()
+            .any(|element| restriction.clone().verify_table_name(element))
+        {
+            return Ok("Doesn't match restrictions");
+        }
+    }
+    // Bind the common variables used later
+    let table_key: String = captures
+        .name("table_key")
+        .unwrap()
+        .as_str()
+        .replace_enclosing();
+    let distant_key: String = captures
+        .name("distant_key")
+        .unwrap()
+        .as_str()
+        .replace_enclosing();
+    let relation_type: &str = captures
+        .name("on_delete")
+        .map_or("RESTRICT", |m| m.as_str());
+    // Process the input
+    return match detect_comas(table_key.as_str()) {
+        // Case where attributes are separated by comas
+        Ok(comas_vec) if !comas_vec.is_empty() => {
+            return match detect_comas(distant_key.as_str()) {
+                // If both vec are the same size, then the nth key of vec1 matches nth key of vec2
+                Ok(second_coma_vec)
+                    if !second_coma_vec.is_empty() && second_coma_vec.len() == comas_vec.len() =>
+                {
+                    let vec_table_key: Vec<&str> = table_key.split_vec(comas_vec.clone());
+                    let vec_distant_key: Vec<&str> = distant_key.split_vec(second_coma_vec);
+                    // Closure to avoid code duplication between the case we know the table it
+                    // refers a table, and the case we don't
+                    let mut common = |i: usize| {
+                        let curr_attr: String = vec_table_key
+                            .get(i)
+                            .unwrap()
+                            .replace_enclosing()
+                            .trim_leading_trailing();
+                        let curr_refered_key: String = vec_distant_key
+                            .get(i)
+                            .unwrap()
+                            .replace_enclosing()
+                            .trim_leading_trailing();
                         dot_file.add_relation(
                             table_name,
                             table_end,
-                            table_key.replace_enclosing().as_str(),
-                            distant_key.replace_enclosing().as_str(),
+                            curr_attr.as_str(),
+                            curr_refered_key.as_str(),
                             relation_type,
                         );
-                        if let Some(table) = dot_table {
+                        (curr_attr, curr_refered_key)
+                    };
+                    //If we have a table as input
+                    if let Some(table) = dot_table {
+                        for i in 0..comas_vec.len() {
+                            let (curr_attr, curr_refered_key): (String, String) = common(i);
                             let _: Result<usize, &str> = table.add_fk_nature_to_attribute(
-                                table_key.replace_enclosing().as_str(),
+                                curr_attr.as_str(),
                                 table_end,
-                                distant_key.replace_enclosing().as_str(),
+                                curr_refered_key.as_str(),
                             );
                         }
-                        Ok("Relation added")
+                    // If we don't
+                    } else {
+                        for i in 0..comas_vec.len() {
+                            common(i);
+                        }
                     }
-                };
-            }
+                    Ok("Multiple keys processed")
+                }
+                // Size of vec doesn't match, error return
+                _ => Err("Error in file format"),
+            };
         }
-    } else {
-        Err("Not a relation")
-    }
+        // Single key processing
+        _ => {
+            dot_file.add_relation(
+                table_name,
+                table_end,
+                table_key.replace_enclosing().as_str(),
+                distant_key.replace_enclosing().as_str(),
+                relation_type,
+            );
+            if let Some(table) = dot_table {
+                let _: Result<usize, &str> = table.add_fk_nature_to_attribute(
+                    table_key.replace_enclosing().as_str(),
+                    table_end,
+                    distant_key.replace_enclosing().as_str(),
+                );
+            }
+            Ok("Relation added")
+        }
+    };
 }
 
 /** Connect to given remote database and process tables
