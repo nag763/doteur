@@ -25,6 +25,17 @@ fn str_to_regex(input: &str) -> Result<regex::Regex, regex::Error> {
     Ok(regex)
 }
 
+#[macro_export]
+macro_rules! check_optionable_restriction {
+        ($restrict:ident, $($to_check:expr),*) => {
+            if let Some(restriction) = $restrict {
+                true $(&& restriction.clone().verify_table_name($to_check))*
+            } else {
+                true
+            }
+    }
+}
+
 /// A restriction represents a condition to render or not the given table.
 #[derive(Clone)]
 pub struct Restriction {
@@ -208,10 +219,8 @@ mod tests {
         );
         assert!(
             !{
-                let rest = Restriction::new_exclusion(vec![String::from("hell*")]);
-                vec!["hell", "helloe$", "helloa", "hell"]
-                    .iter()
-                    .all(|e| rest.clone().verify_table_name(e))
+                let rest = Some(Restriction::new_exclusion(vec![String::from("hell*")]));
+                check_optionable_restriction!(rest, "hell", "helloe$", "helloa", "hell")
             },
             "Exact match"
         );

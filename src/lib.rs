@@ -176,10 +176,8 @@ fn convert_table_to_dot(
     debug!("Currently processing table {}", table_name);
 
     // Check restrictions, if some are present, early return if table doesn't match restrictions
-    if let Some(restriction) = restrictions {
-        if !restriction.clone().verify_table_name(table_name.as_str()) {
-            return Ok("Table doesn't match the restrictions");
-        }
+    if !check_optionable_restriction!(restrictions, &table_name) {
+        return Ok("Table doesn't match the restrictions");
     }
 
     let attr_defs: String = unwrap_captures_name_as_str!(
@@ -417,13 +415,8 @@ fn generate_relations(
     let distant_table: &str = unwrap_captures_name_as_str!(captures, "distant_table");
 
     // If one of the tables doesn't match any of the restrictions, early return
-    if let Some(restriction) = restrictive_regex {
-        if vec![table_name, distant_table]
-            .iter()
-            .any(|element| restriction.clone().verify_table_name(element))
-        {
-            return Ok("Doesn't match restrictions");
-        }
+    if !check_optionable_restriction!(restrictive_regex, table_name, distant_table) {
+        return Ok("Doesn't match restrictions");
     }
 
     // Bind the common variables used later
