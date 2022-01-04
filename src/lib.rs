@@ -31,6 +31,25 @@ use rusqlite::{Connection, Result};
 #[macro_use]
 extern crate lazy_static;
 
+macro_rules! unwrap_captures_name_as_str {
+    ($captures:ident, $key:expr, $err:block) => {
+        match $captures.name($key) {
+            Some(v) => v.as_str(),
+            None => $err,
+        }
+    };
+    ($captures:ident, $key:expr, $err_label:expr) => {
+        unwrap_captures_name_as_str!($captures, $key, {
+            return Err($err_label);
+        })
+    };
+    ($captures:ident, $key:expr) => {
+        unwrap_captures_name_as_str!($captures, $key, {
+            return Err("Named group not found, early return");
+        })
+    };
+}
+
 lazy_static! {
     ///Get table name.
     static ref RE_TABLE_NAME : Regex = Regex::new(r####"(?i)\s*CREATE\s*TABLE\s*(?:IF\s*NOT\s*EXISTS)?\s*[`"'\[]?(?P<table_name>\w*)[`"'\]]?\s*\((?P<content>[^;]*)\)"####).unwrap();
@@ -148,11 +167,12 @@ fn convert_table_to_dot(
 ) -> Result<&'static str, &'static str> {
     let captures: Captures = RE_TABLE_NAME.captures(input).unwrap();
 
-    let table_name: String = match captures.name("table_name") {
-        Some(table_name) => table_name.as_str().trim_leading_trailing(),
-        None => return Err("Regex error, the input is either not a sql table or isn't parsed properly by the process"),
-    };
-
+    let table_name: String = unwrap_captures_name_as_str!(
+        captures,
+        "table_name",
+        "Regex error, the input is either not a sql table or isn't parsed properly by the process"
+    )
+    .trim_leading_trailing();
     debug!("Currently processing table {}", table_name);
 
     // Check restrictions, if some are present, early return if table doesn't match restrictions
@@ -162,10 +182,12 @@ fn convert_table_to_dot(
         }
     }
 
-    let attr_defs: String = match captures.name("content") {
-        Some(content) => content.as_str().trim_leading_trailing(),
-        None => return Err("Regex error, the input is either not a sql table or isn't pared properly by the process"),
-    };
+    let attr_defs: String = unwrap_captures_name_as_str!(
+        captures,
+        "content",
+        "Regex error, the input is either not a sql table or isn't pared properly by the process"
+    )
+    .trim_leading_trailing();
 
     let lines: Vec<&str> = match detect_comas(attr_defs.as_str()) {
         Ok(v) => {
@@ -205,13 +227,11 @@ fn convert_table_to_dot(
                 }
             };
 
-            let key_type: String = match col_type.name("key_type") {
-                Some(v) => v.as_str().to_uppercase(),
-                None => {
-                    error!("Regex error for line - key type not found despite matching regex");
-                    continue;
-                }
-            };
+            let key_type: String = unwrap_captures_name_as_str!(col_type, "key_type", {
+                warn!("Key type isn't interpreted by the process");
+                continue;
+            })
+            .to_uppercase();
             match key_type.as_str() {
                 "FOREIGN" => {
                     debug!(
@@ -293,28 +313,22 @@ fn generate_attributes(dot_table: &mut DotTable, attr: &str) -> Result<&'static 
         let trimmed_line: &str = &RE_PK_IN_LINE.replace(attr, "");
         let captures: Captures = RE_COL_DEF.captures(trimmed_line).unwrap();
         dot_table.add_attribute_pk(
-            captures
-                .name("col_name")
-                .unwrap()
-                .as_str()
+            unwrap_captures_name_as_str!(captures, "col_name")
                 .replace_enclosing()
                 .trim_leading_trailing()
                 .as_str(),
-            captures.name("col_def").unwrap().as_str(),
+            unwrap_captures_name_as_str!(captures, "col_def"),
         );
         Ok("PK detected")
     // Otherwise, process as atribute
     } else {
         let captures: Captures = RE_COL_DEF.captures(attr).unwrap();
         dot_table.add_attribute(
-            captures
-                .name("col_name")
-                .unwrap()
-                .as_str()
+            unwrap_captures_name_as_str!(captures, "col_name")
                 .replace_enclosing()
                 .trim_leading_trailing()
                 .as_str(),
-            captures.name("col_def").unwrap().as_str(),
+            unwrap_captures_name_as_str!(captures, "col_def"),
         );
         Ok("COLUMN DEF detected")
     }
@@ -400,10 +414,7 @@ fn generate_relations(
         None => return Err("Regex error"),
     };
 
-    let distant_table: &str = match captures.name("distant_table") {
-        Some(distant_table) => distant_table.as_str(),
-        None => return Err("Distant table not found, early return"),
-    };
+    let distant_table: &str = unwrap_captures_name_as_str!(captures, "distant_table");
 
     // If one of the tables doesn't match any of the restrictions, early return
     if let Some(restriction) = restrictive_regex {
@@ -416,16 +427,9 @@ fn generate_relations(
     }
 
     // Bind the common variables used later
-    let table_key: String = captures
-        .name("table_key")
-        .unwrap()
-        .as_str()
-        .replace_enclosing();
-    let distant_key: String = captures
-        .name("distant_key")
-        .unwrap()
-        .as_str()
-        .replace_enclosing();
+    let table_key: String = unwrap_captures_name_as_str!(captures, "table_key").replace_enclosing();
+    let distant_key: String =
+        unwrap_captures_name_as_str!(captures, "distant_key").replace_enclosing();
     let relation_type: &str = captures
         .name("on_delete")
         .map_or("RESTRICT", |m| m.as_str());
@@ -592,20 +596,22 @@ pub fn process_file(args: Args) -> String {
     });
 
     // Look after the other fks, declared on alter table statements.
-    RE_ALTERED_TABLE
-        .captures_iter(cleaned_content)
-        .for_each(|element| {
-            match generate_relations(
-                &mut dot_file,
-                None,
-                element.name("table_name").unwrap().as_str(),
-                element.name("altered_content").unwrap().as_str(),
-                args.get_restrictions(),
-            ) {
-                Ok(m) => info!("Alter table processed correctly : {}", m),
-                Err(e) => error!("Error while processing alter table : {}", e),
-            }
-        });
+    for element in RE_ALTERED_TABLE.captures_iter(cleaned_content) {
+        match generate_relations(
+            &mut dot_file,
+            None,
+            unwrap_captures_name_as_str!(element, "table_name", {
+                panic!("Regex error");
+            }),
+            unwrap_captures_name_as_str!(element, "altered_content", {
+                panic!("Regex error");
+            }),
+            args.get_restrictions(),
+        ) {
+            Ok(m) => info!("Alter table processed correctly : {}", m),
+            Err(e) => error!("Error while processing alter table : {}", e),
+        };
+    }
 
     // Returns the content generated
     dot_file.to_string()
