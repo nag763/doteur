@@ -6,7 +6,7 @@ use super::{process_mysql_connection, process_sqlite_connection};
 use crate::restriction::Restriction;
 
 /// Possible dot output formats.
-pub const POSSIBLE_DOTS_OUTPUT: [&str; 54] = [
+pub const POSSIBLE_DOTS_OUTPUT: [&str; 53] = [
     "bmp",
     "canon",
     "gv",
@@ -58,7 +58,8 @@ pub const POSSIBLE_DOTS_OUTPUT: [&str; 54] = [
     "vmlz",
     "vrml",
     "wbmp",
-    "webp",
+    // Webp format scraped as it isn't supported by the stable graphviz version
+    //"webp",
     "xlib",
     "x11",
 ];
