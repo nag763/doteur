@@ -2,8 +2,8 @@ use mysql::{Opts, OptsBuilder};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use super::super::{process_mysql_connection, process_sqlite_connection};
-use super::restriction::Restriction;
+use super::{process_mysql_connection, process_sqlite_connection};
+use crate::restriction::Restriction;
 
 /// Possible dot output formats.
 pub const POSSIBLE_DOTS_OUTPUT: [&str; 54] = [

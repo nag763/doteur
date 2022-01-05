@@ -11,23 +11,28 @@
 //! <li><a href="https://docker.com/nag763/doteur">The docker repo</a></li>
 //! </ul>
 
-pub mod models;
+pub mod dot_structs;
+
+mod add_traits;
+pub mod args;
+mod restriction;
 
 use log::{debug, error, info, warn};
 use regex::{Captures, Regex};
 use std::fs;
 
-use models::add_traits::{LastChar, Replacable, SplitVec, Trim};
-use models::args::Args;
-use models::restriction::Restriction;
+use crate::add_traits::{LastChar, Replacable, SplitVec, Trim};
+use crate::args::Args;
+use crate::restriction::Restriction;
 
-use models::dot_structs::dot_file::DotFile;
-use models::dot_structs::dot_table::DotTable;
+use dot_structs::dot_file::DotFile;
+use dot_structs::dot_table::DotTable;
 
 use mysql::prelude::Queryable;
 use mysql::Pool;
 
 use rusqlite::{Connection, Result};
+
 #[macro_use]
 extern crate lazy_static;
 

@@ -3,7 +3,7 @@ use dialoguer::{Input, Password};
 use std::process::Command;
 use which::which;
 
-use doteur::models::args::{Args, POSSIBLE_DOTS_OUTPUT};
+use doteur::args::{Args, POSSIBLE_DOTS_OUTPUT};
 use doteur::{contains_tables, process_file, write_output_to_file};
 
 #[macro_use]
