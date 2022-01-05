@@ -4,7 +4,8 @@ use std::process::Command;
 use which::which;
 
 use doteur::args::{Args, POSSIBLE_DOTS_OUTPUT};
-use doteur::{contains_tables, process_file, write_output_to_file};
+use doteur::tools::write_output_to_file;
+use doteur::{contains_tables, process_file};
 
 #[macro_use]
 extern crate clap;

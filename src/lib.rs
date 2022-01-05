@@ -11,19 +11,20 @@
 //! <li><a href="https://docker.com/nag763/doteur">The docker repo</a></li>
 //! </ul>
 
+pub mod args;
 pub mod dot_structs;
+pub mod tools;
 
 mod add_traits;
-pub mod args;
 mod restriction;
 
 use log::{debug, error, info, warn};
 use regex::{Captures, Regex};
-use std::fs;
 
-use crate::add_traits::{LastChar, Replacable, SplitVec, Trim};
+use crate::add_traits::{Replacable, SplitVec, Trim};
 use crate::args::Args;
 use crate::restriction::Restriction;
+use crate::tools::detect_comas;
 
 use dot_structs::dot_file::DotFile;
 use dot_structs::dot_table::DotTable;
@@ -72,67 +73,6 @@ lazy_static! {
     static ref RE_ALTERED_TABLE : Regex = Regex::new(r####"\s*(?i)ALTER\s*TABLE\s*['`"\[]?(?P<table_name>\w*)[`"'\]]?\s*(?P<altered_content>[^;]*)"####).unwrap();
     ///Regex to remove comments
     static ref RE_COMMENTS : Regex = Regex::new(r####"(?:[-]{2}|[#]{1}).*$|(?:(?:\\\*)[^\*/]+(?:\*/))"####).unwrap();
-}
-
-/// Detect comas in a String
-///
-/// # Arguments
-///
-/// * `content` - content to detect comas in
-fn detect_comas(content: &str) -> Result<Vec<usize>, &str> {
-    if content.is_empty() {
-        return Err("Empty input");
-    }
-    let mut indexes: Vec<usize> = Vec::new();
-    let mut buffer: String = String::new();
-    for (i, c) in content.chars().enumerate() {
-        match c {
-            '(' => {
-                // If the parenthesis aren't inside a string
-                if buffer.is_empty() || buffer.get_last_char() != '`' {
-                    buffer.push(c);
-                }
-            }
-            ')' => {
-                if !buffer.is_empty() {
-                    let last_char: char = buffer.get_last_char();
-                    // If last char of buffer is an open parenthesis, we pop it and continue
-                    if last_char == '(' {
-                        buffer.pop();
-                    } else if last_char != '`' {
-                        return Err("Opened parenthesis never closed");
-                    }
-                } else {
-                    return Err("Parenthesis closed without being opened");
-                }
-            }
-            '`' => {
-                if !buffer.is_empty() {
-                    let last_char: char = buffer.get_last_char();
-                    if last_char == '`' {
-                        buffer.pop();
-                    } else if last_char == '(' {
-                        buffer.push(c);
-                    // If a back tick is neither a closure nor a declaration
-                    } else {
-                        return Err("Malformed, single backtick");
-                    }
-                } else {
-                    buffer.push(c)
-                }
-            }
-            ',' => {
-                if buffer.is_empty() {
-                    indexes.push(i);
-                }
-            }
-            _ => (),
-        }
-    }
-    match buffer.is_empty() {
-        true => Ok(indexes),
-        false => Err("Malformed, some symbols aren't closed properly"),
-    }
 }
 
 /// Get the tables from the input
@@ -291,17 +231,6 @@ fn convert_table_to_dot(
         table_name
     );
     Ok("Table parsed")
-}
-
-/// Write the output to the given file
-///
-/// # Arguments
-///
-/// * `content` - The content to write
-/// * `filename` - The output file
-pub fn write_output_to_file(content: &str, filename: &str) -> std::io::Result<()> {
-    fs::write(filename, content)?;
-    Ok(())
 }
 
 /// Generate the attributes and write them into the dot_table
@@ -619,40 +548,6 @@ pub fn process_file(args: Args) -> String {
 mod tests {
 
     use super::*;
-
-    #[test]
-    fn test_detect_comas() {
-        assert!(detect_comas("").is_err(), "empty input");
-        assert!(detect_comas("`,)()").is_err(), "malformed");
-        assert!(detect_comas("`,").is_err(), "malformed");
-        assert!(detect_comas("(,))").is_err(), "malformed");
-        assert!(detect_comas("\",)\"\"").is_err(), "malformed");
-        assert!(detect_comas(".,())").is_err(), "malformed");
-        assert!(detect_comas("```,").is_err(), "malformed");
-        assert!(detect_comas("Mytext,`(My text),").is_err(), "malformed");
-
-        assert!(detect_comas("coma1, coma2, coma3").is_ok(), "comas");
-        assert!(detect_comas(" , ").is_ok(), "comas");
-        assert!(detect_comas(",").is_ok(), "comas");
-        assert!(detect_comas("`coma1` , coma2").is_ok(), "comas");
-        assert!(detect_comas("(`coma1`) , coma2").is_ok(), "comas");
-        assert!(detect_comas("`coma1` , (coma2)").is_ok(), "comas");
-
-        assert_eq!(
-            detect_comas("coma1, coma2, coma3").unwrap(),
-            vec![5, 12],
-            "comas"
-        );
-        assert_eq!(detect_comas(" , ").unwrap(), vec![1], "comas");
-        assert_eq!(detect_comas(",").unwrap(), vec![0], "comas");
-        assert_eq!(detect_comas("`coma1` , coma2").unwrap(), vec![8], "comas");
-        assert_eq!(
-            detect_comas("(`coma1`) , coma2").unwrap(),
-            vec![10],
-            "comas"
-        );
-        assert_eq!(detect_comas("`coma1` , (coma2)").unwrap(), vec![8], "comas");
-    }
 
     #[test]
     fn test_re_table_name() {
