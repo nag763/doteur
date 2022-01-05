@@ -92,7 +92,7 @@ impl Restriction {
         if !self.regexs.is_empty() {
             match self.re_search_type {
                 ReSearchType::Inclusive => self.regexs.iter().any(|e| e.is_match(table_name)),
-                ReSearchType::Exclusive => !self.regexs.iter().all(|e| e.is_match(table_name)),
+                ReSearchType::Exclusive => !self.regexs.iter().any(|e| e.is_match(table_name)),
             }
         } else {
             // If the array is empty
