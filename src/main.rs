@@ -1,14 +1,15 @@
-use clap::App;
+#[cfg(feature = "mysql_addons")]
 use dialoguer::{Input, Password};
 use std::process::Command;
 use which::which;
 
-use doteur::args::{Args, POSSIBLE_DOTS_OUTPUT};
+use doteur::args::{get_clap_args, Args, POSSIBLE_DOTS_OUTPUT};
+
 use doteur::tools::write_output_to_file;
 use doteur::{contains_tables, process_file};
 
 #[macro_use]
-extern crate clap;
+extern crate cfg_if;
 
 fn main() {
     env_logger::init();
@@ -27,59 +28,81 @@ fn main() {
 }
 
 fn run_main() -> Result<(), Box<dyn std::error::Error>> {
-    let yaml = load_yaml!("cli.yml");
-    let matches = App::from(yaml).get_matches();
+    let matches = get_clap_args().get_matches();
 
     let mut args: Args;
     if matches.is_present("interactive") {
-        let db_url: String = Input::new()
-            .with_prompt("Database url or ip")
-            .default("localhost".into())
-            .interact_text()
-            .unwrap();
+        cfg_if! {
+            if #[cfg(feature="mysql_addons")] {
+                let db_url: String = Input::new()
+                    .with_prompt("Database url or ip")
+                    .default("localhost".into())
+                    .interact_text()
+                    .unwrap();
 
-        let db_port: u16 = Input::new()
-            .with_prompt("Database port")
-            .default(3306)
-            .interact_text()
-            .unwrap();
+                let db_port: u16 = Input::new()
+                    .with_prompt("Database port")
+                    .default(3306)
+                    .interact_text()
+                    .unwrap();
 
-        let db_name: String = Input::new()
-            .with_prompt("Database name")
-            .interact_text()
-            .unwrap();
+                let db_name: String = Input::new()
+                    .with_prompt("Database name")
+                    .interact_text()
+                    .unwrap();
 
-        let db_user: String = Input::new()
-            .with_prompt("Database user")
-            .interact_text()
-            .unwrap();
+                let db_user: String = Input::new()
+                    .with_prompt("Database user")
+                    .interact_text()
+                    .unwrap();
 
-        let db_password: String = Password::new()
-            .with_prompt("Database user's password")
-            .interact()
-            .unwrap();
+                let db_password: String = Password::new()
+                    .with_prompt("Database user's password")
+                    .interact()
+                    .unwrap();
 
-        args = Args::new_connect_with_params(db_url, db_port, db_name, db_user, db_password)?;
+                args = Args::new_connect_with_params(db_url, db_port, db_name, db_user, db_password)?;
+            } else {
+                return Err("Not available for your configuration".into());
+            }
+        }
     } else {
-        let input : Vec<&str> = match matches.values_of("input") {
+        let input: Vec<&str> = match matches.values_of("input") {
             Some(v) => v.collect(),
-            None => return Err("Please provide a filename or a url. You can also use the --it argument to start an interactive dialog and connect to an existing database.".into())
+            None => {
+                get_clap_args().print_help()?;
+                return Ok(());
+            }
         };
+        // Fake error thrown by clippy
+        #[allow(clippy::if_same_then_else)]
         if matches.is_present("url") {
-            if input.len() != 1 {
-                return Err(
-                    "Please ensure that if the url argument is present that only one url is passed"
-                        .into(),
-                );
+            cfg_if! {
+                if #[cfg(feature="mysql_addons")] {
+                    if input.len() != 1 {
+                        return Err(
+                            "Please ensure that if the url argument is present that only one url is passed"
+                                .into(),
+                        );
+                    }
+                    args = Args::new_from_url(input[0])?;
+                } else {
+                    return Err("Not available for your configuration".into());
+                }
             }
-            args = Args::new_from_url(input[0])?;
         } else if matches.is_present("sqlite") {
-            if input.len() != 1 {
-                return Err(
-                    "Please ensure that only one sqlite database path is passed as argument".into(),
-                );
+            cfg_if! {
+                if #[cfg(feature="sqlite_addons")] {
+                    if input.len() != 1 {
+                        return Err(
+                            "Please ensure that only one sqlite database path is passed as argument".into(),
+                        );
+                    }
+                    args = Args::new_from_sqlite(input[0])?;
+                } else {
+                    return Err("Not available for your configuration".into());
+                }
             }
-            args = Args::new_from_sqlite(input[0])?;
         } else {
             args = Args::new_from_files(input)?;
         }

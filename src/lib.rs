@@ -15,6 +15,12 @@ pub mod args;
 pub mod dot_structs;
 pub mod tools;
 
+#[cfg(feature = "mysql_addons")]
+mod mysql_tools;
+
+#[cfg(feature = "sqlite_addons")]
+mod sqlite_tools;
+
 mod add_traits;
 mod restriction;
 
@@ -29,13 +35,11 @@ use crate::tools::detect_comas;
 use dot_structs::dot_file::DotFile;
 use dot_structs::dot_table::DotTable;
 
-use mysql::prelude::Queryable;
-use mysql::Pool;
-
-use rusqlite::{Connection, Result};
-
 #[macro_use]
 extern crate lazy_static;
+
+#[macro_use]
+extern crate cfg_if;
 
 macro_rules! unwrap_captures_name_as_str {
     ($captures:ident, $key:expr, $err:block) => {
@@ -435,64 +439,6 @@ fn generate_relations(
             Ok("Relation added")
         }
     };
-}
-
-/** Connect to given remote database and process tables
- *
- * # Arguments
- *
- * * `args` - User command lines arguments
- */
-pub fn process_mysql_connection(args: &mut Args) -> Result<(), mysql::Error> {
-    let mut tables: Vec<String> = vec![];
-    let mut file: String = String::new();
-    let pool = Pool::new(args.get_opts().unwrap().clone()).unwrap();
-    let mut conn = pool.get_conn().unwrap();
-    info!("Connection successfull with remote database");
-    conn.query_map(r"SHOW TABLES;", |table_name: String| {
-        tables.push(table_name)
-    })
-    .unwrap();
-    for table in tables.iter() {
-        if let Err(e) = conn.query_map(
-            format!("SHOW CREATE TABLE {0};", table),
-            |(_, script): (String, String)| file.push_str(format!("{};\n", script).as_str()),
-        ) {
-            error!("An error happened while querying remote database");
-            return Err(e);
-        }
-    }
-    info!(
-        "Query made successfully with remote database, {} tables found",
-        tables.len()
-    );
-
-    args.set_filecontent(file);
-    Ok(())
-}
-
-/** Connect to sqlite database and process tables
- *
- * # Arguments
- *
- * * `args` - User command lines arguments
- */
-pub fn process_sqlite_connection(args: &mut Args) -> Result<(), rusqlite::Error> {
-    let conn = Connection::open_with_flags(
-        args.get_sqlite_path().unwrap(),
-        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
-    )?;
-    info!("Connection with database {} done", "foo");
-    let mut stmt = conn.prepare("SELECT sql FROM sqlite_master WHERE sql IS NOT NULL;")?;
-    let mut rows = stmt.query([])?;
-    info!("Query to sqlite db done");
-    let mut schemas: Vec<String> = vec![];
-    while let Some(row) = rows.next()? {
-        schemas.push(row.get(0)?);
-    }
-    args.set_filecontent(schemas.join(";\n"));
-    info!("Schema parsed successfully from sqlite3 database");
-    Ok(())
 }
 
 /// Process the given file and return the output dot string

@@ -1,9 +1,17 @@
-use mysql::{Opts, OptsBuilder};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use super::{process_mysql_connection, process_sqlite_connection};
 use crate::restriction::Restriction;
+
+#[cfg(feature = "mysql_addons")]
+use crate::mysql_tools::process_mysql_connection;
+#[cfg(feature = "mysql_addons")]
+use mysql::{Opts, OptsBuilder};
+
+#[cfg(feature = "sqlite_addons")]
+use crate::sqlite_tools::process_sqlite_connection;
+
+use clap::{App, Arg};
 
 /// Possible dot output formats.
 pub const POSSIBLE_DOTS_OUTPUT: [&str; 53] = [
@@ -64,14 +72,82 @@ pub const POSSIBLE_DOTS_OUTPUT: [&str; 53] = [
     "x11",
 ];
 
+pub fn get_clap_args() -> App<'static> {
+    let app : App = App::new("doteur")
+        .version("0.4.1")
+        .author("LABEYE Loïc <loic.labeye@pm.me>")
+        .about("Parse a SQL configuration and convert it into a .dot file, render the output if Graphviz is installed")
+        .after_help("Some functionnalities might not appear as they depend on which version this tool has been downloaded or built for.")
+        .arg(
+            Arg::new("input")
+                .help("Name of the sql file or database location if an URL arg is passed, can also be a directory or several files")
+                .required(false)
+                .index(1)
+                .multiple_values(true)
+        ).arg(
+            Arg::new("output")
+                .help("output file name")
+                .short('o')
+                .long("output")
+                .takes_value(true)
+        );
+    let trailing_args: Vec<Arg> = vec![
+        Arg::new("include")
+            .help("Filter to include only the given tables, accept simple regexs")
+            .short('i')
+            .long("include")
+            .takes_value(true)
+            .multiple_values(true)
+            .conflicts_with("exclude"),
+        Arg::new("exclude")
+            .help("Filter to exclude the given tables, accept simple regexs")
+            .short('x')
+            .long("exclude")
+            .takes_value(true)
+            .multiple_values(true)
+            .conflicts_with("include"),
+        Arg::new("dark_mode")
+            .help("Render in dark mode")
+            .long("dark-mode")
+            .takes_value(false),
+        Arg::new("legend")
+            .help("Includes hint about the relations type at the bottom of the outpout file")
+            .long("legend")
+            .takes_value(false),
+    ];
+    cfg_if! {
+        if #[cfg(feature = "mysql_addons")] {
+            app.args(
+                vec![
+                    Arg::new("url")
+                        .help("Specificate that the input is an URL (i.e. mysql://usr:password@localhost:3306/database)")
+                        .long("url")
+                        .conflicts_with_all(&["sqlite", "interactive"]),
+                    Arg::new("interactive")
+                        .help("Starts an interactive dialog to connect to a remote database")
+                        .long("it")
+                        .conflicts_with_all(&["sqlite", "url"])
+                ]
+            ).args(trailing_args)
+        } else if #[cfg(feature = "sqlite_addons")] {
+            app.args(vec![
+                Arg::new("sqlite")
+                    .help("Specificate that the input is a sqlite3 database")
+                    .long("sqlite")
+                ]
+            ).args(trailing_args)
+        } else {
+            app.args(trailing_args)
+        }
+    }
+}
+
 /// Cli Args, used to represent the options passed by the user to
 /// the tool.
 #[derive(Clone)]
 pub struct Args {
     /// Filename
     filename: Option<String>,
-    /// Connection options for database
-    opts: Option<Opts>,
     /// Sqlite Path
     sqlite_path: Option<String>,
     /// File content
@@ -120,7 +196,6 @@ impl Args {
             filename: Some(filename),
             filecontent: filecontent.join("\n"),
             output_filename: String::from("output.dot"),
-            opts: None,
             sqlite_path: None,
             restrictions: None,
             legend: false,
@@ -133,19 +208,19 @@ impl Args {
     /// # Arguments
     ///
     /// * `url` - The path of the input
+    #[cfg(feature = "mysql_addons")]
     pub fn new_from_url(url: &str) -> Result<Args, mysql::Error> {
         let opts: Opts = Opts::from_url(url)?;
         let mut args: Args = Args {
             filename: None,
             filecontent: String::new(),
             output_filename: String::from("output.dot"),
-            opts: Some(opts),
             sqlite_path: None,
             restrictions: None,
             legend: false,
             dark_mode: false,
         };
-        process_mysql_connection(&mut args)?;
+        process_mysql_connection(&mut args, opts)?;
         Ok(args)
     }
 
@@ -158,6 +233,7 @@ impl Args {
     /// * `db_name` - Database remote schema name
     /// * `db_user` - Database remote user
     /// * `db_password` - Database remote user's password
+    #[cfg(feature = "mysql_addons")]
     pub fn new_connect_with_params(
         db_url: String,
         db_port: u16,
@@ -175,13 +251,12 @@ impl Args {
             filename: None,
             filecontent: String::new(),
             output_filename: String::from("output.dot"),
-            opts: Some(Opts::from(opts_builder)),
             sqlite_path: None,
             restrictions: None,
             legend: false,
             dark_mode: false,
         };
-        process_mysql_connection(&mut args)?;
+        process_mysql_connection(&mut args, Opts::from(opts_builder))?;
         Ok(args)
     }
 
@@ -190,12 +265,12 @@ impl Args {
     /// # Arguments
     ///
     /// * `path` - The path to the sqlite file
+    #[cfg(feature = "sqlite_addons")]
     pub fn new_from_sqlite(path: &str) -> Result<Args, rusqlite::Error> {
         let mut args: Args = Args {
             filename: None,
             filecontent: String::new(),
             output_filename: String::from("output.dot"),
-            opts: None,
             sqlite_path: Some(path.to_string()),
             restrictions: None,
             legend: false,
@@ -255,10 +330,6 @@ impl Args {
     /// * `output_filename` - The name of the output file
     pub fn set_output_filename(&mut self, output_filename: String) {
         self.output_filename = output_filename;
-    }
-
-    pub fn get_opts(&self) -> Option<&Opts> {
-        self.opts.as_ref()
     }
 
     /// Get restrictions
