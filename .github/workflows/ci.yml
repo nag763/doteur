@@ -47,7 +47,7 @@ jobs:
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: -- -D warnings --all-features
+          args: --features mysql_addons,sqlite_addons -- -D warnings
 
   coverage:
     name: Code coverage
