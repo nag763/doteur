@@ -1,5 +1,10 @@
 #!bin/sh
 
+numberOfFeatures=4
+featuresToBuild=("" '--features mysql_addons' '--features sqlite_addons' '--all-features')
+packagesNames=('doteur_light' 'doteur_mysql' 'doteur_sqlite' 'doteur')
+target_names=('x86_64-unknown-linux-gnu' 'x86_64-pc-windows-gnu' 'x86_64-apple-darwin')
+
 if ! command -v rustup &> /dev/null
 then
     echo "rustup could not be found, please ensure it is installed"
@@ -7,35 +12,26 @@ then
     exit
 fi
 
-rm -rf target/*
-cargo build --release #Linux by default
-cargo build --release --target x86_64-pc-windows-gnu #Windows x64-86
-cargo doc
-
-cp install.sh target/release/
-cp uninstall.sh target/release/
-
 rm -rf release
 mkdir release
 
-cd target/x86_64-pc-windows-gnu/
-mv release doteur
-zip ../../release/doteur_windows_86_64.zip ./doteur -r
+for i in "${target_names[@]}"
+do
+	echo ""
+	echo "Building for target : $i"
+	echo "-----------------------"
+	for ((j=0;j<=numberOfFeatures;j++)); do
+		echo "Running cargo build --release ${featuresToBuild[j]} --target $i";
+		cargo build --release ${featuresToBuild[j]} --target $i;
+		echo 'Cargo build done';
+		echo "Starting to zip target/$i/release in ./release/${packagesNames[j]}_$i";
+		zip ./release/${packagesNames[j]}_$i -r target/$i/release -r -qq;
+		echo "Zipping done";
+		md5sum ./release/${packagesNames[j]}_$i.zip > ./release/${packagesNames[j]}_$i.md5
+	done
+done
 
-cd ../..
-
-cd target
-mv release doteur
-zip ../release/doteur_linux_86_64.zip ./doteur -r
-
-zip ../release/doteur_doc.zip ./doc -r
-
-cd ../release
-
-md5sum doteur_windows_86_64.zip > doteur_windows_86_64.zip.md5
-md5sum doteur_linux_86_64.zip > doteur_linux_86_64.zip.md5
-md5sum doteur_doc.zip > doteur_doc.zip.md5
-
-cd ..
+cargo doc;
+zip ./release/doteur_doc ./target/doc -r --qq;
 
 echo "Done with success"
