@@ -212,7 +212,7 @@ impl Args {
         let data: String = process_mysql_connection(opts)?;
         Ok(Args {
             filename: None,
-            data: data,
+            data,
             output_filename: String::from("output.dot"),
             restrictions: None,
             legend: false,
