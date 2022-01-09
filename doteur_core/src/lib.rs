@@ -11,18 +11,11 @@
 //! <li><a href="https://docker.com/nag763/doteur">The docker repo</a></li>
 //! </ul>
 
-pub mod args;
 pub mod dot_structs;
+pub mod restriction;
 pub mod tools;
 
-#[cfg(feature = "mysql_addons")]
-mod mysql_tools;
-
-#[cfg(feature = "sqlite_addons")]
-mod sqlite_tools;
-
 mod add_traits;
-mod restriction;
 
 use std::borrow::Cow;
 
@@ -39,9 +32,6 @@ use regex::{Captures, Regex};
 
 #[macro_use]
 extern crate lazy_static;
-
-#[macro_use]
-extern crate cfg_if;
 
 macro_rules! unwrap_captures_name_as_str {
     ($captures:ident, $key:expr, $err:block) => {

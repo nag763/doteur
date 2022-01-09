@@ -1,15 +1,15 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use crate::restriction::Restriction;
+use doteur_core::restriction::Restriction;
 
 #[cfg(feature = "mysql_addons")]
-use crate::mysql_tools::process_mysql_connection;
+use doteur_mysql::process_mysql_connection;
 #[cfg(feature = "mysql_addons")]
 use mysql::{Opts, OptsBuilder};
 
 #[cfg(feature = "sqlite_addons")]
-use crate::sqlite_tools::process_sqlite_connection;
+use doteur_sqlite::process_sqlite_connection;
 
 use clap::{App, Arg};
 
@@ -148,8 +148,6 @@ pub fn get_clap_args() -> App<'static> {
 pub struct Args {
     /// Filename
     filename: Option<String>,
-    /// Sqlite Path
-    sqlite_path: Option<String>,
     /// Data to transform
     data: String,
     /// Output file name
@@ -197,7 +195,6 @@ impl Args {
             filename: Some(filename),
             data: data.join("\n"),
             output_filename: String::from("output.dot"),
-            sqlite_path: None,
             restrictions: None,
             legend: false,
             dark_mode: false,
@@ -212,17 +209,15 @@ impl Args {
     #[cfg(feature = "mysql_addons")]
     pub fn new_from_url(url: &str) -> Result<Args, mysql::Error> {
         let opts: Opts = Opts::from_url(url)?;
-        let mut args: Args = Args {
+        let data: String = process_mysql_connection(opts)?;
+        Ok(Args {
             filename: None,
-            data: String::new(),
+            data: data,
             output_filename: String::from("output.dot"),
-            sqlite_path: None,
             restrictions: None,
             legend: false,
             dark_mode: false,
-        };
-        process_mysql_connection(&mut args, opts)?;
-        Ok(args)
+        })
     }
 
     /// Returns a args object for the given parameters
@@ -248,17 +243,15 @@ impl Args {
             .db_name(Some(db_name))
             .user(Some(db_user))
             .pass(Some(db_password));
-        let mut args: Args = Args {
+        let data: String = process_mysql_connection(Opts::from(opts_builder))?;
+        Ok(Args {
             filename: None,
-            data: String::new(),
+            data,
             output_filename: String::from("output.dot"),
-            sqlite_path: None,
             restrictions: None,
             legend: false,
             dark_mode: false,
-        };
-        process_mysql_connection(&mut args, Opts::from(opts_builder))?;
-        Ok(args)
+        })
     }
 
     /// Returns a args object for the given sqlite path
@@ -268,17 +261,15 @@ impl Args {
     /// * `path` - The path to the sqlite file
     #[cfg(feature = "sqlite_addons")]
     pub fn new_from_sqlite(path: &str) -> Result<Args, rusqlite::Error> {
-        let mut args: Args = Args {
+        let data: String = process_sqlite_connection(path)?;
+        Ok(Args {
             filename: None,
-            data: String::new(),
+            data,
             output_filename: String::from("output.dot"),
-            sqlite_path: Some(path.to_string()),
             restrictions: None,
             legend: false,
             dark_mode: false,
-        };
-        process_sqlite_connection(&mut args)?;
-        Ok(args)
+        })
     }
 
     /// Returns the filename without the non ascii digits and chars
@@ -315,10 +306,6 @@ impl Args {
         self.data.as_str()
     }
 
-    pub fn set_data(&mut self, filecontent: String) {
-        self.data = filecontent;
-    }
-
     /// Get the output file name
     pub fn get_output_filename(&self) -> &str {
         self.output_filename.as_str()
@@ -336,10 +323,6 @@ impl Args {
     /// Get restrictions
     pub fn get_restrictions(&self) -> Option<&Restriction> {
         self.restrictions.as_ref()
-    }
-
-    pub fn get_sqlite_path(&self) -> Option<&String> {
-        self.sqlite_path.as_ref()
     }
 
     /// Sets the restrictions in inclusive way

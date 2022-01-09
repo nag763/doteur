@@ -1,12 +1,14 @@
+mod args;
+
 #[cfg(feature = "mysql_addons")]
 use dialoguer::{Input, Password};
 use std::process::Command;
 use which::which;
 
-use doteur::args::{get_clap_args, Args, POSSIBLE_DOTS_OUTPUT};
+use crate::args::{get_clap_args, Args, POSSIBLE_DOTS_OUTPUT};
 
-use doteur::tools::write_output_to_file;
-use doteur::{contains_tables, process_data};
+use doteur_core::tools::write_output_to_file;
+use doteur_core::{contains_tables, process_data};
 
 #[macro_use]
 extern crate cfg_if;
