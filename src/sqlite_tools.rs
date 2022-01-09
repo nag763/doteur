@@ -23,7 +23,7 @@ pub fn process_sqlite_connection(args: &mut Args) -> Result<(), rusqlite::Error>
     while let Some(row) = rows.next()? {
         schemas.push(row.get(0)?);
     }
-    args.set_filecontent(schemas.join(";\n"));
+    args.set_data(schemas.join(";\n"));
     info!("Schema parsed successfully from sqlite3 database");
     Ok(())
 }

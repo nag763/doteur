@@ -24,16 +24,18 @@ mod sqlite_tools;
 mod add_traits;
 mod restriction;
 
-use log::{debug, error, info, warn};
-use regex::{Captures, Regex};
+use std::borrow::Cow;
 
 use crate::add_traits::{Replacable, SplitVec, Trim};
-use crate::args::Args;
 use crate::restriction::Restriction;
 use crate::tools::detect_comas;
 
 use dot_structs::dot_file::DotFile;
 use dot_structs::dot_table::DotTable;
+use dot_structs::relation::Relation;
+
+use log::{debug, error, info, warn};
+use regex::{Captures, Regex};
 
 #[macro_use]
 extern crate lazy_static;
@@ -83,10 +85,10 @@ lazy_static! {
 ///
 /// # Arguments
 ///
-/// * `input` - The content where sql table are stored
-fn get_tables(input: &str) -> Vec<&str> {
+/// * `data` - The content where sql table are stored
+fn get_tables(data: &str) -> Vec<&str> {
     RE_TABLE_NAME
-        .find_iter(input)
+        .find_iter(data)
         .map(|element| element.as_str())
         .collect::<Vec<&str>>()
 }
@@ -95,9 +97,13 @@ fn get_tables(input: &str) -> Vec<&str> {
 ///
 /// # Arguments
 ///
-/// * `input` - The content where sql table are stored
-pub fn contains_tables(input: &str) -> bool {
-    RE_TABLE_NAME.is_match(input)
+/// * `data` - The content where sql table are stored
+pub fn contains_tables(data: &str) -> bool {
+    RE_TABLE_NAME.is_match(data)
+}
+
+pub fn remove_sql_comments(data: &str) -> Cow<'_, str> {
+    RE_COMMENTS.replace(data, "")
 }
 
 /// Convert a sql table to a dot table and store it in the given dot file
@@ -109,11 +115,10 @@ pub fn contains_tables(input: &str) -> bool {
 /// * `restrictions` - The restriction to apply on the table
 /// * `dark_mode` - Changes the rendering of the output file
 fn convert_table_to_dot(
-    dot_file: &mut DotFile,
     input: &str,
     restrictions: Option<&Restriction>,
     dark_mode: bool,
-) -> Result<&'static str, &'static str> {
+) -> Result<Option<(DotTable, Vec<Relation>)>, &'static str> {
     let captures: Captures = RE_TABLE_NAME.captures(input).unwrap();
 
     let table_name: String = unwrap_captures_name_as_str!(
@@ -125,8 +130,8 @@ fn convert_table_to_dot(
     debug!("Currently processing table {}", table_name);
 
     // Check restrictions, if some are present, early return if table doesn't match restrictions
-    if !check_optionable_restriction!(restrictions, &table_name) {
-        return Ok("Table doesn't match the restrictions");
+    if !matches_optionable_restriction!(restrictions, &table_name) {
+        return Ok(None);
     }
 
     let attr_defs: String = unwrap_captures_name_as_str!(
@@ -147,13 +152,12 @@ fn convert_table_to_dot(
         }
         Err(e) => {
             error!("Error in comas parsing for table : {0}\n{1}", table_name, e);
-            dot_file.add_table(DotTable::new(table_name.as_str(), dark_mode));
-            warn!("No attributes added for table {}", table_name);
             return Err("Attributes malformed");
         }
     };
 
     let mut dot_table: DotTable = DotTable::new(table_name.as_str(), dark_mode);
+    let mut relations: Vec<Relation> = Vec::new();
 
     for line in lines {
         // If column type is common attribute
@@ -185,15 +189,18 @@ fn convert_table_to_dot(
                         "Line {} has been found as a foreign key def",
                         line.trim_leading_trailing()
                     );
-                    match generate_relations(
-                        dot_file,
-                        Some(&mut dot_table),
-                        &table_name,
-                        line,
-                        restrictions,
-                    ) {
-                        Ok(m) => {
-                            info!("FK processed correctly : {}", m.trim_leading_trailing())
+                    match generate_relations(table_name.as_str(), line, restrictions) {
+                        Ok(v) => {
+                            if let Some(relation) = v {
+                                relations.push(relation.clone());
+                                for pair_key_refered in relation.get_pairs_of_keys() {
+                                    let _ = dot_table.add_fk_nature_to_attribute(
+                                        pair_key_refered.0.as_str(),
+                                        relation.get_refered_table(),
+                                        pair_key_refered.1.as_str(),
+                                    );
+                                }
+                            }
                         }
                         Err(e) => {
                             error!("An error happened while processing foreign key: {}", e)
@@ -229,12 +236,11 @@ fn convert_table_to_dot(
             }
         }
     }
-    dot_file.add_table(dot_table);
     info!(
         "The table {} has been added to the file with success",
         table_name
     );
-    Ok("Table parsed")
+    Ok(Some((dot_table, relations)))
 }
 
 /// Generate the attributes and write them into the dot_table
@@ -334,18 +340,16 @@ fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<&'static str
 /// * `input` - Where the relations are written
 /// * `restrictive_regex` - The restrictions to apply
 fn generate_relations(
-    dot_file: &mut DotFile,
-    dot_table: Option<&mut DotTable>,
     table_name: &str,
-    input: &str,
+    line: &str,
     restrictive_regex: Option<&Restriction>,
-) -> Result<&'static str, &'static str> {
+) -> Result<Option<Relation>, &'static str> {
     // If the regex doesn't match the input, early return
-    if !RE_FK_DEF.is_match(input) {
+    if !RE_FK_DEF.is_match(line) {
         return Err("Not a relation");
     }
 
-    let captures: Captures = match RE_FK_DEF.captures(input) {
+    let captures: Captures = match RE_FK_DEF.captures(line) {
         Some(v) => v,
         None => return Err("Regex error"),
     };
@@ -353,8 +357,9 @@ fn generate_relations(
     let distant_table: &str = unwrap_captures_name_as_str!(captures, "distant_table");
 
     // If one of the tables doesn't match any of the restrictions, early return
-    if !check_optionable_restriction!(restrictive_regex, table_name, distant_table) {
-        return Ok("Doesn't match restrictions");
+    if !matches_optionable_restriction!(restrictive_regex, table_name, distant_table) {
+        info!("One of the two tables doesn't match the restrictions");
+        return Ok(None);
     }
 
     // Bind the common variables used later
@@ -374,70 +379,43 @@ fn generate_relations(
                 Ok(second_coma_vec)
                     if !second_coma_vec.is_empty() && second_coma_vec.len() == comas_vec.len() =>
                 {
+                    let mut relation: Relation = Relation::new(
+                        table_name.to_string(),
+                        distant_table.to_string(),
+                        relation_type.to_string(),
+                    );
                     let vec_table_key: Vec<&str> = table_key.split_vec(comas_vec.clone());
                     let vec_distant_key: Vec<&str> = distant_key.split_vec(second_coma_vec);
-                    // Closure to avoid code duplication between the case we know the table it
-                    // refers a table, and the case we don't
-                    let mut common = |i: usize| {
-                        let curr_attr: String = vec_table_key
-                            .get(i)
-                            .unwrap()
-                            .replace_enclosing()
-                            .trim_leading_trailing();
-                        let curr_refered_key: String = vec_distant_key
-                            .get(i)
-                            .unwrap()
-                            .replace_enclosing()
-                            .trim_leading_trailing();
-                        dot_file.add_relation(
-                            table_name,
-                            distant_table,
-                            curr_attr.as_str(),
-                            curr_refered_key.as_str(),
-                            relation_type,
-                        );
-                        (curr_attr, curr_refered_key)
-                    };
                     //If we have a table as input
-                    if let Some(table) = dot_table {
-                        for i in 0..comas_vec.len() {
-                            let (curr_attr, curr_refered_key): (String, String) = common(i);
-                            let _: Result<usize, &str> = table.add_fk_nature_to_attribute(
-                                curr_attr.as_str(),
-                                distant_table,
-                                curr_refered_key.as_str(),
-                            );
-                        }
-                    // If we don't
-                    } else {
-                        for i in 0..comas_vec.len() {
-                            common(i);
-                        }
+                    for i in 0..comas_vec.len() {
+                        relation.push_pair_of_keys(
+                            vec_table_key
+                                .get(i)
+                                .unwrap()
+                                .replace_enclosing()
+                                .trim_leading_trailing(),
+                            vec_distant_key
+                                .get(i)
+                                .unwrap()
+                                .replace_enclosing()
+                                .trim_leading_trailing(),
+                        );
                     }
-                    Ok("Multiple keys processed")
+                    // If we don't
+                    Ok(Some(relation))
                 }
                 // Size of vec doesn't match, error return
                 _ => Err("Error in file format"),
             };
         }
         // Single key processing
-        _ => {
-            dot_file.add_relation(
-                table_name,
-                distant_table,
-                table_key.replace_enclosing().as_str(),
-                distant_key.replace_enclosing().as_str(),
-                relation_type,
-            );
-            if let Some(table) = dot_table {
-                let _: Result<usize, &str> = table.add_fk_nature_to_attribute(
-                    table_key.replace_enclosing().as_str(),
-                    distant_table,
-                    distant_key.replace_enclosing().as_str(),
-                );
-            }
-            Ok("Relation added")
-        }
+        _ => Ok(Some(Relation::new_with_single_pair(
+            table_name.to_string(),
+            distant_table.to_string(),
+            table_key.replace_enclosing().trim_leading_trailing(),
+            distant_key.replace_enclosing().trim_leading_trailing(),
+            relation_type.to_string(),
+        ))),
     };
 }
 
@@ -446,24 +424,31 @@ fn generate_relations(
 /// # Arguments
 ///
 /// * `args` - The CLI args
-pub fn process_file(args: Args) -> String {
-    let mut dot_file: DotFile = DotFile::new(
-        args.get_filename_without_specials().as_str(),
-        args.get_legend(),
-        args.get_dark_mode(),
-    );
+pub fn process_data(
+    data: &str,
+    restrictions: Option<&Restriction>,
+    dot_file_graph_name: &str,
+    legend: bool,
+    dark_mode: bool,
+) -> String {
+    let mut dot_file: DotFile = DotFile::new(dot_file_graph_name, legend, dark_mode);
 
-    let cleaned_content: &str = &RE_COMMENTS.replace(args.get_filecontent(), "");
+    let cleaned_content: &str = &remove_sql_comments(data);
 
     // Generate content from the declared tables.
     get_tables(cleaned_content).iter().for_each(|element| {
-        match convert_table_to_dot(
-            &mut dot_file,
-            element,
-            args.get_restrictions(),
-            args.get_dark_mode(),
-        ) {
-            Ok(m) => info!("File converted successfully in dot : {}", m),
+        match convert_table_to_dot(element, restrictions, dark_mode) {
+            Ok(result) => {
+                if let Some((dot_table, relations)) = result {
+                    dot_file.add_table(dot_table);
+                    for relation in relations {
+                        dot_file.add_relation(relation);
+                    }
+                    info!("Table added to dot file");
+                } else {
+                    info!("Table wasn't matching the restrictions");
+                }
+            }
             Err(e) => error!("An error happened while processing the sql file : {}", e),
         };
     });
@@ -471,17 +456,19 @@ pub fn process_file(args: Args) -> String {
     // Look after the other fks, declared on alter table statements.
     for element in RE_ALTERED_TABLE.captures_iter(cleaned_content) {
         match generate_relations(
-            &mut dot_file,
-            None,
             unwrap_captures_name_as_str!(element, "table_name", {
                 panic!("Regex error");
             }),
             unwrap_captures_name_as_str!(element, "altered_content", {
                 panic!("Regex error");
             }),
-            args.get_restrictions(),
+            restrictions,
         ) {
-            Ok(m) => info!("Alter table processed correctly : {}", m),
+            Ok(v) => {
+                if let Some(relation) = v {
+                    dot_file.add_relation(relation);
+                }
+            }
             Err(e) => error!("Error while processing alter table : {}", e),
         };
     }

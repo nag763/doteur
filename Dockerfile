@@ -6,7 +6,7 @@ WORKDIR /usr/src/doteur
 
 COPY ./ .
 
-RUN cargo install --path .
+RUN cargo install --path . --features "mysql_addons sqlite_addons"
 
 RUN rm -rf ./* 
 

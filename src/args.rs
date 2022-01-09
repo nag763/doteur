@@ -150,8 +150,8 @@ pub struct Args {
     filename: Option<String>,
     /// Sqlite Path
     sqlite_path: Option<String>,
-    /// File content
-    filecontent: String,
+    /// Data to transform
+    data: String,
     /// Output file name
     output_filename: String,
     /// Restrictions to apply
@@ -178,23 +178,24 @@ impl Args {
                 None => return Err("No file found for given input".into()),
             };
         }
-        let mut filecontent: Vec<String> = vec![];
+        let mut data: Vec<String> = vec![];
+        // Reads the filecontent of a directory, ignores subdirectories
         for path in path_str.iter() {
             if Path::new(path).is_dir() {
                 for subpath in fs::read_dir(path)? {
                     let file_path: &PathBuf = &subpath.unwrap().path();
                     // Ignore subdirs
                     if Path::new(file_path).is_file() {
-                        filecontent.push(fs::read_to_string(file_path)?);
+                        data.push(fs::read_to_string(file_path)?);
                     }
                 }
             } else {
-                filecontent.push(fs::read_to_string(path)?);
+                data.push(fs::read_to_string(path)?);
             }
         }
         Ok(Args {
             filename: Some(filename),
-            filecontent: filecontent.join("\n"),
+            data: data.join("\n"),
             output_filename: String::from("output.dot"),
             sqlite_path: None,
             restrictions: None,
@@ -213,7 +214,7 @@ impl Args {
         let opts: Opts = Opts::from_url(url)?;
         let mut args: Args = Args {
             filename: None,
-            filecontent: String::new(),
+            data: String::new(),
             output_filename: String::from("output.dot"),
             sqlite_path: None,
             restrictions: None,
@@ -249,7 +250,7 @@ impl Args {
             .pass(Some(db_password));
         let mut args: Args = Args {
             filename: None,
-            filecontent: String::new(),
+            data: String::new(),
             output_filename: String::from("output.dot"),
             sqlite_path: None,
             restrictions: None,
@@ -269,7 +270,7 @@ impl Args {
     pub fn new_from_sqlite(path: &str) -> Result<Args, rusqlite::Error> {
         let mut args: Args = Args {
             filename: None,
-            filecontent: String::new(),
+            data: String::new(),
             output_filename: String::from("output.dot"),
             sqlite_path: Some(path.to_string()),
             restrictions: None,
@@ -310,12 +311,12 @@ impl Args {
     }
 
     /// Returns the file content
-    pub fn get_filecontent(&self) -> &str {
-        self.filecontent.as_str()
+    pub fn get_data(&self) -> &str {
+        self.data.as_str()
     }
 
-    pub fn set_filecontent(&mut self, filecontent: String) {
-        self.filecontent = filecontent;
+    pub fn set_data(&mut self, filecontent: String) {
+        self.data = filecontent;
     }
 
     /// Get the output file name

@@ -1,6 +1,7 @@
 use std::fmt;
 
 use super::dot_table::DotTable;
+use super::relation::Relation;
 
 /// A DotFile object is used to render the compiled schema in argument.
 pub struct DotFile {
@@ -9,7 +10,7 @@ pub struct DotFile {
     /// The tables to include in the file
     dot_tables: Vec<DotTable>,
     /// The relations to include in the file
-    relations: Vec<String>,
+    relations: Vec<Relation>,
     /// The footer of the file
     footer: String,
     /// Define if the graph has to be in dark mode
@@ -27,7 +28,11 @@ impl fmt::Display for DotFile {
                 .map(|s| s.to_string())
                 .collect::<Vec<String>>()
                 .join("\n"),
-            self.relations.join("\n"),
+            self.relations
+                .iter()
+                .map(|r| r.clone().generate_dot_output(self.dark_mode))
+                .collect::<Vec<String>>()
+                .join("\n"),
             self.footer
         )
     }
@@ -68,22 +73,8 @@ impl DotFile {
     /// * `table_end` - The table where the relation ends
     /// * `key` - The key of the begin table
     /// * `refered` - The key of the end table
-    pub fn add_relation(
-        &mut self,
-        table_name: &str,
-        table_end: &str,
-        key: &str,
-        refered: &str,
-        on_delete: &str,
-    ) {
-        self.relations.push(generate_relation(
-            table_name,
-            table_end,
-            key,
-            refered,
-            on_delete,
-            self.dark_mode,
-        ));
+    pub fn add_relation(&mut self, relation: Relation) {
+        self.relations.push(relation);
     }
 }
 
@@ -140,40 +131,5 @@ digraph {0} {{\n
 
     {2}",
         filename, bg_color, dot_legend
-    )
-}
-
-/// Generate a dot relation with the given arguments
-///
-/// # Arguments
-///
-/// * `table_name` - The table where the relation begins
-/// * `table_end` - The table where the relation ends
-/// * `key` - The key of the begin table
-/// * `refered` - The key of the end table
-fn generate_relation(
-    table_name: &str,
-    table_end: &str,
-    key: &str,
-    refered: &str,
-    on_delete: &str,
-    dark_mode: bool,
-) -> String {
-    let color_scheme: &str = match dark_mode {
-        true => "fontcolor=white, color=white",
-        false => "",
-    };
-    let refer: &str = match cfg!(unix) {
-        true => "\u{27A1}",
-        _ => "refers",
-    };
-    let arrowhead: &str = match on_delete.to_uppercase().as_str() {
-        "SET NULL" => "odot",
-        "CASCADE" => "dot",
-        _ => "normal",
-    };
-    format!(
-        "\t{0} -> {1} [label=<<I>{2} {3} {4}</I>>, arrowhead = \"{5}\", fontsize=\"12.0\", {6}]",
-        table_name, table_end, key, refer, refered, arrowhead, color_scheme
     )
 }

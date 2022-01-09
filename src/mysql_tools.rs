@@ -35,6 +35,6 @@ pub fn process_mysql_connection(args: &mut Args, opts: Opts) -> Result<(), mysql
         tables.len()
     );
 
-    args.set_filecontent(file);
+    args.set_data(file);
     Ok(())
 }
