@@ -36,25 +36,28 @@ If you have any suggestion, or issue, please report it, it will help us to fix t
 
 ##### For Linux
 
-libssl-dev is the required if you installed a version including mysql (either doteur_mysql or doteur).
+libssl-dev is the required if you installed a version including mysql features (either doteur_mysql or doteur).
+
+libsqlite3-dev is the required if you installed a version including sqlite features (either doteur_sqlite or doteur).
+
 
 Also, it is required to have gcc installed with at least the version 9.
 
 ###### On Debian based systems
 
-```
-sudo apt-get install libssl gcc
+```bash
+sudo apt-get install gcc libssl-dev #4mysql libsqlite3-dev #4sqlite
 ```
 
 ###### On Fedora
 
-```
-sudo rpm -i libssl gcc
+```bash
+sudo rpm -i gcc libssl-dev #4mysql libsqlite3-dev #4sqlite
 ```
 ###### On arch based systems
 
-```
-sudo pacman -S install libssl gcc
+```bash
+sudo pacman -S gcc libssl-dev #4mysql libsqlite3-dev #4sqlite
 ```
 
 #### How to use through Docker
