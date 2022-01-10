@@ -52,7 +52,9 @@ sudo apt-get install gcc libssl-dev #4mysql libsqlite3-dev #4sqlite
 ###### On Fedora
 
 ```bash
-sudo rpm -i gcc libssl-dev #4mysql libsqlite3-dev #4sqlite
+sudo rpm -i gcc 
+libssl-dev #4mysql 
+libsqlite3-dev #4sqlite
 ```
 ###### On arch based systems
 
