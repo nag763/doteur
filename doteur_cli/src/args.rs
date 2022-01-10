@@ -91,7 +91,8 @@ pub fn get_clap_args() -> App<'static> {
                 .long("output")
                 .takes_value(true)
         );
-    let trailing_args: Vec<Arg> = vec![
+    let mut cfg_args: Vec<Arg> = Vec::new();
+    let mut remaining_args: Vec<Arg> = vec![
         Arg::new("include")
             .help("Filter to include only the given tables, accept simple regexs")
             .short('i')
@@ -117,8 +118,7 @@ pub fn get_clap_args() -> App<'static> {
     ];
     cfg_if! {
         if #[cfg(feature = "mysql_addons")] {
-            app.args(
-                vec![
+            let mut v: Vec<Arg> = vec![
                     Arg::new("url")
                         .help("Specificate that the input is an URL (i.e. mysql://usr:password@localhost:3306/database)")
                         .long("url")
@@ -127,19 +127,22 @@ pub fn get_clap_args() -> App<'static> {
                         .help("Starts an interactive dialog to connect to a remote database")
                         .long("it")
                         .conflicts_with_all(&["sqlite", "url"])
-                ]
-            ).args(trailing_args)
-        } else if #[cfg(feature = "sqlite_addons")] {
-            app.args(vec![
+                ];
+            cfg_args.append(&mut v);
+        }
+    }
+    cfg_if! {
+        if #[cfg(feature = "sqlite_addons")] {
+            let mut v: Vec<Arg> = vec![
                 Arg::new("sqlite")
                     .help("Specificate that the input is a sqlite3 database")
                     .long("sqlite")
-                ]
-            ).args(trailing_args)
-        } else {
-            app.args(trailing_args)
+                ];
+           cfg_args.append(&mut v);
         }
     }
+    cfg_args.append(&mut remaining_args);
+    app.args(cfg_args)
 }
 
 /// Cli Args, used to represent the options passed by the user to
