@@ -1,12 +1,12 @@
-FROM rust:1.52
+FROM rust:1.57
 
-RUN apt update; apt install graphviz -y
+RUN apt update; apt install graphviz gcc libssl-dev libsqlite3-dev -y
 
 WORKDIR /usr/src/doteur
 
 COPY ./ .
 
-RUN cargo install --path . --features "mysql_addons sqlite_addons"
+RUN cargo install --path doteur_cli --all-features
 
 RUN rm -rf ./* 
 
