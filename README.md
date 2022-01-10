@@ -46,20 +46,24 @@ Also, it is required to have gcc installed with at least the version 9.
 ###### On Debian based systems
 
 ```bash
-sudo apt-get install gcc libssl-dev #4mysql libsqlite3-dev #4sqlite
+sudo apt-get install gcc
+libssl-dev #for mysql features
+libsqlite3-dev #for sqlite features
 ```
 
 ###### On Fedora
 
 ```bash
 sudo rpm -i gcc 
-libssl-dev #4mysql 
-libsqlite3-dev #4sqlite
+libssl-dev #for mysql features
+libsqlite3-dev #for sqlite features
 ```
 ###### On arch based systems
 
 ```bash
-sudo pacman -S gcc libssl-dev #4mysql libsqlite3-dev #4sqlite
+sudo pacman -S gcc
+libssl-dev #for mysql features
+libsqlite3-dev #for sqlite features
 ```
 
 #### How to use through Docker
