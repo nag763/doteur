@@ -47,6 +47,7 @@ Also, it is required to have gcc installed with at least the version 9.
 
 ```bash
 sudo apt-get install gcc
+graphviz #required for rendering
 libssl-dev #for mysql features
 libsqlite3-dev #for sqlite features
 ```
@@ -55,6 +56,7 @@ libsqlite3-dev #for sqlite features
 
 ```bash
 sudo rpm -i gcc 
+graphviz #required for rendering
 libssl-dev #for mysql features
 libsqlite3-dev #for sqlite features
 ```
@@ -62,6 +64,7 @@ libsqlite3-dev #for sqlite features
 
 ```bash
 sudo pacman -S gcc
+graphviz #required for rendering
 libssl-dev #for mysql features
 libsqlite3-dev #for sqlite features
 ```
