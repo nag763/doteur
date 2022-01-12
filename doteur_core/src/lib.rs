@@ -12,7 +12,11 @@
 //! </ul>
 
 pub mod dot_structs;
+#[cfg(feature = "mysql_addons")]
+pub mod mysql_tools;
 pub mod restriction;
+#[cfg(feature = "sqlite_addons")]
+pub mod sqlite_tools;
 pub mod tools;
 
 mod add_traits;

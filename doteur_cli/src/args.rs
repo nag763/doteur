@@ -4,12 +4,12 @@ use std::path::{Path, PathBuf};
 use doteur_core::restriction::Restriction;
 
 #[cfg(feature = "mysql_addons")]
-use doteur_mysql::process_mysql_connection;
-#[cfg(feature = "mysql_addons")]
-use mysql::{Opts, OptsBuilder};
+use doteur_core::mysql_tools::{
+    process_mysql_connection_from_params, process_mysql_connection_from_url,
+};
 
 #[cfg(feature = "sqlite_addons")]
-use doteur_sqlite::process_sqlite_connection;
+use doteur_core::sqlite_tools::process_sqlite_connection;
 
 use clap::{App, Arg};
 
@@ -210,9 +210,8 @@ impl Args {
     ///
     /// * `url` - The path of the input
     #[cfg(feature = "mysql_addons")]
-    pub fn new_from_url(url: &str) -> Result<Args, mysql::Error> {
-        let opts: Opts = Opts::from_url(url)?;
-        let data: String = process_mysql_connection(opts)?;
+    pub fn new_from_url(url: &str) -> Result<Args, Box<dyn std::error::Error>> {
+        let data: String = process_mysql_connection_from_url(url)?;
         Ok(Args {
             filename: None,
             data,
@@ -239,14 +238,9 @@ impl Args {
         db_name: String,
         db_user: String,
         db_password: String,
-    ) -> Result<Args, mysql::Error> {
-        let opts_builder: OptsBuilder = OptsBuilder::new()
-            .ip_or_hostname(Some(db_url))
-            .tcp_port(db_port)
-            .db_name(Some(db_name))
-            .user(Some(db_user))
-            .pass(Some(db_password));
-        let data: String = process_mysql_connection(Opts::from(opts_builder))?;
+    ) -> Result<Args, Box<dyn std::error::Error>> {
+        let data: String =
+            process_mysql_connection_from_params(db_url, db_port, db_name, db_user, db_password)?;
         Ok(Args {
             filename: None,
             data,
@@ -263,7 +257,7 @@ impl Args {
     ///
     /// * `path` - The path to the sqlite file
     #[cfg(feature = "sqlite_addons")]
-    pub fn new_from_sqlite(path: &str) -> Result<Args, rusqlite::Error> {
+    pub fn new_from_sqlite(path: &str) -> Result<Args, Box<dyn std::error::Error>> {
         let data: String = process_sqlite_connection(path)?;
         Ok(Args {
             filename: None,

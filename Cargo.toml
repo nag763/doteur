@@ -2,6 +2,4 @@
 members = [
     "doteur_cli",
     "doteur_core",
-    "doteur_sqlite",
-    "doteur_mysql",
 ]

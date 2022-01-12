@@ -20,17 +20,13 @@ exclude = [
 ]
 
 [dependencies]
-doteur_core = { path = "../doteur_core" }
-doteur_sqlite = { path = "../doteur_sqlite", optional=true }
-doteur_mysql = { path = "../doteur_mysql", optional=true }
+doteur_core = { path = "../doteur_core", default-features = false }
 cfg-if = "1.0.0"
 which = "4.1.0"
 clap = { version = "3.0.3" }
 env_logger = "0.9.0"
-mysql = { version="21.0.2", optional=true}
 dialoguer = { version="0.9.0", optional=true}
-rusqlite = { version="0.26.3", optional=true}
 
 [features]
-mysql_addons = ["mysql", "dialoguer", "doteur_mysql"]
-sqlite_addons = ["rusqlite", "doteur_sqlite"]
+mysql_addons = ["dialoguer", "doteur_core/mysql_addons"]
+sqlite_addons = ["doteur_core/sqlite_addons"]
