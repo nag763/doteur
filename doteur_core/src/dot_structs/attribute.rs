@@ -1,5 +1,7 @@
 use std::fmt;
 
+use crate::DoteurCoreError;
+
 use super::super::add_traits::Trim;
 
 /// The attribute type
@@ -217,14 +219,14 @@ pub trait KeyValueMap {
     /// # Arguments
     ///
     /// * `attr_name` - Name of the attribute to be retrieved
-    fn index_of_attribute(&mut self, attr_name: &str) -> Result<usize, &'static str>;
+    fn index_of_attribute(&mut self, attr_name: &str) -> Result<usize, DoteurCoreError>;
 
     /// Add PK nature to an attribute in the vec
     ///
     /// # Arguments
     ///
     /// * `attr_name` - Name of the attribute to be retrieved
-    fn add_pk_nature_to_attribute(&mut self, attr_name: &str) -> Result<usize, &'static str>;
+    fn add_pk_nature_to_attribute(&mut self, attr_name: &str) -> Result<usize, DoteurCoreError>;
 
     /// Add FK nature to an existing attribute
     ///
@@ -238,7 +240,7 @@ pub trait KeyValueMap {
         attr_name: &str,
         foreign_table: &str,
         foreign_key: &str,
-    ) -> Result<usize, &'static str>;
+    ) -> Result<usize, DoteurCoreError>;
 
     /// Push attribute or replace it
     ///
@@ -247,7 +249,7 @@ pub trait KeyValueMap {
 }
 
 impl KeyValueMap for Vec<Attribute> {
-    fn index_of_attribute(&mut self, attr_name: &str) -> Result<usize, &'static str> {
+    fn index_of_attribute(&mut self, attr_name: &str) -> Result<usize, DoteurCoreError> {
         let index: Option<usize> = self
             .iter_mut()
             .enumerate()
@@ -257,7 +259,9 @@ impl KeyValueMap for Vec<Attribute> {
 
         match index {
             Some(v) => Ok(v),
-            None => Err("No such attribute"),
+            None => Err(DoteurCoreError::logic_error(
+                format!("Attribute {} not found", attr_name).as_str(),
+            )),
         }
     }
 
@@ -270,13 +274,19 @@ impl KeyValueMap for Vec<Attribute> {
         };
     }
 
-    fn add_pk_nature_to_attribute(&mut self, attr_name: &str) -> Result<usize, &'static str> {
+    fn add_pk_nature_to_attribute(&mut self, attr_name: &str) -> Result<usize, DoteurCoreError> {
         match self.index_of_attribute(attr_name) {
             Ok(index) => {
                 self[index].add_pk_nature();
                 Ok(index)
             }
-            Err(_) => Err("Index not found"),
+            Err(_) => Err(DoteurCoreError::logic_error(
+                format!(
+                    "Can't add pk nature to the {} attribute not present in the vec",
+                    attr_name
+                )
+                .as_str(),
+            )),
         }
     }
 
@@ -285,13 +295,19 @@ impl KeyValueMap for Vec<Attribute> {
         attr_name: &str,
         foreign_table: &str,
         foreign_key: &str,
-    ) -> Result<usize, &'static str> {
+    ) -> Result<usize, DoteurCoreError> {
         match self.index_of_attribute(attr_name) {
             Ok(index) => {
                 self[index].add_fk_nature(foreign_table.to_string(), foreign_key.to_string());
                 Ok(index)
             }
-            Err(_) => Err("Index not found"),
+            Err(_) => Err(DoteurCoreError::logic_error(
+                format!(
+                    "Can't add fk nature to the {} attribute not present in the vec",
+                    attr_name
+                )
+                .as_str(),
+            )),
         }
     }
 }

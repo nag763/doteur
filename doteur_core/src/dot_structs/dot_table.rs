@@ -1,5 +1,7 @@
 use std::fmt;
 
+use crate::errors::DoteurCoreError;
+
 use super::super::add_traits::Trim;
 use super::attribute::{Attribute, KeyValueMap};
 
@@ -87,7 +89,7 @@ impl DotTable {
         key: &str,
         fk_table: &str,
         fk_col: &str,
-    ) -> Result<usize, &'static str> {
+    ) -> Result<usize, DoteurCoreError> {
         self.attributes
             .add_fk_nature_to_attribute(key, fk_table, fk_col)
     }
@@ -97,7 +99,7 @@ impl DotTable {
     /// # Arguments
     ///
     /// * `key` - The key of the attribute in the table
-    pub fn add_pk_nature_to_attribute(&mut self, key: &str) -> Result<usize, &'static str> {
+    pub fn add_pk_nature_to_attribute(&mut self, key: &str) -> Result<usize, DoteurCoreError> {
         self.attributes.add_pk_nature_to_attribute(key)
     }
 }

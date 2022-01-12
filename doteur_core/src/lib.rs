@@ -20,10 +20,12 @@ pub mod sqlite_tools;
 pub mod tools;
 
 mod add_traits;
+mod errors;
 
 use std::borrow::Cow;
 
 use crate::add_traits::{Replacable, SplitVec, Trim};
+use crate::errors::DoteurCoreError;
 use crate::restriction::Restriction;
 use crate::tools::detect_comas;
 
@@ -46,12 +48,12 @@ macro_rules! unwrap_captures_name_as_str {
     };
     ($captures:ident, $key:expr, $err_label:expr) => {
         unwrap_captures_name_as_str!($captures, $key, {
-            return Err($err_label);
+            return Err(DoteurCoreError::regex_error($err_label));
         })
     };
     ($captures:ident, $key:expr) => {
         unwrap_captures_name_as_str!($captures, $key, {
-            return Err("Named group not found, early return");
+            return Err(DoteurCoreError::regex_error("Group not found in regex"));
         })
     };
 }
@@ -112,7 +114,7 @@ fn convert_table_to_dot(
     input: &str,
     restrictions: Option<&Restriction>,
     dark_mode: bool,
-) -> Result<Option<(DotTable, Vec<Relation>)>, &'static str> {
+) -> Result<Option<(DotTable, Vec<Relation>)>, DoteurCoreError> {
     let captures: Captures = RE_TABLE_NAME.captures(input).unwrap();
 
     let table_name: String = unwrap_captures_name_as_str!(
@@ -146,7 +148,9 @@ fn convert_table_to_dot(
         }
         Err(e) => {
             error!("Error in comas parsing for table : {0}\n{1}", table_name, e);
-            return Err("Attributes malformed");
+            return Err(DoteurCoreError::user_input_malformed(
+                "Attributes malformed",
+            ));
         }
     };
 
@@ -197,7 +201,7 @@ fn convert_table_to_dot(
                             }
                         }
                         Err(e) => {
-                            error!("An error happened while processing foreign key: {}", e)
+                            error!("An error happened while processing foreign key: {:#?}", e)
                         }
                     }
                 }
@@ -210,7 +214,7 @@ fn convert_table_to_dot(
                         match generate_attributes(&mut dot_table, line) {
                             Ok(m) => info!("PK processed correctly : {}", m),
                             Err(e) => {
-                                error!("An error happened while processing primary key : {}", e)
+                                error!("An error happened while processing primary key : {:#?}", e)
                             }
                         }
                     } else {
@@ -221,7 +225,7 @@ fn convert_table_to_dot(
                         match generate_primary(&mut dot_table, line) {
                             Ok(m) => info!("PK processed correctly : {}", m),
                             Err(e) => {
-                                error!("An error happened while processing primary key : {}", e)
+                                error!("An error happened while processing primary key : {:#?}", e)
                             }
                         }
                     }
@@ -243,7 +247,10 @@ fn convert_table_to_dot(
 ///
 /// * `dot_table` - A mutable DotTable object where the attributes will be written
 /// * `attr` - The attributes as string
-fn generate_attributes(dot_table: &mut DotTable, attr: &str) -> Result<&'static str, &'static str> {
+fn generate_attributes(
+    dot_table: &mut DotTable,
+    attr: &str,
+) -> Result<&'static str, DoteurCoreError> {
     // If a PK is present in line, process attribute as pk
     if RE_PK_IN_LINE.is_match(attr) {
         let trimmed_line: &str = &RE_PK_IN_LINE.replace(attr, "");
@@ -276,17 +283,17 @@ fn generate_attributes(dot_table: &mut DotTable, attr: &str) -> Result<&'static 
 ///
 /// * `dot_table` - A mutable DotTable object where the attributes will be written
 /// * `line` - The line as string
-fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<&'static str, &'static str> {
+fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<&'static str, DoteurCoreError> {
     // Assert that the line matches regex and get the captures
     let captures: Captures = match RE_PK_DEF.captures(line) {
         Some(captures) => captures,
-        None => return Err("Regex input err"),
+        None => return Err(DoteurCoreError::regex_error("Input error")),
     };
     // Check that the group column name has been captured, and detect the comas within
     let (col_name, comas_detected): (&str, Result<Vec<usize>, &str>) =
         match captures.name("col_name") {
             Some(v) => (v.as_str(), detect_comas(v.as_str())),
-            None => return Err("Not a PK"),
+            None => return Err(DoteurCoreError::regex_error("Input is not a primary key")),
         };
     match comas_detected {
         //If severeal comas are detected
@@ -303,7 +310,7 @@ fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<&'static str
                         .is_err()
                 })
             {
-                Err("One or more errors for multiple PK attr def")
+                Err(DoteurCoreError::regex_error("One or more error occured"))
             } else {
                 Ok("Multiple attributes set as PK")
             }
@@ -337,15 +344,15 @@ fn generate_relations(
     table_name: &str,
     line: &str,
     restrictive_regex: Option<&Restriction>,
-) -> Result<Option<Relation>, &'static str> {
+) -> Result<Option<Relation>, DoteurCoreError> {
     // If the regex doesn't match the input, early return
     if !RE_FK_DEF.is_match(line) {
-        return Err("Not a relation");
+        return Err(DoteurCoreError::regex_error("Input isn't a relation"));
     }
 
     let captures: Captures = match RE_FK_DEF.captures(line) {
         Some(v) => v,
-        None => return Err("Regex error"),
+        None => return Err(DoteurCoreError::regex_error("Capture error")),
     };
 
     let distant_table: &str = unwrap_captures_name_as_str!(captures, "distant_table");
@@ -399,7 +406,9 @@ fn generate_relations(
                     Ok(Some(relation))
                 }
                 // Size of vec doesn't match, error return
-                _ => Err("Error in file format"),
+                _ => Err(DoteurCoreError::user_input_malformed(
+                    "Error in file format",
+                )),
             };
         }
         // Single key processing

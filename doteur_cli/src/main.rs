@@ -1,4 +1,5 @@
 mod args;
+mod errors;
 
 #[cfg(feature = "mysql_addons")]
 use dialoguer::{Input, Password};
@@ -6,6 +7,7 @@ use std::process::Command;
 use which::which;
 
 use crate::args::{get_clap_args, Args, POSSIBLE_DOTS_OUTPUT};
+use crate::errors::DoteurCliError;
 
 use doteur_core::tools::write_output_to_file;
 use doteur_core::{contains_tables, process_data};
@@ -18,11 +20,8 @@ fn main() {
     std::process::exit(match run_main() {
         Ok(_) => 0,
         Err(err) => {
-            eprintln!("An error happened : {:?}", err);
-            eprintln!(
-                "Please use the --help argument if you need further informations about the tool."
-            );
-            eprintln!("If you think the error shouldn't be happening, please raise and detail an issue on github : https://github.com/nag763/doteur/issues/new/choose");
+            eprintln!("An error happened : {}", err);
+            eprintln!("\nIf you think the error shouldn't be happening, please raise and detail an issue on github : https://github.com/nag763/doteur/issues/new/choose");
             eprintln!("The application finished with return code 1");
             1
         }
@@ -47,9 +46,9 @@ fn run_main() -> Result<(), Box<dyn std::error::Error>> {
         // the graphviz library is in the system's path
         if file_ext != "dot" {
             if which("dot").is_err() {
-                Err("The dot exe isn't in your path, we couldn't write the output.If you work on linux, use your package manager to download graphviz.If you work on windows, refer to the tutorial or download the tool via the official graphviz site.Graphviz official download page : https://graphviz.org/download/.".into())
+                Err(DoteurCliError::dot_exe_not_in_path().into())
             } else if !Args::ext_supported(file_ext) {
-                Err(format!("The given extension isn't supported. Please verify it is one of the following :\n\n{}", POSSIBLE_DOTS_OUTPUT.join(";")).into())
+                Err(DoteurCliError::ext_not_supported(&POSSIBLE_DOTS_OUTPUT.join(";")).into())
             } else {
                 write_output_to_file(output_content.as_str(), ".output.dot")?;
                 Command::new("dot")
@@ -73,7 +72,7 @@ fn run_main() -> Result<(), Box<dyn std::error::Error>> {
             Ok(())
         }
     } else {
-        Err("No tables have been found for the given input".into())
+        Err(DoteurCliError::no_table_found().into())
     }
 }
 
@@ -115,7 +114,7 @@ fn get_args_from_clap() -> Result<Args, Box<dyn std::error::Error>> {
                 args = Args::new_connect_with_params(db_url, db_port, db_name, db_user, db_password)?;
             // Should be unreachable as the interactive command isn't compiled in that case
             } else {
-                return Err("Not available for your configuration".into());
+                return Err(DoteurCliError::not_available_for_config().into());
             }
         }
     } else {
@@ -123,7 +122,7 @@ fn get_args_from_clap() -> Result<Args, Box<dyn std::error::Error>> {
         // input arg
         let input: Vec<&str> = match matches.values_of("input") {
             Some(v) => v.collect(),
-            None => return Err("Please precise at least one argument as input".into()),
+            None => return Err(DoteurCliError::no_input().into()),
         };
         // Fake error thrown by clippy
         #[allow(clippy::if_same_then_else)]
@@ -131,31 +130,28 @@ fn get_args_from_clap() -> Result<Args, Box<dyn std::error::Error>> {
             cfg_if! {
                 if #[cfg(feature="mysql_addons")] {
                     if input.len() != 1 {
-                        return Err(
-                            "Please ensure that if the url argument is present that only one url is passed"
-                                .into(),
+                        return Err(DoteurCliError::bad_input("Please ensure that if the url argument is present that only one url is passed").into(),
                         );
                     }
                     args = Args::new_from_url(input[0])?;
                 // Shouldn't be reachable as it the subcommand wouldn't be compiled without the
                 // mysql feature
                 } else {
-                    return Err("Not available for your configuration".into());
+                    return Err(DoteurCliError::not_available_for_config().into());
                 }
             }
         } else if matches.is_present("sqlite") {
             cfg_if! {
                 if #[cfg(feature="sqlite_addons")] {
                     if input.len() != 1 {
-                        return Err(
-                            "Please ensure that only one sqlite database path is passed as argument".into(),
+                        return Err(DoteurCliError::bad_input("Please ensure that only one sqlite database path is passed as argument").into(),
                         );
                     }
                     args = Args::new_from_sqlite(input[0])?;
                 // Shouldn't be reachable as the option shouldn't be compiled without the sqlite
                 // feature
                 } else {
-                    return Err("Not available for your configuration".into());
+                    return Err(DoteurCliError::not_available_for_config().into());
                 }
             }
         } else {
