@@ -1,4 +1,4 @@
-## Welcome to GitHub Pages
+## Welcome to Doteur's doc
 
 You can use the [editor on GitHub](https://github.com/nag763/doteur/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
 
