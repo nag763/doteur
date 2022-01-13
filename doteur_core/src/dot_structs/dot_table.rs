@@ -7,6 +7,9 @@ use super::attribute::{Attribute, KeyValueMap};
 
 /// A dot table is the corresponding rendering of a sql table in a dot file
 pub struct DotTable {
+    /// Name of the table
+    table_name: String,
+    /// Header of the table
     header: String,
     /// The attribute of the table
     attributes: Vec<Attribute>,
@@ -42,11 +45,16 @@ impl DotTable {
     pub fn new(table_name: &str, dark_mode: bool) -> DotTable {
         let header: String = generate_table_header(table_name, dark_mode);
         DotTable {
+            table_name: table_name.to_string(),
             header,
             attributes: Vec::new(),
             footer: String::from("</TABLE> >]"),
             dark_mode,
         }
+    }
+
+    pub fn get_table_name(&self) -> &str {
+        self.table_name.as_str()
     }
 
     /// Adds an attribute to the table

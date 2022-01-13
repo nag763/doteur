@@ -114,7 +114,7 @@ fn convert_table_to_dot(
     input: &str,
     restrictions: Option<&Restriction>,
     dark_mode: bool,
-) -> Result<Option<(DotTable, Vec<Relation>)>, DoteurCoreError> {
+) -> Result<Option<(String, DotTable, Vec<Relation>)>, DoteurCoreError> {
     let captures: Captures = RE_TABLE_NAME.captures(input).unwrap();
 
     let table_name: String = unwrap_captures_name_as_str!(
@@ -123,7 +123,10 @@ fn convert_table_to_dot(
         "Regex error, the input is either not a sql table or isn't parsed properly by the process"
     )
     .trim_leading_trailing();
-    debug!("Currently processing table {}", table_name);
+    info!(
+        "Starting to convert the SQL table {} into a DOT table",
+        table_name
+    );
 
     // Check restrictions, if some are present, early return if table doesn't match restrictions
     if !matches_optionable_restriction!(restrictions, &table_name) {
@@ -160,14 +163,23 @@ fn convert_table_to_dot(
     for line in lines {
         // If column type is common attribute
         if !RE_COL_TYPE.is_match(line) {
-            debug!("Line {} is a column def", line.trim_leading_trailing());
+            debug!(
+                "Line {} is an attribute definition",
+                line.trim_leading_trailing()
+            );
             match generate_attributes(&mut dot_table, line) {
-                Ok(m) => info!("Attribute processed correctly : {}", m),
+                Ok(col_name) => info!(
+                    "Attribute {} processed correctly and added to table {}",
+                    col_name, table_name
+                ),
                 Err(e) => error!("An error happened while processing line : {}", e),
             }
         // If column type is a relation or an index
         } else {
-            debug!("Line {} is not a column def", line.trim_leading_trailing());
+            debug!(
+                "Line {} has been deteceted has a relation definition",
+                line.trim_leading_trailing()
+            );
             let col_type: Captures = match RE_COL_TYPE.captures(line) {
                 Some(v) => v,
                 None => {
@@ -177,7 +189,7 @@ fn convert_table_to_dot(
             };
 
             let key_type: String = unwrap_captures_name_as_str!(col_type, "key_type", {
-                warn!("Key type isn't interpreted by the process");
+                warn!("Key type isn't handled, line will be ignored");
                 continue;
             })
             .to_uppercase();
@@ -189,32 +201,42 @@ fn convert_table_to_dot(
                     );
                     match generate_relations(table_name.as_str(), line, restrictions) {
                         Ok(v) => {
+                            // If the relations matched the restrictions
                             if let Some(relation) = v {
+                                // Add them to the function buffer
                                 relations.push(relation.clone());
+                                debug!("{} relations have been added following the processing of the line {}", relation.get_number_of_pairs_of_keys(), line.trim_leading_trailing());
+                                // And add the FK nature to the attributes in table
                                 for pair_key_refered in relation.get_pairs_of_keys() {
-                                    let _ = dot_table.add_fk_nature_to_attribute(
+                                    match dot_table.add_fk_nature_to_attribute(
                                         pair_key_refered.0.as_str(),
                                         relation.get_refered_table(),
                                         pair_key_refered.1.as_str(),
-                                    );
+                                    ) {
+                                        Ok(_) => info!("Attribute {} of table {} has been detected as FK", pair_key_refered.0, table_name),
+                                        Err(e) => error!("An error happened while adding the FK nature of attribute {} to the table {} : {}", pair_key_refered.0, table_name, e)
+                                    };
                                 }
                             }
                         }
                         Err(e) => {
-                            error!("An error happened while processing foreign key: {:#?}", e)
+                            error!("An error happened while processing the foreign key: {}", e)
                         }
                     }
                 }
                 "PRIMARY" => {
                     if !RE_PK_DEF.is_match(line) {
                         debug!(
-                            "Line {} has been found as a primary key def including a column def",
+                            "Line {} has been found as a primary key definition including an attribute definition",
                             line.trim_leading_trailing()
                         );
                         match generate_attributes(&mut dot_table, line) {
-                            Ok(m) => info!("PK processed correctly : {}", m),
+                            Ok(col_name) => info!(
+                                "PK {} with attribute definition added to table {}",
+                                col_name, table_name
+                            ),
                             Err(e) => {
-                                error!("An error happened while processing primary key : {:#?}", e)
+                                error!("An error happened while processing primary key : {}", e)
                             }
                         }
                     } else {
@@ -223,9 +245,12 @@ fn convert_table_to_dot(
                             line.trim_leading_trailing()
                         );
                         match generate_primary(&mut dot_table, line) {
-                            Ok(m) => info!("PK processed correctly : {}", m),
+                            Ok(m) => info!(
+                                "PK(s) processed correctly {} and added to the table {}",
+                                m, table_name
+                            ),
                             Err(e) => {
-                                error!("An error happened while processing primary key : {:#?}", e)
+                                error!("An error happened while processing primary key : {}", e)
                             }
                         }
                     }
@@ -234,11 +259,8 @@ fn convert_table_to_dot(
             }
         }
     }
-    info!(
-        "The table {} has been added to the file with success",
-        table_name
-    );
-    Ok(Some((dot_table, relations)))
+    info!("The table {} has been processed with success", table_name);
+    Ok(Some((table_name, dot_table, relations)))
 }
 
 /// Generate the attributes and write them into the dot_table
@@ -247,33 +269,31 @@ fn convert_table_to_dot(
 ///
 /// * `dot_table` - A mutable DotTable object where the attributes will be written
 /// * `attr` - The attributes as string
-fn generate_attributes(
-    dot_table: &mut DotTable,
-    attr: &str,
-) -> Result<&'static str, DoteurCoreError> {
+fn generate_attributes(dot_table: &mut DotTable, attr: &str) -> Result<String, DoteurCoreError> {
+    let col_name: String;
     // If a PK is present in line, process attribute as pk
     if RE_PK_IN_LINE.is_match(attr) {
         let trimmed_line: &str = &RE_PK_IN_LINE.replace(attr, "");
         let captures: Captures = RE_COL_DEF.captures(trimmed_line).unwrap();
+        col_name = unwrap_captures_name_as_str!(captures, "col_name")
+            .replace_enclosing()
+            .trim_leading_trailing();
         dot_table.add_attribute_pk(
-            unwrap_captures_name_as_str!(captures, "col_name")
-                .replace_enclosing()
-                .trim_leading_trailing()
-                .as_str(),
+            col_name.as_str(),
             unwrap_captures_name_as_str!(captures, "col_def"),
         );
-        Ok("PK detected")
+        Ok(col_name)
     // Otherwise, process as atribute
     } else {
         let captures: Captures = RE_COL_DEF.captures(attr).unwrap();
+        col_name = unwrap_captures_name_as_str!(captures, "col_name")
+            .replace_enclosing()
+            .trim_leading_trailing();
         dot_table.add_attribute(
-            unwrap_captures_name_as_str!(captures, "col_name")
-                .replace_enclosing()
-                .trim_leading_trailing()
-                .as_str(),
+            col_name.as_str(),
             unwrap_captures_name_as_str!(captures, "col_def"),
         );
-        Ok("COLUMN DEF detected")
+        Ok(col_name)
     }
 }
 
@@ -283,52 +303,38 @@ fn generate_attributes(
 ///
 /// * `dot_table` - A mutable DotTable object where the attributes will be written
 /// * `line` - The line as string
-fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<&'static str, DoteurCoreError> {
+fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<String, DoteurCoreError> {
     // Assert that the line matches regex and get the captures
     let captures: Captures = match RE_PK_DEF.captures(line) {
         Some(captures) => captures,
         None => return Err(DoteurCoreError::regex_error("Input error")),
     };
     // Check that the group column name has been captured, and detect the comas within
-    let (col_name, comas_detected): (&str, Result<Vec<usize>, &str>) =
+    let (col_name, comas_detected): (String, Result<Vec<usize>, &str>) =
         match captures.name("col_name") {
-            Some(v) => (v.as_str(), detect_comas(v.as_str())),
+            Some(v) => (v.as_str().to_string(), detect_comas(v.as_str())),
             None => return Err(DoteurCoreError::regex_error("Input is not a primary key")),
         };
     match comas_detected {
         //If severeal comas are detected
         Ok(comas_vec) if !comas_vec.is_empty() => {
-            if col_name
-                .to_string()
-                .split_vec(comas_vec)
-                .iter()
-                .any(|attr| {
-                    dot_table
-                        .add_pk_nature_to_attribute(
-                            attr.replace_enclosing().trim_leading_trailing().as_str(),
-                        )
-                        .is_err()
-                })
-            {
-                Err(DoteurCoreError::regex_error("One or more error occured"))
-            } else {
-                Ok("Multiple attributes set as PK")
+            for attr in col_name.split_vec(comas_vec) {
+                dot_table.add_pk_nature_to_attribute(
+                    attr.replace_enclosing().trim_leading_trailing().as_str(),
+                )?;
             }
         }
         // If no comas are detected
         _ => {
-            if let Err(e) = dot_table.add_pk_nature_to_attribute(
+            dot_table.add_pk_nature_to_attribute(
                 col_name
                     .replace_enclosing()
                     .trim_leading_trailing()
                     .as_str(),
-            ) {
-                Err(e)
-            } else {
-                Ok("PK nature added")
-            }
+            )?;
         }
     }
+    Ok(col_name)
 }
 
 /// Generates the relations and write them into the DotFile
@@ -438,44 +444,51 @@ pub fn process_data(
 
     let cleaned_content: &str = &remove_sql_comments(data);
 
+    info!("Starting to process the tables for the given input");
     // Generate content from the declared tables.
-    get_tables(cleaned_content).iter().for_each(|element| {
-        match convert_table_to_dot(element, restrictions, dark_mode) {
+    for table in get_tables(cleaned_content) {
+        match convert_table_to_dot(table, restrictions, dark_mode) {
             Ok(result) => {
-                if let Some((dot_table, relations)) = result {
+                if let Some((table_name, dot_table, relations)) = result {
                     dot_file.add_table(dot_table);
                     for relation in relations {
                         dot_file.add_relation(relation);
                     }
-                    info!("Table added to dot file");
+                    info!("Table {} added to dot file", table_name);
                 } else {
-                    info!("Table wasn't matching the restrictions");
+                    info!("The table hasn't been added as it wasn't matching the restrictions");
                 }
             }
-            Err(e) => error!("An error happened while processing the sql file : {}", e),
+            Err(e) => error!("An error happened while processing a table : {}", e),
         };
-    });
+    }
 
     // Look after the other fks, declared on alter table statements.
     for element in RE_ALTERED_TABLE.captures_iter(cleaned_content) {
-        match generate_relations(
-            unwrap_captures_name_as_str!(element, "table_name", {
-                panic!("Regex error");
-            }),
-            unwrap_captures_name_as_str!(element, "altered_content", {
-                panic!("Regex error");
-            }),
-            restrictions,
-        ) {
+        // Those errors shouldn't be thrown
+        let table_name: &str = unwrap_captures_name_as_str!(element, "table_name", {
+            panic!("Regex error");
+        });
+        let altered_content: &str = unwrap_captures_name_as_str!(element, "altered_content", {
+            panic!("Regex error");
+        });
+        match generate_relations(table_name, altered_content, restrictions) {
             Ok(v) => {
                 if let Some(relation) = v {
                     dot_file.add_relation(relation);
+                    info!("New relation found and added for table : {}", table_name);
+                } else {
+                    info!(
+                        "Relation for table : {} didn't match the restrictions",
+                        table_name
+                    );
                 }
             }
             Err(e) => error!("Error while processing alter table : {}", e),
         };
     }
 
+    info!("The data has been processed into the data file with sucess");
     // Returns the content generated
     dot_file.to_string()
 }

@@ -64,6 +64,10 @@ impl Relation {
         self.keys.clone()
     }
 
+    pub fn get_number_of_pairs_of_keys(&self) -> usize {
+        self.keys.len()
+    }
+
     pub fn get_refered_table(&self) -> &str {
         self.refered_table.as_str()
     }
