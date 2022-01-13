@@ -4,6 +4,6 @@ output.dot
 .output.dot
 **/.output.dot
 **/output.dot
-docs/Gemfile*
+docs/Gemfile.*
 docs/_site
 docs/vendor
