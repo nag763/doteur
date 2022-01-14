@@ -44,3 +44,4 @@ plugins:
 #   - vendor/ruby/
 url: https://nag763.github.io
 domain: nag763.github.io
+destination: ../docs
