@@ -1,42 +1,45 @@
 ---
+title: Welcome
 layout: home
+nav_order: 1
 ---
 
-## Doteur wiki
+## About this tool
 
-You can use the [editor on GitHub](https://github.com/nag763/doteur/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+Doteur is a CLI (Command Line Interface) tool that has for purpose to render the SQL schemas into good looking graphs. This will help you to easily understand the structure of a large database and understand what happens behind the scenes of your project.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
-### Markdown
+Besides, you will be able to use the large panel of features to either sort the tables you want to visualize or render with a different color scheme for instance.
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+So far the tool handles both the MySQL and SQLite syntaxes, but it is planned to handle the Postgre one as soon as the formers will be considered as stable. The input of the tool can be either a sql file export, or given the version you downloaded, connect to either a MySQL running instance or an existing SQLite database. 
 
-```markdown
-Syntax highlighted code block
+The tool has been developed on Linux, but is also available for Windows 10 and 11 and macOS.
 
-# Header 1
-## Header 2
-### Header 3
+## Output example
 
-- Bulleted
-- List
+![/assets/sample.svg](assets/sample.svg)
 
-1. Numbered
-2. List
+## Introduction
 
-**Bold** and _Italic_ and `Code` text
+Welcome to this wiki, you will find here useful informations about how to use the tool, how to install it and how to report bugs.
 
-[Link](url) and ![Image](src)
-```
+I hope you will appreciate this tool as much as I appreciated developping it, don't hesitate to add a star on this project on GitHub if you like this project.
 
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
+## About this project
 
-### Jekyll Themes
+- <u>Author :</u> LABEYE Loïc
+- <u>Licence :</u> [MIT](license)
+- <u>Official website :</u> https://doteur.net
+- <u>Latest version :</u> 0.4.1
+- <u>Platforms available :</u>
+	- Linux
+		- [X] Tested
+	- Windows
+		- [ ] Untested
+	- Darwin (Apple)
+		- [ ] Untested
+- <a href="https://github.com/nag763/doteur">Link to Github source</a>
+- <a href="https://crates.io/crates/doteur">Link to Crate clik</a>
+- <a href="https://hub.docker.com/r/nag763/doteur">Link to Docker image</a>
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/nag763/doteur/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
 

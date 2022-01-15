@@ -8,10 +8,17 @@ github_username:  nag763
 github_repo: doteur
 
 markdown: kramdown
-theme: minimal-mistakes-jekyll
-minimal_mistakes_skin: "dark"
-plugins:
-  - jekyll-feed
+theme: just-the-docs
 url: https://nag763.github.io
 domain: nag763.github.io
 destination: ../docs
+logo: "./assets/logo.png"
+aux_links:
+  "GitHub project":
+          - "https://github.com/nag763/doteur"
+  "Offical website link":
+          - "https://doteur.net/"
+heading_anchors: true
+footer_content: "Copyright &copy; 2021-2022 LABEYE Loïc. Distributed by an <a href=\"https://github.com/nag763/doteur/LICENCE.MD\">MIT Licence</a>"
+last_edit_timestamp: true
+
