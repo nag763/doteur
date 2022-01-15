@@ -1,6 +1,7 @@
 ---
 title: How to use
 nav_order: 3
+permalink: usage
 ---
 
 You will find in this section the instructions on how to use this tool on your computer. Following this guide, you should be able to use this tool at your will.
