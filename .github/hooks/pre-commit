@@ -5,8 +5,14 @@ cargo fmt --all -- --check || { echo 'Format is incorrect' ; exit 1; }
 
 echo "Running clippy checker"
 cargo clippy --all-features || { echo 'Linter found errors' ; exit 1; }
+cargo clippy || { echo 'Linter found errors' ; exit 1; }
+cargo clippy --features "mysql_addons" || { echo 'Linter found errors' ; exit 1; }
+cargo clippy --features "sqlite_addons" || { echo 'Linter found errors' ; exit 1; }
 
 echo "Running common tests"
 cargo test || { echo 'Tests are either outdated or incorrect' ; exit 1; }
+cargo test --all-features || { echo 'Tests are either outdated or incorrect' ; exit 1; }
+cargo test --features "mysql_addons" || { echo 'Tests are either outdated or incorrect' ; exit 1; }
+cargo test --features "sqlite_addons" || { echo 'Tests are either outdated or incorrect' ; exit 1; }
 
 echo "Code ready for commit mate !"

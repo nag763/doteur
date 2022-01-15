@@ -6,7 +6,6 @@ enum DoteurCliErrorType {
     DotExeNotInPath,
     ExtensionNotSupported,
     NoTableFound,
-    NotAvailableForConfig,
     NoInput,
     BadInput,
 }
@@ -23,7 +22,6 @@ impl fmt::Display for DoteurCliError {
             DoteurCliErrorType::DotExeNotInPath => "The dot exe isn't in your path, we couldn't write the output.If you work on linux, use your package manager to download graphviz.If you work on windows, refer to the tutorial or download the tool via the official graphviz site.Graphviz official download page : https://graphviz.org/download/.".to_string(),
             DoteurCliErrorType::ExtensionNotSupported => format!("The given extension isn't supported. Please verify it is one of the following :\n\n{}", self.message.as_ref().unwrap()),
             DoteurCliErrorType::NoTableFound => "No table found for the given input".to_string(),
-            DoteurCliErrorType::NotAvailableForConfig => "This option shouldn't be available for your config".to_string(),
             DoteurCliErrorType::NoInput => "Please precise at least one argument as input".to_string(),
             DoteurCliErrorType::BadInput => self.message.as_ref().unwrap().to_string()
        };
@@ -53,14 +51,7 @@ impl DoteurCliError {
             r#type: DoteurCliErrorType::NoTableFound,
         }
     }
-    // Allow as it depends from the feature it's compiled with
-    #[allow(dead_code)]
-    pub fn not_available_for_config() -> DoteurCliError {
-        DoteurCliError {
-            message: None,
-            r#type: DoteurCliErrorType::NotAvailableForConfig,
-        }
-    }
+
     pub fn no_input() -> DoteurCliError {
         DoteurCliError {
             message: None,
