@@ -12,6 +12,8 @@ enum DoteurCoreErrorType {
 pub struct DoteurCoreError {
     r#type: DoteurCoreErrorType,
     message: String,
+    file: Option<String>,
+    line: Option<u32>,
 }
 
 impl Error for DoteurCoreError {}
@@ -23,10 +25,20 @@ impl fmt::Display for DoteurCoreError {
                 format!("User input is malformed : {}", self.message)
             }
             DoteurCoreErrorType::RegexError => {
-                format!("Regex error ({}:{}) : {}", file!(), line!(), self.message)
+                format!(
+                    "Regex error ({}:{}) : {}",
+                    self.file.as_ref().unwrap(),
+                    self.line.unwrap(),
+                    self.message
+                )
             }
             DoteurCoreErrorType::LogicError => {
-                format!("Logic error ({}:{}) : {}", file!(), line!(), self.message)
+                format!(
+                    "Logic error ({}:{}) : {}",
+                    self.file.as_ref().unwrap(),
+                    self.line.unwrap(),
+                    self.message
+                )
             }
         };
         write!(f, "{}", err_msg)
@@ -37,21 +49,27 @@ impl DoteurCoreError {
     pub fn user_input_malformed(message: &str) -> DoteurCoreError {
         DoteurCoreError {
             r#type: DoteurCoreErrorType::UserInputMalformed,
-            message: String::from(message),
+            message: message.to_string(),
+            file: None,
+            line: None,
         }
     }
 
-    pub fn regex_error(message: &str) -> DoteurCoreError {
+    pub fn regex_error(message: &str, file: &str, line: u32) -> DoteurCoreError {
         DoteurCoreError {
             r#type: DoteurCoreErrorType::RegexError,
-            message: String::from(message),
+            message: message.to_string(),
+            file: Some(file.to_string()),
+            line: Some(line),
         }
     }
 
-    pub fn logic_error(message: &str) -> DoteurCoreError {
+    pub fn logic_error(message: &str, file: &str, line: u32) -> DoteurCoreError {
         DoteurCoreError {
             r#type: DoteurCoreErrorType::LogicError,
-            message: String::from(message),
+            message: message.to_string(),
+            file: Some(file.to_string()),
+            line: Some(line),
         }
     }
 }

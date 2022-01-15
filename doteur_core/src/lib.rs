@@ -48,12 +48,16 @@ macro_rules! unwrap_captures_name_as_str {
     };
     ($captures:ident, $key:expr, $err_label:expr) => {
         unwrap_captures_name_as_str!($captures, $key, {
-            return Err(DoteurCoreError::regex_error($err_label));
+            return Err(DoteurCoreError::regex_error($err_label, file!(), line!()));
         })
     };
     ($captures:ident, $key:expr) => {
         unwrap_captures_name_as_str!($captures, $key, {
-            return Err(DoteurCoreError::regex_error("Group not found in regex"));
+            return Err(DoteurCoreError::regex_error(
+                "Group not found in regex",
+                file!(),
+                line!(),
+            ));
         })
     };
 }
@@ -307,13 +311,25 @@ fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<String, Dote
     // Assert that the line matches regex and get the captures
     let captures: Captures = match RE_PK_DEF.captures(line) {
         Some(captures) => captures,
-        None => return Err(DoteurCoreError::regex_error("Input error")),
+        None => {
+            return Err(DoteurCoreError::regex_error(
+                "Input error",
+                file!(),
+                line!(),
+            ))
+        }
     };
     // Check that the group column name has been captured, and detect the comas within
     let (col_name, comas_detected): (String, Result<Vec<usize>, &str>) =
         match captures.name("col_name") {
             Some(v) => (v.as_str().to_string(), detect_comas(v.as_str())),
-            None => return Err(DoteurCoreError::regex_error("Input is not a primary key")),
+            None => {
+                return Err(DoteurCoreError::regex_error(
+                    "Input is not a primary key",
+                    file!(),
+                    line!(),
+                ))
+            }
         };
     match comas_detected {
         //If severeal comas are detected
@@ -353,12 +369,22 @@ fn generate_relations(
 ) -> Result<Option<Relation>, DoteurCoreError> {
     // If the regex doesn't match the input, early return
     if !RE_FK_DEF.is_match(line) {
-        return Err(DoteurCoreError::regex_error("Input isn't a relation"));
+        return Err(DoteurCoreError::regex_error(
+            "Input isn't a relation",
+            file!(),
+            line!(),
+        ));
     }
 
     let captures: Captures = match RE_FK_DEF.captures(line) {
         Some(v) => v,
-        None => return Err(DoteurCoreError::regex_error("Capture error")),
+        None => {
+            return Err(DoteurCoreError::regex_error(
+                "Capture error",
+                file!(),
+                line!(),
+            ))
+        }
     };
 
     let distant_table: &str = unwrap_captures_name_as_str!(captures, "distant_table");
