@@ -84,7 +84,7 @@ pub const POSSIBLE_DOTS_OUTPUT: [&str; 53] = [
     after_help = "Some functionnalities might not appear as they depend on which version this tool has been downloaded or built for."
 )]
 pub struct Args {
-    #[clap(required = false, index=1)]
+    #[clap(required = false, index = 1)]
     /// Name of the sql file or database location if an URL arg is passed, can also be a directory or several files
     input: Vec<String>,
     #[clap(long = "output", short = 'o', default_value = "output.dot")]
