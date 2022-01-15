@@ -261,6 +261,8 @@ impl KeyValueMap for Vec<Attribute> {
             Some(v) => Ok(v),
             None => Err(DoteurCoreError::logic_error(
                 format!("Attribute {} not found", attr_name).as_str(),
+                file!(),
+                line!(),
             )),
         }
     }
@@ -286,6 +288,8 @@ impl KeyValueMap for Vec<Attribute> {
                     attr_name
                 )
                 .as_str(),
+                file!(),
+                line!(),
             )),
         }
     }
@@ -307,6 +311,8 @@ impl KeyValueMap for Vec<Attribute> {
                     attr_name
                 )
                 .as_str(),
+                file!(),
+                line!(),
             )),
         }
     }
