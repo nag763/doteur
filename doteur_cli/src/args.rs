@@ -1,6 +1,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use crate::DoteurCliError;
 use doteur_core::restriction::Restriction;
 
 #[cfg(feature = "mysql_addons")]
@@ -8,10 +9,13 @@ use doteur_core::mysql_tools::{
     process_mysql_connection_from_params, process_mysql_connection_from_url,
 };
 
+#[cfg(feature = "mysql_addons")]
+use dialoguer::{Input, Password};
+
 #[cfg(feature = "sqlite_addons")]
 use doteur_core::sqlite_tools::process_sqlite_connection;
 
-use clap::{App, Arg};
+use clap::Parser;
 
 /// Possible dot output formats.
 pub const POSSIBLE_DOTS_OUTPUT: [&str; 53] = [
@@ -72,305 +76,158 @@ pub const POSSIBLE_DOTS_OUTPUT: [&str; 53] = [
     "x11",
 ];
 
-pub fn get_clap_args() -> App<'static> {
-    let app : App = App::new("doteur")
-        .version("0.4.1")
-        .author("LABEYE Loïc <loic.labeye@pm.me>")
-        .about("Parse a SQL configuration and convert it into a .dot file, render the output if Graphviz is installed")
-        .after_help("Some functionnalities might not appear as they depend on which version this tool has been downloaded or built for.")
-        .arg(
-            Arg::new("input")
-                .help("Name of the sql file or database location if an URL arg is passed, can also be a directory or several files")
-                .required(false)
-                .index(1)
-                .multiple_values(true)
-        ).arg(
-            Arg::new("output")
-                .help("output file name")
-                .short('o')
-                .long("output")
-                .takes_value(true)
-        );
-    let mut cfg_args: Vec<Arg> = Vec::new();
-    let mut remaining_args: Vec<Arg> = vec![
-        Arg::new("include")
-            .help("Filter to include only the given tables, accept simple regexs")
-            .short('i')
-            .long("include")
-            .takes_value(true)
-            .multiple_values(true)
-            .conflicts_with("exclude"),
-        Arg::new("exclude")
-            .help("Filter to exclude the given tables, accept simple regexs")
-            .short('x')
-            .long("exclude")
-            .takes_value(true)
-            .multiple_values(true)
-            .conflicts_with("include"),
-        Arg::new("dark_mode")
-            .help("Render in dark mode")
-            .long("dark-mode")
-            .takes_value(false),
-        Arg::new("legend")
-            .help("Includes hint about the relations type at the bottom of the outpout file")
-            .long("legend")
-            .takes_value(false),
-    ];
-    cfg_if! {
-        if #[cfg(feature = "mysql_addons")] {
-            let mut v: Vec<Arg> = vec![
-                    Arg::new("url")
-                        .help("Specificate that the input is an URL (i.e. mysql://usr:password@localhost:3306/database)")
-                        .long("url")
-                        .conflicts_with_all(&["sqlite", "interactive"]),
-                    Arg::new("interactive")
-                        .help("Starts an interactive dialog to connect to a remote database")
-                        .long("it")
-                        .conflicts_with_all(&["sqlite", "url"])
-                ];
-            cfg_args.append(&mut v);
-        }
-    }
-    cfg_if! {
-        if #[cfg(feature = "sqlite_addons")] {
-            let mut v: Vec<Arg> = vec![
-                Arg::new("sqlite")
-                    .help("Specificate that the input is a sqlite3 database")
-                    .long("sqlite")
-                ];
-           cfg_args.append(&mut v);
-        }
-    }
-    cfg_args.append(&mut remaining_args);
-    app.args(cfg_args)
-}
-
-/// Cli Args, used to represent the options passed by the user to
-/// the tool.
-#[derive(Clone)]
+#[derive(Parser)]
+#[clap(
+    author = "LABEYE Loïc <loic.labeye@pm.me>",
+    version = "0.4.1",
+    about = "Parse a SQL configuration and convert it into a .dot file, render the output if Graphviz is installed",
+    after_help = "Some functionnalities might not appear as they depend on which version this tool has been downloaded or built for."
+)]
 pub struct Args {
-    /// Filename
-    filename: Option<String>,
-    /// Data to transform
-    data: String,
-    /// Output file name
-    output_filename: String,
-    /// Restrictions to apply
-    restrictions: Option<Restriction>,
-    /// Set if the legend has to be included
-    legend: bool,
-    /// Set if the dark mode has to be activated
+    #[clap(required = false, index=1)]
+    /// Name of the sql file or database location if an URL arg is passed, can also be a directory or several files
+    input: Vec<String>,
+    #[clap(long = "output", short = 'o', default_value = "output.dot")]
+    /// Name of the output file
+    output: String,
+    #[cfg(feature = "mysql_addons")]
+    #[clap(long = "url", conflicts_with_all = &["it", "sqlite"])]
+    /// Specificate that the input is an URL (i.e. mysql://usr:password@localhost:3306/database)
+    url: bool,
+    #[cfg(feature = "mysql_addons")]
+    #[clap(long = "it", conflicts_with_all = &["url", "sqlite"])]
+    /// Starts an interactive dialog to connect to a remote database
+    interactive: bool,
+    #[cfg(feature = "sqlite_addons")]
+    #[clap(long = "sqlite", conflicts_with_all = &["url", "interactive"])]
+    /// Starts an interactive dialog to connect to a remote database
+    sqlite: bool,
+    #[clap(short = 'i', long = "include")]
+    /// Filter to include only the given tables, accept simple regexs
+    include: Vec<String>,
+    #[clap(short = 'x', long = "exclude", conflicts_with = "include")]
+    /// Filter to exclude the given tables, accept simple regexs
+    exclude: Vec<String>,
+    #[clap(long = "dark_mode")]
+    /// Wheter to render in dark mode or not
     dark_mode: bool,
+    #[clap(long = "legend")]
+    /// Includes hint about the relations type at the bottom of the output file
+    legend: bool,
 }
 
 impl Args {
-    /// Returns a args object for the given filename
-    ///
-    /// # Arguments
-    ///
-    /// * `path_str` - The path of the input
-    pub fn new_from_files(path_str: Vec<&str>) -> Result<Args, Box<dyn std::error::Error>> {
-        let filename: String;
-        if path_str.len() != 1 {
-            filename = String::from("multifilearg");
-        } else {
-            filename = match Path::new(path_str[0]).file_name() {
-                Some(v) => v.to_str().unwrap().to_string(),
-                None => return Err("No file found for given input".into()),
-            };
-        }
-        let mut data: Vec<String> = vec![];
-        // Reads the filecontent of a directory, ignores subdirectories
-        for path in path_str.iter() {
-            if Path::new(path).is_dir() {
-                for subpath in fs::read_dir(path)? {
-                    let file_path: &PathBuf = &subpath.unwrap().path();
-                    // Ignore subdirs
-                    if Path::new(file_path).is_file() {
-                        data.push(fs::read_to_string(file_path)?);
+    pub fn get_data(&self) -> Result<String, Box<dyn std::error::Error>> {
+        cfg_if! {
+            if #[cfg(feature="mysql_addons")] {
+                if self.interactive {
+                    // Interactive dialog is only available for the mysql feature
+                            let db_url: String = Input::new()
+                                .with_prompt("Database url or ip")
+                                .default("localhost".into())
+                                .interact_text()
+                                .unwrap();
+
+                            let db_port: u16 = Input::new()
+                                .with_prompt("Database port")
+                                .default(3306)
+                                .interact_text()
+                                .unwrap();
+
+                            let db_name: String = Input::new()
+                                .with_prompt("Database name")
+                                .interact_text()
+                                .unwrap();
+
+                            let db_user: String = Input::new()
+                                .with_prompt("Database user")
+                                .interact_text()
+                                .unwrap();
+
+                            let db_password: String = Password::new()
+                                .with_prompt("Database user's password")
+                                .interact()
+                                .unwrap();
+                            let data : String = process_mysql_connection_from_params(db_url, db_port, db_name, db_user, db_password)?;
+                            return Ok(data);
+                    }
+                if self.url {
+                    if self.input.len() != 1 {
+                        return Err(DoteurCliError::bad_input("Please ensure that if the url argument is present that only one url is passed").into());
+                    } else {
+                        let data : String = process_mysql_connection_from_url(&self.input[0])?;
+                        return Ok(data);
                     }
                 }
-            } else {
-                data.push(fs::read_to_string(path)?);
             }
         }
-        Ok(Args {
-            filename: Some(filename),
-            data: data.join("\n"),
-            output_filename: String::from("output.dot"),
-            restrictions: None,
-            legend: false,
-            dark_mode: false,
-        })
-    }
-
-    /// Returns a args object for the given filename
-    ///
-    /// # Arguments
-    ///
-    /// * `url` - The path of the input
-    #[cfg(feature = "mysql_addons")]
-    pub fn new_from_url(url: &str) -> Result<Args, Box<dyn std::error::Error>> {
-        let data: String = process_mysql_connection_from_url(url)?;
-        Ok(Args {
-            filename: None,
-            data,
-            output_filename: String::from("output.dot"),
-            restrictions: None,
-            legend: false,
-            dark_mode: false,
-        })
-    }
-
-    /// Returns a args object for the given parameters
-    ///
-    /// # Arguments
-    ///
-    /// * `db_url` - Database url or ip
-    /// * `db_port` - Database remote port
-    /// * `db_name` - Database remote schema name
-    /// * `db_user` - Database remote user
-    /// * `db_password` - Database remote user's password
-    #[cfg(feature = "mysql_addons")]
-    pub fn new_connect_with_params(
-        db_url: String,
-        db_port: u16,
-        db_name: String,
-        db_user: String,
-        db_password: String,
-    ) -> Result<Args, Box<dyn std::error::Error>> {
-        let data: String =
-            process_mysql_connection_from_params(db_url, db_port, db_name, db_user, db_password)?;
-        Ok(Args {
-            filename: None,
-            data,
-            output_filename: String::from("output.dot"),
-            restrictions: None,
-            legend: false,
-            dark_mode: false,
-        })
-    }
-
-    /// Returns a args object for the given sqlite path
-    ///
-    /// # Arguments
-    ///
-    /// * `path` - The path to the sqlite file
-    #[cfg(feature = "sqlite_addons")]
-    pub fn new_from_sqlite(path: &str) -> Result<Args, Box<dyn std::error::Error>> {
-        let data: String = process_sqlite_connection(path)?;
-        Ok(Args {
-            filename: None,
-            data,
-            output_filename: String::from("output.dot"),
-            restrictions: None,
-            legend: false,
-            dark_mode: false,
-        })
-    }
-
-    /// Returns the filename without the non ascii digits and chars
-    pub fn get_filename_without_specials(&self) -> String {
-        match &self.filename {
-            Some(v) => v
-                .chars()
-                .filter(|c| c.is_ascii_alphanumeric() || c.is_ascii_whitespace())
-                .collect::<String>(),
-            None => "doteur".to_string(),
+        cfg_if! {
+            if #[cfg(feature="sqlite_addons")] {
+                if self.sqlite {
+                    if self.input.len() != 1 {
+                        return Err(DoteurCliError::bad_input("Please ensure that only one sqlite database path is passed as argument").into(),
+                        );
+                    } else {
+                        let data : String = process_sqlite_connection(&self.input[0])?;
+                        return Ok(data);
+                    }
+                }
+            }
+        }
+        if !self.input.is_empty() {
+            let mut data: Vec<String> = vec![];
+            // Reads the filecontent of a directory, ignores subdirectories
+            for path in self.input.iter() {
+                if Path::new(path).is_dir() {
+                    for subpath in fs::read_dir(path)? {
+                        let file_path: &PathBuf = &subpath.unwrap().path();
+                        // Ignore subdirs
+                        if Path::new(file_path).is_file() {
+                            data.push(fs::read_to_string(file_path)?);
+                        }
+                    }
+                } else {
+                    data.push(fs::read_to_string(path)?);
+                }
+            }
+            Ok(data.join("\n"))
+        } else {
+            Err(DoteurCliError::no_input().into())
         }
     }
 
-    /// Returns the file extension
+    pub fn get_restrictions(&self) -> Option<Restriction> {
+        if !self.include.is_empty() {
+            Some(Restriction::new_inclusion(self.include.clone()))
+        } else if !self.exclude.is_empty() {
+            Some(Restriction::new_exclusion(self.exclude.clone()))
+        } else {
+            None
+        }
+    }
+
     pub fn get_output_file_ext(&self) -> &str {
-        std::path::Path::new(self.output_filename.as_str())
+        std::path::Path::new(self.output.as_str())
             .extension()
             .unwrap_or_default()
             .to_str()
             .unwrap_or_default()
     }
 
-    /// Check if the file extension is supported by the graphviz tool
-    ///
-    /// # Arguments
-    ///
-    /// * `ext` - extension to verify
-    pub fn ext_supported(ext: &str) -> bool {
-        POSSIBLE_DOTS_OUTPUT.iter().any(|&i| i == ext)
-    }
-
-    /// Returns the file content
-    pub fn get_data(&self) -> &str {
-        self.data.as_str()
-    }
-
-    /// Get the output file name
     pub fn get_output_filename(&self) -> &str {
-        self.output_filename.as_str()
+        &self.output
     }
 
-    /// Sets the output filename
-    ///
-    /// # Arguments
-    ///
-    /// * `output_filename` - The name of the output file
-    pub fn set_output_filename(&mut self, output_filename: String) {
-        self.output_filename = output_filename;
+    pub fn can_render_with_graphviz(&self) -> bool {
+        let extension: &str = self.get_output_file_ext();
+        POSSIBLE_DOTS_OUTPUT.iter().any(|&i| i == extension)
     }
 
-    /// Get restrictions
-    pub fn get_restrictions(&self) -> Option<&Restriction> {
-        self.restrictions.as_ref()
-    }
-
-    /// Sets the restrictions in inclusive way
-    ///
-    /// The inclusive arguments mean that only the given values with the -i cli arg will be
-    /// rendered
-    ///
-    /// # Arguments
-    ///
-    /// * `inclusions` - The inclusions to set
-    pub fn set_inclusions(&mut self, inclusions: Vec<String>) {
-        self.restrictions = Some(Restriction::new_inclusion(inclusions));
-    }
-
-    /// Sets the restrictions in exclusive way
-    ///
-    /// The exclusive arguments mean that the given values with the -x cli arg won't be
-    /// rendered
-    ///
-    /// # Arguments
-    ///
-    /// * `exclusions` - The exclusions to set
-    pub fn set_exclusions(&mut self, exclusions: Vec<String>) {
-        self.restrictions = Some(Restriction::new_exclusion(exclusions));
-    }
-
-    /// Returns the legend attribute
     pub fn get_legend(&self) -> bool {
         self.legend
     }
 
-    /// Sets the legend attribute
-    ///
-    /// # Arguments
-    ///
-    /// * `legend` - The new value
-    pub fn set_legend(&mut self, legend: bool) {
-        self.legend = legend;
-    }
-
-    /// Returns the dark_mode attribute
     pub fn get_dark_mode(&self) -> bool {
         self.dark_mode
-    }
-
-    /// Set the dark mode attribute
-    ///
-    /// # Arguments
-    ///
-    /// * `dark_mode` - The new dark mode value
-    pub fn set_dark_mode(&mut self, dark_mode: bool) {
-        self.dark_mode = dark_mode;
     }
 }

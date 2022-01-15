@@ -436,11 +436,10 @@ fn generate_relations(
 pub fn process_data(
     data: &str,
     restrictions: Option<&Restriction>,
-    dot_file_graph_name: &str,
     legend: bool,
     dark_mode: bool,
 ) -> String {
-    let mut dot_file: DotFile = DotFile::new(dot_file_graph_name, legend, dark_mode);
+    let mut dot_file: DotFile = DotFile::new(legend, dark_mode);
 
     let cleaned_content: &str = &remove_sql_comments(data);
 

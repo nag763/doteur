@@ -46,9 +46,9 @@ impl DotFile {
     /// * `filename` - This will be set as the graph's filename
     /// * `legend` - If true the legend, will be included
     /// * `dark_mode` - Set if the file has to be in dark mode
-    pub fn new(filename: &str, legend: bool, dark_mode: bool) -> DotFile {
+    pub fn new(legend: bool, dark_mode: bool) -> DotFile {
         DotFile {
-            header: init_dot(filename, legend, dark_mode),
+            header: init_dot(legend, dark_mode),
             dot_tables: Vec::new(),
             relations: Vec::new(),
             footer: String::from("}"),
@@ -82,10 +82,9 @@ impl DotFile {
 ///
 /// # Arguments
 ///
-/// * `filename` - The name of the input file
 /// * `legend` - If true, includes a legend for the graph
 /// * `dark_mode` - Changes the color of rendering
-fn init_dot(filename: &str, legend: bool, dark_mode: bool) -> String {
+fn init_dot(legend: bool, dark_mode: bool) -> String {
     let bg_color: &str = match dark_mode {
         true => "bgcolor= black;",
         false => "",
@@ -121,15 +120,15 @@ fn init_dot(filename: &str, legend: bool, dark_mode: bool) -> String {
 
     format!(
         "//This file has been generated with doteur, enjoy!
-digraph {0} {{\n
+digraph doteur {{\n
 
-    {1}
+    {0}
 
     node [\n
         shape = \"plaintext\"
     ]\n\n
 
-    {2}",
-        filename, bg_color, dot_legend
+    {1}",
+        bg_color, dot_legend
     )
 }
