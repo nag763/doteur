@@ -1,3 +1,6 @@
+// Copyright ⓒ 2021-2022 LABEYE Loïc
+// This tool is distributed under the MIT License, check out [here](https://github.com/nag763/doteur/blob/main/LICENCE.MD).
+
 use std::fmt;
 
 use super::dot_table::DotTable;
@@ -40,12 +43,6 @@ impl fmt::Display for DotFile {
 
 impl DotFile {
     /// Creates a new dotfile with the given name
-    ///
-    /// # Arguments
-    ///
-    /// * `filename` - This will be set as the graph's filename
-    /// * `legend` - If true the legend, will be included
-    /// * `dark_mode` - Set if the file has to be in dark mode
     pub fn new(legend: bool, dark_mode: bool) -> DotFile {
         DotFile {
             header: init_dot(legend, dark_mode),
@@ -57,33 +54,17 @@ impl DotFile {
     }
 
     /// Adds a table to the DotFile
-    ///
-    /// # Arguments
-    ///
-    /// * `table` - The table to add to the file
     pub fn add_table(&mut self, table: DotTable) {
         self.dot_tables.push(table);
     }
 
     /// Add a relation to the DotFile
-    ///
-    /// # Arguments
-    ///
-    /// * `table_name` - The table where the relation begins
-    /// * `table_end` - The table where the relation ends
-    /// * `key` - The key of the begin table
-    /// * `refered` - The key of the end table
     pub fn add_relation(&mut self, relation: Relation) {
         self.relations.push(relation);
     }
 }
 
 /// Creates the dot file header
-///
-/// # Arguments
-///
-/// * `legend` - If true, includes a legend for the graph
-/// * `dark_mode` - Changes the color of rendering
 fn init_dot(legend: bool, dark_mode: bool) -> String {
     let bg_color: &str = match dark_mode {
         true => "bgcolor= black;",
@@ -101,7 +82,7 @@ fn init_dot(legend: bool, dark_mode: bool) -> String {
             "
     {{
         labelloc=\"b\"
-        labeljust=\"r\"                
+        labeljust=\"r\"
         rank=sink
         rankdir=LR
         d0 [style = invis];

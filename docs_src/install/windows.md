@@ -5,6 +5,8 @@ title: On Windows
 permalink: install/windows
 ---
 
+**Since the version 0.5.0, doteur is shipped with in several packages, for more information check the [features](../features) section**
+
 ## Prerequisites
 
 It is required to install Graphviz in order to get the best from this tool.

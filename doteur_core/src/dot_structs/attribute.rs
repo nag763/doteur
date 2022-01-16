@@ -1,3 +1,6 @@
+// Copyright ⓒ 2021-2022 LABEYE Loïc
+// This tool is distributed under the MIT License, check out [here](https://github.com/nag763/doteur/blob/main/LICENCE.MD).
+
 use std::fmt;
 
 use crate::DoteurCoreError;
@@ -143,12 +146,6 @@ impl fmt::Display for Attribute {
 
 impl Attribute {
     /// Define a new sql column
-    ///
-    /// # Arguments
-    ///
-    /// * `name` - Name of the column
-    /// * `associed_definition` - Associed definition
-    /// * `dark_mode` - Whether the output needs to be rendered in dark mode or not
     pub fn new_col_def(name: String, associed_definition: String, dark_mode: bool) -> Attribute {
         Attribute {
             name,
@@ -161,12 +158,6 @@ impl Attribute {
     }
 
     /// Define a new primary key
-    ///
-    /// # Arguments
-    ///
-    /// * `name` - Name of the column
-    /// * `associed_definition` - Associed definition
-    /// * `dark_mode` - Whether the output needs to be rendered in dark mode or not
     pub fn new_pk(name: String, associed_definition: String, dark_mode: bool) -> Attribute {
         Attribute {
             name,
@@ -190,11 +181,6 @@ impl Attribute {
     }
 
     /// Add FK nature to a current attribute
-    ///
-    /// # Arguments
-    ///
-    /// * `foreign_table` - Refered table
-    /// * `foreign_key` - Refered key
     pub fn add_fk_nature(&mut self, foreign_table: String, foreign_key: String) {
         match self.attribute_type {
             AttributeType::Pk => {
@@ -213,7 +199,7 @@ impl Attribute {
 }
 
 /// Trait for retrieving and modifying values from a vec
-pub trait KeyValueMap {
+pub(crate) trait KeyValueMap {
     /// Returns the index of an attribute
     ///
     /// # Arguments

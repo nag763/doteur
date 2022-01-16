@@ -1,3 +1,6 @@
+// Copyright ⓒ 2021-2022 LABEYE Loïc
+// This tool is distributed under the MIT License, check out [here](https://github.com/nag763/doteur/blob/main/LICENCE.MD).
+
 use std::fmt;
 
 use crate::errors::DoteurCoreError;
@@ -7,8 +10,6 @@ use super::attribute::{Attribute, KeyValueMap};
 
 /// A dot table is the corresponding rendering of a sql table in a dot file
 pub struct DotTable {
-    /// Name of the table
-    table_name: String,
     /// Header of the table
     header: String,
     /// The attribute of the table
@@ -37,15 +38,9 @@ impl fmt::Display for DotTable {
 
 impl DotTable {
     /// Creates a new table
-    ///
-    /// # Arguments
-    ///
-    /// * `table_name` - The table to render in dot
-    /// * `dark_mode` - Changes the rendering of the file if true
     pub fn new(table_name: &str, dark_mode: bool) -> DotTable {
         let header: String = generate_table_header(table_name, dark_mode);
         DotTable {
-            table_name: table_name.to_string(),
             header,
             attributes: Vec::new(),
             footer: String::from("</TABLE> >]"),
@@ -53,16 +48,7 @@ impl DotTable {
         }
     }
 
-    pub fn get_table_name(&self) -> &str {
-        self.table_name.as_str()
-    }
-
     /// Adds an attribute to the table
-    ///
-    /// # Arguments
-    ///
-    /// * `title` - The title of the attribute
-    /// * `desc` - The description of the attribute
     pub fn add_attribute(&mut self, title: &str, desc: &str) {
         self.attributes.push(Attribute::new_col_def(
             title.to_string(),
@@ -72,11 +58,6 @@ impl DotTable {
     }
 
     /// Adds a PK to the table
-    ///
-    /// # Arguments
-    ///
-    /// * `title` - The title of the attribute
-    /// * `desc` - The description of the attribute
     pub fn add_attribute_pk(&mut self, key: &str, desc: &str) {
         self.attributes.push_or_replace_attribute(Attribute::new_pk(
             key.to_string(),
@@ -86,12 +67,6 @@ impl DotTable {
     }
 
     /// Adds foreign key nature to given attribute
-    ///
-    /// # Arguments
-    ///
-    /// * `key` - The key of the attribute in the table
-    /// * `fk_table` - The refered table
-    /// * `fk_col` - The refered key
     pub fn add_fk_nature_to_attribute(
         &mut self,
         key: &str,
@@ -103,21 +78,12 @@ impl DotTable {
     }
 
     /// Adds primary key nature to given attribute
-    ///
-    /// # Arguments
-    ///
-    /// * `key` - The key of the attribute in the table
     pub fn add_pk_nature_to_attribute(&mut self, key: &str) -> Result<usize, DoteurCoreError> {
         self.attributes.add_pk_nature_to_attribute(key)
     }
 }
 
 /// Generate the .dot table header.
-///
-/// # Arguments
-///
-/// * `name` - The name of the table
-/// * `dark_mode` - Changes the rendering of the table header if true
 fn generate_table_header(name: &str, dark_mode: bool) -> String {
     let styles: (&str, &str) = match dark_mode {
         true => ("grey20", "grey10"),

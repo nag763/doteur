@@ -1,11 +1,32 @@
+// Copyright ⓒ 2021-2022 LABEYE Loïc
+// This tool is distributed under the MIT License, check out [here](https://github.com/nag763/doteur/blob/main/LICENCE.MD).
+
 use crate::add_traits::LastChar;
 use std::fs;
 
-/// Detect comas in a String
+/// Detect unclosed comas in a String
+///
+/// This method is used to detect the unclosed comas in a string. It will return an error if
+/// the comas aren't enclosed properly and in consequence the input is malformed.
 ///
 /// # Arguments
 ///
 /// * `content` - content to detect comas in
+///
+/// # Example
+///
+/// ```
+/// use doteur_core::tools::detect_comas;
+/// assert!(detect_comas("Mytext,`(My text),").is_err(), "malformed");
+///
+/// assert!(detect_comas("coma1, coma2, coma3").is_ok(), "comas");
+///
+/// assert_eq!(
+///     detect_comas("coma1, coma2, coma3").unwrap(),
+///     vec![5, 12],
+///     "comas"
+/// );
+/// ```
 pub fn detect_comas(content: &str) -> Result<Vec<usize>, &str> {
     if content.is_empty() {
         return Err("Empty input");

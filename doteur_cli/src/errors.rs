@@ -1,3 +1,6 @@
+// Copyright ⓒ 2021-2022 LABEYE Loïc
+// This tool is distributed under the MIT License, check out [here](https://github.com/nag763/doteur/blob/main/LICENCE.MD).
+
 use std::error::Error;
 use std::fmt;
 

@@ -10,9 +10,9 @@ cargo clippy --features "mysql_addons" || { echo 'Linter found errors' ; exit 1;
 cargo clippy --features "sqlite_addons" || { echo 'Linter found errors' ; exit 1; }
 
 echo "Running common tests"
-cargo test || { echo 'Tests are either outdated or incorrect' ; exit 1; }
-cargo test --all-features || { echo 'Tests are either outdated or incorrect' ; exit 1; }
-cargo test --features "mysql_addons" || { echo 'Tests are either outdated or incorrect' ; exit 1; }
-cargo test --features "sqlite_addons" || { echo 'Tests are either outdated or incorrect' ; exit 1; }
+cargo test --lib || { echo 'Tests are either outdated or incorrect' ; exit 1; }
+cargo test --lib --all-features || { echo 'Tests are either outdated or incorrect' ; exit 1; }
+cargo test --lib --features "mysql_addons" || { echo 'Tests are either outdated or incorrect' ; exit 1; }
+cargo test --lib --features "sqlite_addons" || { echo 'Tests are either outdated or incorrect' ; exit 1; }
 
 echo "Code ready for commit mate !"

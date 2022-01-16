@@ -1,6 +1,6 @@
 [package]
 name = "doteur"
-version = "0.4.1"
+version = "0.5.0"
 authors = ["nag763 <loic.labeye@tutanota.de>"]
 edition = "2018"
 license = "MIT"
@@ -9,7 +9,7 @@ description = "Tool to automate the visualisation of UML dependencies from a SQL
 repository = "https://github.com/nag763/doteur/"
 readme = "README.md"
 categories = ["command-line-utilities", "rendering", "visualization"]
-keywords = ["cli", "mysql", "dot"] 
+keywords = ["cli", "mysql", "dot"]
 exclude = [
     "release/*",
     ".github/*",

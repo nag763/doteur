@@ -5,6 +5,8 @@ title: On Linux
 permalink: install/linux
 ---
 
+**Since the version 0.5.0, doteur is shipped with in several packages, for more information check the [features](../features) section**
+
 ## Prerequisites
 
 It is required for you to have gcc at least in the version 9, and highly recommended to install graphviz in order to render :
@@ -27,6 +29,8 @@ sudo rpm -i gcc graphviz
 sudo pacman -S gcc graphviz
 ```
 
+**Since the version 0.5.0, doteur is shipped with in several packages, some features require additional dependencies being installed on your system, please check this [section](../features#additional-known-requirements-on-linux-regarding-the-features) if you face issues**
+
 ## First step : download the tool
 
 See the download list [here](../downloads)
@@ -43,7 +47,7 @@ unzip $ZIP_FOLDER_NAME
 sudo mv $UNZIPPED_FOLDER/doteur /usr/local/lib
 ```
 
-### Finally create a symlink so that the tool remains in your path
+## Finally create a symlink so that the tool remains in your path
 
 ```
 sudo ln -s /usr/local/lib/doteur/doteur /usr/local/bin/doteur

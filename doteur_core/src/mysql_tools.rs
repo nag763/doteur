@@ -1,3 +1,6 @@
+// Copyright ⓒ 2021-2022 LABEYE Loïc
+// This tool is distributed under the MIT License, check out [here](https://github.com/nag763/doteur/blob/main/LICENCE.MD).
+
 use log::{error, info};
 
 use mysql::prelude::Queryable;
@@ -14,7 +17,7 @@ fn process_mysql_connection(opts: Opts) -> Result<String, mysql::Error> {
     let mut data: String = String::new();
     let pool = Pool::new(opts)?;
     let mut conn = pool.get_conn().unwrap();
-    info!("Connection successfull with remote database");
+    info!("Connection successfull to remote database");
     conn.query_map(r"SHOW TABLES;", |table_name: String| {
         tables.push(table_name)
     })
@@ -24,25 +27,42 @@ fn process_mysql_connection(opts: Opts) -> Result<String, mysql::Error> {
             format!("SHOW CREATE TABLE {0};", table),
             |(_, script): (String, String)| data.push_str(format!("{};\n", script).as_str()),
         ) {
-            error!("An error happened while querying remote database");
+            error!("An error happened while querying remote database : {}", e);
             return Err(e);
         }
     }
     info!(
-        "Query made successfully with remote database, {} tables found",
+        "Query made successfully to remote database, {} tables found",
         tables.len()
     );
 
     Ok(data)
 }
 
-pub fn process_mysql_connection_from_url(url: &str) -> Result<String, mysql::Error> {
+/// Connect to the db and return the data from the given parameters if the connection is
+/// successfull
+///
+/// # Arguments
+///
+/// * `url` - The url to connect to. It has to be in the format `mysql://usr:password@localhost:3306/database`
+///
+/// # Example
+///
+/// ```
+/// use doteur_core::mysql_tools::get_schemas_from_mysql_params;
+/// assert_eq!(
+///     get_schemas_from_mysql_url("mysql://usr:password@localhost:3306/database",
+///     "CREATE TABLE ...")
+/// );
+/// ```
+///
+pub fn get_schemas_from_mysql_url(url: &str) -> Result<String, mysql::Error> {
     let opts: Opts = Opts::from_url(url)?;
     process_mysql_connection(opts)
 }
 
 /// Connect to the db and return the data from the given parameters if the connection is
-/// succesful
+/// successfull
 ///
 /// # Arguments
 ///
@@ -51,7 +71,22 @@ pub fn process_mysql_connection_from_url(url: &str) -> Result<String, mysql::Err
 /// * `db_name` - Database remote schema name
 /// * `db_user` - Database remote user
 /// * `db_password` - Database remote user's password
-pub fn process_mysql_connection_from_params(
+///
+/// # Example
+///
+/// ```
+/// use doteur_core::mysql_tools::get_schemas_from_mysql_params;
+/// assert_eq!(
+///     get_schemas_from_mysql_params(
+///         "localhost",
+///         3306,
+///         "schemaname",
+///         "usr",
+///         "password",
+///     ), "CREATE TABLE foo [...]"
+/// );
+/// ```
+pub fn get_schemas_from_mysql_params(
     db_url: String,
     db_port: u16,
     db_name: String,

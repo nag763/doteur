@@ -1,25 +1,43 @@
+//! Copyright ⓒ 2021-2022 LABEYE Loïc
+//! This tool is distributed under the MIT License, check out [here](https://github.com/nag763/doteur/blob/main/LICENCE.MD).
 //! # General information
-//! <p align="center"><img src="https://raw.githubusercontent.com/nag763/doteur/main/.github/assets/logo.png"></img></p>
-//! <h2 align="center">Doteur</h2>
-//! <h4 align="center">A simple tool to draw your mysql relations from exports.</h4>
-//! <p align="center"><img height ="480" width="640" src="https://raw.githubusercontent.com/nag763/doteur/main/.github/assets/sample.jpeg"></img></p>
-//! <u>Warning :</u> It is highly recommended to install <a href="https://graphviz.org/download/">graphviz</a> prior using this tool
-//! For more information, please refer to either :
+//! <h2 align="center">Doteur Core</h2>
+//! <h4 align="center">This library contains all the tools used to transform your SQL input into a DOT one.</h4>
+//! <p align="justify">Doteur is a CLI (Command Line Interface) tool that has for purpose to render the SQL schemas into good looking graphs. This will help you to easily understand the structure of a large database and understand what happens behind the scenes of your project.</p>
+//! Besides, you will be able to use the large panel of features to either sort the tables you want to visualize or render with a different color scheme for instance.
+//! So far the tool handles both the MySQL and SQLite syntaxes, but it is planned to handle the Postgre one as soon as the formers will be considered as stable. The input of the tool can be either a sql file export, or given the version you downloaded, connect to either a MySQL running instance or an existing SQLite database.
+//! The tool has been developed on Linux, but is also available for Windows 10 and 11 and macOS.
+//! <br/>
+//! <p>Useful links :</p>
 //! <ul>
-//! <li><a href="https://github.com/nag763/doteur"/>Github</a></li>
-//! <li><a href="https://doteur.net">The offical website</a></li>
-//! <li><a href="https://docker.com/nag763/doteur">The docker repo</a></li>
+//! <li><a href="https://github.com/nag763/doteur"/>Github repository</a></li>
+//! <li><a href="https://nag763.github.io/doteur"/>Official documentation</a></li>
+//! <li><a href="https://docker.com/nag763/doteur">Docker tool</a></li>
 //! </ul>
 
-pub mod dot_structs;
 #[cfg(feature = "mysql_addons")]
+/// Module used to connect to a remote MySQL running database instance
+///
+/// This module is only available with the `mysql_addons` feature
 pub mod mysql_tools;
+/// Module used to filter the tables to render
+///
+/// A restriction can either be inclusive, meaning that only the tables that matche the restriction
+/// are rendered, or exclusive, meaning that only the tables that don't match the restrictions will be rendered
 pub mod restriction;
 #[cfg(feature = "sqlite_addons")]
+/// Module used to connect to a SQLite database
+///
+/// This module is only available with the `sqlite_addons` feature
 pub mod sqlite_tools;
+/// Module containing different utilities
 pub mod tools;
 
+/// Module containing the additional traits
 mod add_traits;
+/// Module containing the different dot structures used in the code
+mod dot_structs;
+/// Module containing the errors thrown by the core libraries
 mod errors;
 
 use std::borrow::Cow;
@@ -83,6 +101,9 @@ lazy_static! {
 
 /// Get the tables from the input
 ///
+/// This method will check the data given on input and will return all the tables
+/// until the end of their declaration.
+///
 /// # Arguments
 ///
 /// * `data` - The content where sql table are stored
@@ -95,26 +116,42 @@ fn get_tables(data: &str) -> Vec<&str> {
 
 /// Check if the given input contains sql tables
 ///
+/// This function will with the given input ensure that the data passed contains at least one SQL table.
+/// If no table is detected in the data, the function will return false, otherwise, it will return true.
+///
 /// # Arguments
 ///
-/// * `data` - The content where sql table are stored
-pub fn contains_tables(data: &str) -> bool {
+/// * `data` - The content that we need to check the existence of SQL tables in.
+///
+/// # Example
+/// ```
+/// use doteur_core::contains_sql_tables;
+/// // Normal use case
+///assert!(contains_sql_tables("
+/// CREATE TABLE foo ( bar );
+///"));
+///assert!(contains_sql_tables("
+/// CREATE TABLE `foo` ( bar );
+///"));
+///assert!(contains_sql_tables("
+/// CREATE TABLE `FOOBAR` ( bar );
+///"));
+///assert_eq!(contains_sql_tables("
+/// My table ;
+///"), false);
+/// ```
+///
+pub fn contains_sql_tables(data: &str) -> bool {
     RE_TABLE_NAME.is_match(data)
 }
 
-pub fn remove_sql_comments(data: &str) -> Cow<'_, str> {
+/// Remove the SQL comments from an input
+fn remove_sql_comments(data: &str) -> Cow<'_, str> {
     RE_COMMENTS.replace(data, "")
 }
 
 /// Convert a sql table to a dot table and store it in the given dot file
-///
-/// # Arguments
-///
-/// * `dot_file` - A mutable dot file
-/// * `input` - The content to convert
-/// * `restrictions` - The restriction to apply on the table
-/// * `dark_mode` - Changes the rendering of the output file
-fn convert_table_to_dot(
+fn convert_sql_table_to_dot(
     input: &str,
     restrictions: Option<&Restriction>,
     dark_mode: bool,
@@ -268,11 +305,6 @@ fn convert_table_to_dot(
 }
 
 /// Generate the attributes and write them into the dot_table
-///
-/// # Arguments
-///
-/// * `dot_table` - A mutable DotTable object where the attributes will be written
-/// * `attr` - The attributes as string
 fn generate_attributes(dot_table: &mut DotTable, attr: &str) -> Result<String, DoteurCoreError> {
     let col_name: String;
     // If a PK is present in line, process attribute as pk
@@ -302,11 +334,6 @@ fn generate_attributes(dot_table: &mut DotTable, attr: &str) -> Result<String, D
 }
 
 /// Generate the attributes as primary and write them into the table
-///
-/// # Arguments
-///
-/// * `dot_table` - A mutable DotTable object where the attributes will be written
-/// * `line` - The line as string
 fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<String, DoteurCoreError> {
     // Assert that the line matches regex and get the captures
     let captures: Captures = match RE_PK_DEF.captures(line) {
@@ -353,15 +380,7 @@ fn generate_primary(dot_table: &mut DotTable, line: &str) -> Result<String, Dote
     Ok(col_name)
 }
 
-/// Generates the relations and write them into the DotFile
-///
-/// # Arguments
-///
-/// * `dot_file` - Where the content should be written in
-/// * `dot_table` - Table to add the attribute if needed
-/// * `table_name` - The name of the table where the relations originates
-/// * `input` - Where the relations are written
-/// * `restrictive_regex` - The restrictions to apply
+/// Returns the relations from an input
 fn generate_relations(
     table_name: &str,
     line: &str,
@@ -454,11 +473,16 @@ fn generate_relations(
     };
 }
 
-/// Process the given file and return the output dot string
+/// Process the given file and return the output as a string
+///
+/// This function takes a SQL table as data and returns it as a DOT output.
 ///
 /// # Arguments
 ///
-/// * `args` - The CLI args
+/// * `data` - The SQL content as a string
+/// * `restrictions` - The list of filters we want to apply on the input
+/// * `legend` - Whether we add a legend describing the types of relations at the end of the file or not.
+/// * `dark_mode` - Whether the output needs to be rendered in dark mode or not.
 pub fn process_data(
     data: &str,
     restrictions: Option<&Restriction>,
@@ -472,7 +496,7 @@ pub fn process_data(
     info!("Starting to process the tables for the given input");
     // Generate content from the declared tables.
     for table in get_tables(cleaned_content) {
-        match convert_table_to_dot(table, restrictions, dark_mode) {
+        match convert_sql_table_to_dot(table, restrictions, dark_mode) {
             Ok(result) => {
                 if let Some((table_name, dot_table, relations)) = result {
                     dot_file.add_table(dot_table);

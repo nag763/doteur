@@ -29,8 +29,7 @@ I hope you will appreciate this tool as much as I appreciated developping it, do
 
 - <u>Author :</u> LABEYE Loïc
 - <u>Licence :</u> [MIT](license)
-- <u>Official website :</u> https://doteur.net
-- <u>Latest version :</u> 0.4.1
+- <u>Latest version :</u> 0.5.0
 - <u>Platforms available :</u>
 	- Linux
 		- [X] Tested
@@ -38,8 +37,7 @@ I hope you will appreciate this tool as much as I appreciated developping it, do
 		- [ ] Untested
 	- Darwin (Apple)
 		- [ ] Untested
-- <a href="https://github.com/nag763/doteur">Link to Github source</a>
-- <a href="https://crates.io/crates/doteur">Link to Crate clik</a>
+- <a href="https://github.com/nag763/doteur">Link to Github repository</a>
+- <a href="https://crates.io/crates/doteur">Link to Crate</a>
 - <a href="https://hub.docker.com/r/nag763/doteur">Link to Docker image</a>
-
 

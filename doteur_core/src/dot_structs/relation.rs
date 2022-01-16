@@ -1,3 +1,6 @@
+// Copyright ⓒ 2021-2022 LABEYE Loïc
+// This tool is distributed under the MIT License, check out [here](https://github.com/nag763/doteur/blob/main/LICENCE.MD).
+
 #[derive(Debug, Clone)]
 enum OnDelete {
     SetNull,
@@ -8,6 +11,7 @@ enum OnDelete {
 }
 
 impl OnDelete {
+    /// Returns the on delete type from a str
     fn from_str(relation_type: &str) -> OnDelete {
         match relation_type {
             "SET NULL" => OnDelete::SetNull,
@@ -17,7 +21,7 @@ impl OnDelete {
             _ => OnDelete::Restrict,
         }
     }
-
+    /// Return the arrow head
     fn get_dot_arrowhead(&self) -> &str {
         match self {
             OnDelete::SetNull => "odot",
@@ -28,14 +32,21 @@ impl OnDelete {
 }
 
 #[derive(Debug, Clone)]
+/// A relation is a link between a list of pair of keys
+/// between two tables
 pub struct Relation {
+    /// Table that got the refering key
     origin_table: String,
+    /// Table that got the refered key
     refered_table: String,
+    /// List of keys refering each others
     keys: Vec<(String, String)>,
+    /// Relations type
     relation_type: OnDelete,
 }
 
 impl Relation {
+    /// A new relation
     pub fn new(origin_table: String, refered_table: String, relation_type: String) -> Relation {
         Relation {
             origin_table,
@@ -45,6 +56,7 @@ impl Relation {
         }
     }
 
+    /// A new relation with a single pair
     pub fn new_with_single_pair(
         origin_table: String,
         refered_table: String,
@@ -60,22 +72,27 @@ impl Relation {
         }
     }
 
+    /// Returns a copy of the pairs of key
     pub fn get_pairs_of_keys(&self) -> Vec<(String, String)> {
         self.keys.clone()
     }
 
+    /// Returns the number of pairs of keys
     pub fn get_number_of_pairs_of_keys(&self) -> usize {
         self.keys.len()
     }
 
+    /// Returns the refered table
     pub fn get_refered_table(&self) -> &str {
         self.refered_table.as_str()
     }
 
+    /// Add a new pair of key to the relation
     pub fn push_pair_of_keys(&mut self, origin_key: String, refered_key: String) {
         self.keys.push((origin_key, refered_key));
     }
 
+    /// Returns the relations as a dot output
     pub fn generate_dot_output(self, dark_mode: bool) -> String {
         let color_scheme: &str = match dark_mode {
             true => "fontcolor=white, color=white",

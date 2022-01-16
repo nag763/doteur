@@ -13,9 +13,36 @@ Check [this guide](https://doc.rust-lang.org/cargo/getting-started/installation.
 
 Since the release 0.3.3, doteur is downloadable with cargo as it has been published on crates.io. It is then recommended to install the tool this way :
 
+## Step 1 : Download the tool
+
+**Since the version 0.5.0, doteur is shipped with in several packages, for more information check the [features](../features) section**
+- `light` :
+
 ```
 cargo install doteur
 ```
+
+- `mysql_addons` :
+
+```
+cargo install doteur --features mysql_addons
+```
+
+- `sqlite_addons` :
+
+```
+cargo install doteur --features sqlite_addons
+```
+
+- `all-features` :
+
+```
+cargo install doteur --all-features
+```
+
+**Since the version 0.5.0, doteur is shipped with in several packages, some features require additional dependencies being installed on your system, please check this [section](../features#additional-known-requirements-on-linux-regarding-the-features) if you face issues**
+
+## Step 2 : Ensure it has been installed correctly
 
 Once the tool has been downloaded with cargo, the executable will be in your path, to verify :
 

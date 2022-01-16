@@ -1,9 +1,12 @@
+// Copyright ⓒ 2021-2022 LABEYE Loïc
+// This tool is distributed under the MIT License, check out [here](https://github.com/nag763/doteur/blob/main/LICENCE.MD).
+
 use regex::Regex;
 
 /// ReSearchType indicates if the regex should be made according to the fact they match the
 /// given regexs, or not.
 #[derive(Clone)]
-pub enum ReSearchType {
+enum ReSearchType {
     /// If the regex is matched, the value will be true
     Inclusive,
     /// If the regex is not matched, the value will be true
@@ -37,6 +40,9 @@ macro_rules! matches_optionable_restriction {
 }
 
 /// A restriction represents a condition to render or not the given table.
+///
+/// A restriction can either be inclusive (will match only what matches the expressions)
+/// or exclusive (will only match what doesn't match the expressions)
 #[derive(Clone)]
 pub struct Restriction {
     /// The list of regexs
@@ -70,6 +76,13 @@ impl Restriction {
     /// # Arguments
     ///
     /// * `re_string` - The trivial regexs as string
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use doteur_core::restriction::Restriction;
+    /// Restriction::new_inclusion(vec![String::from(".*hell")]);
+    /// ```
     pub fn new_inclusion(re_string: Vec<String>) -> Restriction {
         Restriction::new(re_string, ReSearchType::Inclusive)
     }
@@ -79,6 +92,13 @@ impl Restriction {
     /// # Arguments
     ///
     /// * `re_string` - The trivial regexs as string
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use doteur_core::restriction::Restriction;
+    /// Restriction::new_exclusion(vec![String::from(".*hell")]);
+    /// ```
     pub fn new_exclusion(re_string: Vec<String>) -> Restriction {
         Restriction::new(re_string, ReSearchType::Exclusive)
     }
@@ -88,6 +108,26 @@ impl Restriction {
     /// # Arguments
     ///
     /// * `table_name` - The table to verify with the given restriction
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use doteur_core::restriction::Restriction;
+    /// assert!(
+    ///     {
+    ///         let rest = Restriction::new_inclusion(vec![String::from("hell")]);
+    ///         rest.verify_table_name("hell")
+    ///     },
+    ///     "Exact match"
+    /// );
+    /// assert!(
+    ///     !{
+    ///         let rest = Restriction::new_exclusion(vec![String::from("hell")]);
+    ///         rest.verify_table_name("hell")
+    ///     },
+    ///     "Exact match"
+    /// );
+    /// ```
     pub fn verify_table_name(self, table_name: &str) -> bool {
         if !self.regexs.is_empty() {
             match self.re_search_type {

@@ -1,3 +1,6 @@
+// Copyright ⓒ 2021-2022 LABEYE Loïc
+// This tool is distributed under the MIT License, check out [here](https://github.com/nag763/doteur/blob/main/LICENCE.MD).
+
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -5,15 +8,13 @@ use crate::DoteurCliError;
 use doteur_core::restriction::Restriction;
 
 #[cfg(feature = "mysql_addons")]
-use doteur_core::mysql_tools::{
-    process_mysql_connection_from_params, process_mysql_connection_from_url,
-};
+use doteur_core::mysql_tools::{get_schemas_from_mysql_params, get_schemas_from_mysql_url};
 
 #[cfg(feature = "mysql_addons")]
 use dialoguer::{Input, Password};
 
 #[cfg(feature = "sqlite_addons")]
-use doteur_core::sqlite_tools::process_sqlite_connection;
+use doteur_core::sqlite_tools::get_schemas_from_sqlite_instance;
 
 use clap::Parser;
 
@@ -79,7 +80,7 @@ pub const POSSIBLE_DOTS_OUTPUT: [&str; 53] = [
 #[derive(Parser)]
 #[clap(
     author = "LABEYE Loïc <loic.labeye@pm.me>",
-    version = "0.4.1",
+    version = "0.5.0",
     about = "Parse a SQL configuration and convert it into a .dot file, render the output if Graphviz is installed",
     after_help = "Some functionnalities might not appear as they depend on which version this tool has been downloaded or built for."
 )]
@@ -148,14 +149,14 @@ impl Args {
                                 .with_prompt("Database user's password")
                                 .interact()
                                 .unwrap();
-                            let data : String = process_mysql_connection_from_params(db_url, db_port, db_name, db_user, db_password)?;
+                            let data : String = get_schemas_from_mysql_params(db_url, db_port, db_name, db_user, db_password)?;
                             return Ok(data);
                     }
                 if self.url {
                     if self.input.len() != 1 {
                         return Err(DoteurCliError::bad_input("Please ensure that if the url argument is present that only one url is passed").into());
                     } else {
-                        let data : String = process_mysql_connection_from_url(&self.input[0])?;
+                        let data : String = get_schemas_from_mysql_url(&self.input[0])?;
                         return Ok(data);
                     }
                 }
@@ -168,7 +169,7 @@ impl Args {
                         return Err(DoteurCliError::bad_input("Please ensure that only one sqlite database path is passed as argument").into(),
                         );
                     } else {
-                        let data : String = process_sqlite_connection(&self.input[0])?;
+                        let data : String = get_schemas_from_sqlite_instance(&self.input[0])?;
                         return Ok(data);
                     }
                 }
