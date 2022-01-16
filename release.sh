@@ -39,7 +39,7 @@ do
 		echo "Back to ";
 		pwd
 		echo "Adding sum";
-		md5sum ./release/${packagesNames[j]}_$i.zip > ./release/${packagesNames[j]}_$i.md5
+		md5sum ./release/${packagesNames[j]}_$i.zip > ./release/${packagesNames[j]}_$i.zip.md5
 		echo "Cleaning release dir";
 		rm -r target/$i/doteur;
 		echo "Done with ${featuresToBuild[j]} for $i";
