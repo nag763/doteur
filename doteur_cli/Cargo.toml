@@ -4,7 +4,7 @@ version = "0.5.0"
 authors = ["nag763 <loic.labeye@tutanota.de>"]
 edition = "2018"
 license = "MIT"
-homepage = "https://doteur.net"
+homepage = "https://nag763.github.io/doteur"
 description = "Tool to automate the visualisation of UML dependencies from a SQL file"
 repository = "https://github.com/nag763/doteur/"
 readme = "README.md"
@@ -20,7 +20,7 @@ exclude = [
 ]
 
 [dependencies]
-doteur_core = { path = "../doteur_core", default-features = false }
+doteur_core = { path = "../doteur_core", default-features = false, version="0.1.0" }
 cfg-if = "1.0.0"
 which = "4.1.0"
 clap = { version = "3.0.3", features = ["derive"] }
