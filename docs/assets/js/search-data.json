@@ -31,7 +31,7 @@
   },"5": {
     "doc": "Changelog",
     "title": "Version 0.5.0 (in development)",
-    "content": ". ",
+    "content": ". | A brand new website | A better packaging | A better code, for a better tool ! | . ",
     "url": "https://nag763.github.io/doteur/changelog#version-050-in-development",
     "relUrl": "/changelog#version-050-in-development"
   },"6": {
@@ -108,215 +108,221 @@
     "relUrl": "/install/docker"
   },"18": {
     "doc": "Downloads",
-    "title": "Version 0.4.1 (latest) :",
-    "content": "Linux : . | doteur | checksum | . Windows : . | doteur | checksum | . ",
-    "url": "https://nag763.github.io/doteur/downloads#version-041-latest-",
-    "relUrl": "/downloads#version-041-latest-"
+    "title": "Version 0.5.0 (latest) :",
+    "content": "Linux : . Light . | doteur | checksum | . MySQL addons . | doteur | checksum | . SQLite addons . | doteur | checksum | . All features . | doteur | checksum | . Windows : . Light . | doteur | checksum | . MySQL addons . | doteur | checksum | . SQLite addons . | doteur | checksum | . All features . | doteur | checksum | . ",
+    "url": "https://nag763.github.io/doteur/downloads#version-050-latest-",
+    "relUrl": "/downloads#version-050-latest-"
   },"19": {
+    "doc": "Downloads",
+    "title": "Version 0.4.1 :",
+    "content": "Linux : . | doteur | checksum | . Windows : . | doteur | checksum | . ",
+    "url": "https://nag763.github.io/doteur/downloads#version-041-",
+    "relUrl": "/downloads#version-041-"
+  },"20": {
     "doc": "Downloads",
     "title": "Version 0.4.0 :",
     "content": "Linux : . | doteur | checksum | . Windows : . | doteur | checksum | . ",
     "url": "https://nag763.github.io/doteur/downloads#version-040-",
     "relUrl": "/downloads#version-040-"
-  },"20": {
+  },"21": {
     "doc": "Downloads",
     "title": "Version 0.3.3 :",
     "content": "Linux : . | doteur | checksum | . Windows : . | doteur | checksum | . ",
     "url": "https://nag763.github.io/doteur/downloads#version-033-",
     "relUrl": "/downloads#version-033-"
-  },"21": {
+  },"22": {
     "doc": "Downloads",
     "title": "Version 0.3.2 :",
     "content": "Linux : . | doteur | checksum | . Windows : . | doteur | checksum | . ",
     "url": "https://nag763.github.io/doteur/downloads#version-032-",
     "relUrl": "/downloads#version-032-"
-  },"22": {
+  },"23": {
     "doc": "Downloads",
     "title": "Version 0.3.1 :",
     "content": "Linux : . | doteur | checksum | . Windows : . | doteur | checksum | . ",
     "url": "https://nag763.github.io/doteur/downloads#version-031-",
     "relUrl": "/downloads#version-031-"
-  },"23": {
+  },"24": {
     "doc": "Downloads",
     "title": "Version 0.3.0 :",
     "content": "Linux : . | doteur | checksum | . Windows : . | doteur | checksum | . ",
     "url": "https://nag763.github.io/doteur/downloads#version-030-",
     "relUrl": "/downloads#version-030-"
-  },"24": {
+  },"25": {
     "doc": "Downloads",
     "title": "Version 0.2.0 :",
     "content": "Linux : . | doteur | checksum | . Windows : . | doteur | checksum | . ",
     "url": "https://nag763.github.io/doteur/downloads#version-020-",
     "relUrl": "/downloads#version-020-"
-  },"25": {
+  },"26": {
     "doc": "Downloads",
     "title": "Version 0.1.2 :",
     "content": "Linux : . | doteur | checksum | . Windows : . | doteur | checksum | . ",
     "url": "https://nag763.github.io/doteur/downloads#version-012-",
     "relUrl": "/downloads#version-012-"
-  },"26": {
+  },"27": {
     "doc": "Downloads",
     "title": "Version 0.1.1 :",
     "content": "Linux : . | doteur | checksum | . Windows : . | doteur | checksum | . ",
     "url": "https://nag763.github.io/doteur/downloads#version-011-",
     "relUrl": "/downloads#version-011-"
-  },"27": {
+  },"28": {
     "doc": "Downloads",
     "title": "Version 0.1 :",
     "content": "Linux : . | doteur | checksum | . Windows : . | doteur | checksum | . ",
     "url": "https://nag763.github.io/doteur/downloads#version-01-",
     "relUrl": "/downloads#version-01-"
-  },"28": {
+  },"29": {
     "doc": "Downloads",
     "title": "Downloads",
     "content": "Since the version 0.5.0, doteur is shipped with in several packages, for more information check the features section . All the downloads available below are for x86_64 platforms. See the changelog if you need further details about the versions mentionned below. If you have cargo installed, use : . cargo install doteur --all-features . For Windows users, don’t forget to check that you match the prequisites . For Linux users, don’t forget to check that you match the prerequisites. Since the version 0.5.0, doteur is shipped with in several packages, some features require additional dependencies being installed on your system, please check this section if you face issues . ",
     "url": "https://nag763.github.io/doteur/downloads",
     "relUrl": "/downloads"
-  },"29": {
+  },"30": {
     "doc": "About features",
     "title": "What are features ?",
     "content": "Features are enhancements to the original experience of the tool usage. They are meant to provide additional functionnalities and fit more specific usages. ",
     "url": "https://nag763.github.io/doteur/features#what-are-features-",
     "relUrl": "/features#what-are-features-"
-  },"30": {
+  },"31": {
     "doc": "About features",
     "title": "Why should I care about features ?",
     "content": "As you can see, this tool already covers a large panel of functionnalities and is starting to become bigger and bigger. It can be annoying as most users won’t ever be using most of what is available while having a larger executable than it should be. The purpose is then to download the necessary features instead of everything that is available. However, you can still download the whole package if you feel like you will be using all the features of the tool. ",
     "url": "https://nag763.github.io/doteur/features#why-should-i-care-about-features-",
     "relUrl": "/features#why-should-i-care-about-features-"
-  },"31": {
+  },"32": {
     "doc": "About features",
     "title": "What are the available features",
     "content": ". | default : No additionnal features to the original experience, it means that you will only be able to parse SQL exports. | mysql_addons : This feature will allow you to connect to a remote MySQL database instance besides of the light features | sqlite_addons : This feature will allow you to connect to a local SQLite database instace besides of the light features | all-features : This feature contains all the previous features | . ",
     "url": "https://nag763.github.io/doteur/features#what-are-the-available-features",
     "relUrl": "/features#what-are-the-available-features"
-  },"32": {
+  },"33": {
     "doc": "About features",
     "title": "How can I chose which feature to download ?",
     "content": "Downloading with cargo . Check this section regarding the downloads with cargo and the features. Docker usage . With docker, you download by default the version with all the features . Linux and Windows binary downloads . Simply download the binary that matches the feature name . ",
     "url": "https://nag763.github.io/doteur/features#how-can-i-chose-which-feature-to-download-",
     "relUrl": "/features#how-can-i-chose-which-feature-to-download-"
-  },"33": {
+  },"34": {
     "doc": "About features",
     "title": "Additional known requirements on Linux regarding the features",
     "content": "mysql_addons . On Debian/ Ubuntu . sudo apt-get libssl-dev . On Fedora . sudo rpm -i libssl-dev . On ArchLinux . sudo pacman -S libssl-dev . sqlite_addons . On Debian/ Ubuntu . sudo apt-get libsqlite3-dev . On Fedora . sudo rpm -i libsqlite3-dev . On ArchLinux . sudo pacman -S libsqlite3-dev . all-features . Match the requirements for mysql_addons and sqlite_addons . ",
     "url": "https://nag763.github.io/doteur/features#additional-known-requirements-on-linux-regarding-the-features",
     "relUrl": "/features#additional-known-requirements-on-linux-regarding-the-features"
-  },"34": {
+  },"35": {
     "doc": "About features",
     "title": "About features",
     "content": "Since 0.5.0, doteur is shipped in different packages. Read this section if you feel like you are lost on which feature to download for your computer. ",
     "url": "https://nag763.github.io/doteur/features",
     "relUrl": "/features"
-  },"35": {
+  },"36": {
     "doc": "Give a feedback",
     "title": "Give a feedback",
     "content": ". | Report a bug / an issue : GitHub issues template | . To see more logs when you use the tool, check this section. | Request a feature : Github features template . | Support the project : . | Improve it on GitHub | Star it, to show your love On GitHub (top right of repository page) | . | . ",
     "url": "https://nag763.github.io/doteur/feedback.html",
     "relUrl": "/feedback.html"
-  },"36": {
+  },"37": {
     "doc": "Installation guide",
     "title": "Installation guide",
     "content": "You will find in this section the instructions on how to download and install the tool on your computer. Following this guide, the executable should be in your system’s path and ready to be executed. The installation guide for macOS system should be the same than the linux one, however, the installation has never been tested on macOS, so feel free to complete the installation guide if you have been able to install it on this system. ",
     "url": "https://nag763.github.io/doteur/install/",
     "relUrl": "/install/"
-  },"37": {
+  },"38": {
     "doc": "Welcome",
     "title": "About this tool",
     "content": "Doteur is a CLI (Command Line Interface) tool that has for purpose to render the SQL schemas into good looking graphs. This will help you to easily understand the structure of a large database and understand what happens behind the scenes of your project. Besides, you will be able to use the large panel of features to either sort the tables you want to visualize or render with a different color scheme for instance. So far the tool handles both the MySQL and SQLite syntaxes, but it is planned to handle the Postgre one as soon as the formers will be considered as stable. The input of the tool can be either a sql file export, or given the version you downloaded, connect to either a MySQL running instance or an existing SQLite database. The tool has been developed on Linux, but is also available for Windows 10 and 11 and macOS. ",
     "url": "https://nag763.github.io/doteur/#about-this-tool",
     "relUrl": "/#about-this-tool"
-  },"38": {
+  },"39": {
     "doc": "Welcome",
     "title": "Output example",
     "content": ". ",
     "url": "https://nag763.github.io/doteur/#output-example",
     "relUrl": "/#output-example"
-  },"39": {
+  },"40": {
     "doc": "Welcome",
     "title": "Introduction",
     "content": "Welcome to this wiki, you will find here useful informations about how to use the tool, how to install it and how to report bugs. I hope you will appreciate this tool as much as I appreciated developping it, don’t hesitate to add a star on this project on GitHub if you like this project. ",
     "url": "https://nag763.github.io/doteur/#introduction",
     "relUrl": "/#introduction"
-  },"40": {
+  },"41": {
     "doc": "Welcome",
     "title": "About this project",
     "content": ". | Author : LABEYE Loïc | Licence : MIT | Latest version : 0.5.0 | Platforms available : . | Linux . | Tested | . | Windows . | Untested | . | Darwin (Apple) . | Untested | . | . | Link to Github repository | Link to Crate | Link to Docker image | . ",
     "url": "https://nag763.github.io/doteur/#about-this-project",
     "relUrl": "/#about-this-project"
-  },"41": {
+  },"42": {
     "doc": "Welcome",
     "title": "Welcome",
     "content": " ",
     "url": "https://nag763.github.io/doteur/",
     "relUrl": "/"
-  },"42": {
+  },"43": {
     "doc": "On Linux",
     "title": "Prerequisites",
     "content": "It is required for you to have gcc at least in the version 9, and highly recommended to install graphviz in order to render : . On Debian/ Ubuntu . sudo apt-get install gcc graphviz . On Fedora . sudo rpm -i gcc graphviz . On ArchLinux . sudo pacman -S gcc graphviz . Since the version 0.5.0, doteur is shipped with in several packages, some features require additional dependencies being installed on your system, please check this section if you face issues . ",
     "url": "https://nag763.github.io/doteur/install/linux#prerequisites",
     "relUrl": "/install/linux#prerequisites"
-  },"43": {
+  },"44": {
     "doc": "On Linux",
     "title": "First step : download the tool",
     "content": "See the download list here . And unzip it : . unzip $ZIP_FOLDER_NAME . ",
     "url": "https://nag763.github.io/doteur/install/linux#first-step--download-the-tool",
     "relUrl": "/install/linux#first-step--download-the-tool"
-  },"44": {
+  },"45": {
     "doc": "On Linux",
     "title": "Second step : Move the tool in your library",
     "content": "sudo mv $UNZIPPED_FOLDER/doteur /usr/local/lib . ",
     "url": "https://nag763.github.io/doteur/install/linux#second-step--move-the-tool-in-your-library",
     "relUrl": "/install/linux#second-step--move-the-tool-in-your-library"
-  },"45": {
+  },"46": {
     "doc": "On Linux",
     "title": "Finally create a symlink so that the tool remains in your path",
     "content": "sudo ln -s /usr/local/lib/doteur/doteur /usr/local/bin/doteur . You should now be done ! Check with your terminal that the tool is in your path : . doteur --help . It should print the help guide of the tool. Now that you are done, check the Usage section. ",
     "url": "https://nag763.github.io/doteur/install/linux#finally-create-a-symlink-so-that-the-tool-remains-in-your-path",
     "relUrl": "/install/linux#finally-create-a-symlink-so-that-the-tool-remains-in-your-path"
-  },"46": {
+  },"47": {
     "doc": "On Linux",
     "title": "On Linux",
     "content": "Since the version 0.5.0, doteur is shipped with in several packages, for more information check the features section . ",
     "url": "https://nag763.github.io/doteur/install/linux",
     "relUrl": "/install/linux"
-  },"47": {
+  },"48": {
     "doc": "How to use",
     "title": "Print help",
     "content": "doteur --help doteur 0.5.0 LABEYE Loïc &lt;loic.labeye@pm.me&gt; Parse a SQL configuration and convert it into a .dot file, render the output if Graphviz is installed USAGE: doteur [OPTIONS] [INPUT]... ARGS: &lt;INPUT&gt;... Name of the sql file or database location if an URL arg is passed, can also be a directory or several files OPTIONS: --dark_mode Wheter to render in dark mode or not -h, --help Print help information -i, --include &lt;INCLUDE&gt; Filter to include only the given tables, accept simple regexs --it Starts an interactive dialog to connect to a remote database --legend Includes hint about the relations type at the bottom of the output file -o, --output &lt;OUTPUT&gt; Name of the output file [default: output.dot] --sqlite Starts an interactive dialog to connect to a remote database --url Specificate that the input is an URL (i.e. mysql://usr:password@localhost:3306/database) -V, --version Print version information -x, --exclude &lt;EXCLUDE&gt; Filter to exclude the given tables, accept simple regexs Some functionnalities might not appear as they depend on which version this tool has been downloaded or built for. ",
     "url": "https://nag763.github.io/doteur/usage#print-help",
     "relUrl": "/usage#print-help"
-  },"48": {
+  },"49": {
     "doc": "How to use",
     "title": "Example usage",
     "content": "Export a .sql file to a .dot . usr@pop-os:~$ doteur sample.sql . The output will be in the output.dot . Export a .sql file to a .png . usr@pop-os:~$ doteur sample.sql -o output.png . For the format supported, please refer to the graphviz documentation . [mysql_addons] Connect to a remote database without a dialog and export the file as .png . usr@ubuntu:~/doteur$ doteur mysql://newuser:password@localhost:3306/foo --url -o output.png . [mysql_addons] Connect to a remote database with dialog and export the file as .png . usr@ubuntu:~/doteur$ doteur --it -o output.png Database url or ip: localhost Database port: 3306 Database name: foo Database user: username Database password: [hidden] . The output will be in a png file. [sqlite_addons] Connect to a sqlite3 database without a dialog and export the file as .png . doteur db.sqlite3 --sqlite -o output.png . Export a .sql file to a .png, render in dark mode . usr@pop-os:~$ doteur sample.sql -o output.png --dark-mode . Export a .sql file to a .png, include only tables who have either the name hello or world . usr@pop-os:~$ doteur sample.sql -o output.png -i hello world . Export a .sql file to a .png, include only tables that start with the name hello . usr@pop-os:~$ doteur sample.sql -o output.png -i hello* . Export a .sql file to a .png, exclude all tables that start with the name hello . usr@pop-os:~$ doteur sample.sql -o output.png -x hello* . See logs of a output . usr@pop-os:~$ RUST_LOG=ERROR doteur sample.sql . With available levels being DEBUG, INFO, WARN, ERROR . ",
     "url": "https://nag763.github.io/doteur/usage#example-usage",
     "relUrl": "/usage#example-usage"
-  },"49": {
+  },"50": {
     "doc": "How to use",
     "title": "How to use",
     "content": "Since the version 0.5.0, doteur is shipped in several packages, for more information check the features section. Soome CLI options might not be avalaible regarding which version you installed on your system . You will find in this section the instructions on how to use this tool on your computer. Following this guide, you should be able to use this tool at your will. As a reminder, doteur is a CLI tool meaning that you need to run it through a shell or cmd session. There is no GUI available at the moment. ",
     "url": "https://nag763.github.io/doteur/usage",
     "relUrl": "/usage"
-  },"50": {
+  },"51": {
     "doc": "On Windows",
     "title": "Prerequisites",
     "content": "It is required to install Graphviz in order to get the best from this tool. Please check the installation guide of Graphviz here and fullfill it prior going further. ",
     "url": "https://nag763.github.io/doteur/install/windows#prerequisites",
     "relUrl": "/install/windows#prerequisites"
-  },"51": {
+  },"52": {
     "doc": "On Windows",
     "title": "First step : download the tool",
     "content": "See the download list here . And unzip it. ",
     "url": "https://nag763.github.io/doteur/install/windows#first-step--download-the-tool",
     "relUrl": "/install/windows#first-step--download-the-tool"
-  },"52": {
+  },"53": {
     "doc": "On Windows",
     "title": "Second step : Move the tool",
     "content": "It is better to not let the tool in your Downloads folder following its extraction, move it to somewhere you could retrieve it easier. Finally, add the tool to your system path . Open your environment variables editor : . And click on environment variables, you should now see this interface : . Navigate to the variable Path in the second panel and click on Edit : . Click on new and put the path to the root of the folder that contains the doteur.exe binary. You should now be done ! Open a new cmd session and ensure that the tool is in your path : . doteur --help . It should print the help guide of the tool. Now that you are done, check the Usage section. ",
     "url": "https://nag763.github.io/doteur/install/windows#second-step--move-the-tool",
     "relUrl": "/install/windows#second-step--move-the-tool"
-  },"53": {
+  },"54": {
     "doc": "On Windows",
     "title": "On Windows",
     "content": "Since the version 0.5.0, doteur is shipped with in several packages, for more information check the features section . ",

@@ -9,6 +9,10 @@ You will find below the different details about the different versions of this t
 
 ## Version 0.5.0 (in development)
 
+- A brand new website
+- A better packaging 
+- A better code, for a better tool !
+
 ---
 
 ## Version 0.4.1 (latest) :
