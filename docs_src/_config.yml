@@ -14,7 +14,7 @@ domain: nag763.github.io
 destination: ../docs
 logo: "./assets/logo.png"
 aux_links:
-  "GitHub project":
+  "GitHub repository":
           - "https://github.com/nag763/doteur"
   "Check this project on crates.io":
           - "https://crates.io/crates/doteur"
