@@ -22,19 +22,19 @@ So far the tool handles both the MySQL and SQLite syntaxes, but it is planned to
 
 The tool has been developed on Linux, but is also available for Windows 10 and 11 and macOS.
 
-#### :new: About features
+#### 🆕 About features
 
 Since the version 0.5.0, the CLI tool is downloadable with several features. If you don't intend to connect to connect to either a running mysql or sqlite database, ignore what follows, the exports in SQL files will be handled no matter what feature you download the tool for.
 
-##### :new: What's a fetaure ?
+##### 🆕 What's a fetaure ?
 
 A feature is an addition to the original tool that adds several components and functionnalities to the original ones.
 
-#### :new: How will it impact me
+#### 🆕 How will it impact me
 
 If you download the tool with a certain feature, you won't be able
 
-#### :new: What are the available features
+#### 🆕 What are the available features
 
 * `mysql_addons` : Allow you to connect to running MySQL instance
 * `sqlite_addons` : Allow you to connect to a local SQLite database
@@ -45,7 +45,7 @@ Please refer to the installation guide :https://nag763.github.io/doteur/usage
 
 #### Help us
 
-If you use the tool, and like it, don't forget to add a star to the project on GitHub :star:, it helps us to keep motivation to improve it.
+If you use the tool, and like it, don't forget to add a star to the project on GitHub ⭐, it helps us to keep motivation to improve it.
 
 If you have any suggestion, or issue, please report it, it will help us to fix them.
 

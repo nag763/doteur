@@ -15,7 +15,7 @@ Since the release 0.3.3, doteur is downloadable with cargo as it has been publis
 
 ## Step 1 : Download the tool
 
-**Since the version 0.5.0, doteur is shipped with in several packages, for more information check the [features](../features) section**
+**Since the version 0.5.0, doteur is shipped with several packages, for more information check the [features](../features) section**
 - `light` :
 
 ```
@@ -40,7 +40,7 @@ cargo install doteur --features sqlite_addons
 cargo install doteur --all-features
 ```
 
-**Since the version 0.5.0, doteur is shipped with in several packages, some features require additional dependencies being installed on your system, please check this [section](../features#additional-known-requirements-on-linux-regarding-the-features) if you face issues**
+**Since the version 0.5.0, doteur is shipped with several packages, some features require additional dependencies being installed on your system, please check this [section](../features#additional-known-requirements-on-linux-regarding-the-features) if you face issues**
 
 ## Step 2 : Ensure it has been installed correctly
 

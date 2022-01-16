@@ -20,7 +20,7 @@ For Windows users, don't forget to check that you match the [prequisites](instal
 
 For Linux users, don't forget to check that you match the [prerequisites](install/linux#prerequisites).
 
-**Since the version 0.5.0, doteur is shipped with in several packages, some features require additional dependencies being installed on your system, please check this [section](features#additional-known-requirements-on-linux-regarding-the-features) if you face issues**
+**Since the version 0.5.0, doteur is shipped with several packages, some features require additional dependencies being installed on your system, please check this [section](features#additional-known-requirements-on-linux-regarding-the-features) if you face issues**
 
 ## Version 0.5.0 (latest) :
 

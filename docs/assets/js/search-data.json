@@ -13,7 +13,7 @@
   },"2": {
     "doc": "(Recommended) With Cargo",
     "title": "Step 1 : Download the tool",
-    "content": "Since the version 0.5.0, doteur is shipped with in several packages, for more information check the features section . | light : | . cargo install doteur . | mysql_addons : | . cargo install doteur --features mysql_addons . | sqlite_addons : | . cargo install doteur --features sqlite_addons . | all-features : | . cargo install doteur --all-features . Since the version 0.5.0, doteur is shipped with in several packages, some features require additional dependencies being installed on your system, please check this section if you face issues . ",
+    "content": "Since the version 0.5.0, doteur is shipped with several packages, for more information check the features section . | light : | . cargo install doteur . | mysql_addons : | . cargo install doteur --features mysql_addons . | sqlite_addons : | . cargo install doteur --features sqlite_addons . | all-features : | . cargo install doteur --all-features . Since the version 0.5.0, doteur is shipped with several packages, some features require additional dependencies being installed on your system, please check this section if you face issues . ",
     "url": "https://nag763.github.io/doteur/install/cargo#step-1--download-the-tool",
     "relUrl": "/install/cargo#step-1--download-the-tool"
   },"3": {
@@ -175,7 +175,7 @@
   },"29": {
     "doc": "Downloads",
     "title": "Downloads",
-    "content": "Since the version 0.5.0, doteur is shipped in several packages, for more information check the features section . All the downloads available below are for x86_64 platforms. See the changelog if you need further details about the versions mentionned below. If you have cargo installed, use : . cargo install doteur --all-features . For Windows users, don’t forget to check that you match the prequisites . For Linux users, don’t forget to check that you match the prerequisites. Since the version 0.5.0, doteur is shipped with in several packages, some features require additional dependencies being installed on your system, please check this section if you face issues . ",
+    "content": "Since the version 0.5.0, doteur is shipped in several packages, for more information check the features section . All the downloads available below are for x86_64 platforms. See the changelog if you need further details about the versions mentionned below. If you have cargo installed, use : . cargo install doteur --all-features . For Windows users, don’t forget to check that you match the prequisites . For Linux users, don’t forget to check that you match the prerequisites. Since the version 0.5.0, doteur is shipped with several packages, some features require additional dependencies being installed on your system, please check this section if you face issues . ",
     "url": "https://nag763.github.io/doteur/downloads",
     "relUrl": "/downloads"
   },"30": {
@@ -259,7 +259,7 @@
   },"43": {
     "doc": "On Linux",
     "title": "Prerequisites",
-    "content": "It is required for you to have gcc at least in the version 9, and highly recommended to install graphviz in order to render : . On Debian/ Ubuntu . sudo apt-get install gcc graphviz . On Fedora . sudo rpm -i gcc graphviz . On ArchLinux . sudo pacman -S gcc graphviz . Since the version 0.5.0, doteur is shipped with in several packages, some features require additional dependencies being installed on your system, please check this section if you face issues . ",
+    "content": "It is required for you to have gcc at least in the version 9, and highly recommended to install graphviz in order to render : . On Debian/ Ubuntu . sudo apt-get install gcc graphviz . On Fedora . sudo rpm -i gcc graphviz . On ArchLinux . sudo pacman -S gcc graphviz . Since the version 0.5.0, doteur is shipped with several packages, some features require additional dependencies being installed on your system, please check this section if you face issues . ",
     "url": "https://nag763.github.io/doteur/install/linux#prerequisites",
     "relUrl": "/install/linux#prerequisites"
   },"44": {
@@ -283,7 +283,7 @@
   },"47": {
     "doc": "On Linux",
     "title": "On Linux",
-    "content": "Since the version 0.5.0, doteur is shipped with in several packages, for more information check the features section . ",
+    "content": "Since the version 0.5.0, doteur is shipped with several packages, for more information check the features section . ",
     "url": "https://nag763.github.io/doteur/install/linux",
     "relUrl": "/install/linux"
   },"48": {
@@ -325,7 +325,7 @@
   },"54": {
     "doc": "On Windows",
     "title": "On Windows",
-    "content": "Since the version 0.5.0, doteur is shipped with in several packages, for more information check the features section . ",
+    "content": "Since the version 0.5.0, doteur is shipped with several packages, for more information check the features section . ",
     "url": "https://nag763.github.io/doteur/install/windows",
     "relUrl": "/install/windows"
   }

@@ -5,7 +5,7 @@ title: On Windows
 permalink: install/windows
 ---
 
-**Since the version 0.5.0, doteur is shipped with in several packages, for more information check the [features](../features) section**
+**Since the version 0.5.0, doteur is shipped with several packages, for more information check the [features](../features) section**
 
 ## Prerequisites
 
