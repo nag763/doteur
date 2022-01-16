@@ -12,7 +12,7 @@
 
 <p align="center"><img height ="480" width="640" src="https://raw.githubusercontent.com/nag763/doteur/main/.github/assets/sample.jpeg"></img></p>
 
-#### About
+## About
 
 Doteur is a CLI (Command Line Interface) tool that has for purpose to render the SQL schemas into good looking graphs. This will help you to easily understand the structure of a large database and understand what happens behind the scenes of your project.
 
@@ -22,34 +22,34 @@ So far the tool handles both the MySQL and SQLite syntaxes, but it is planned to
 
 The tool has been developed on Linux, but is also available for Windows 10 and 11 and macOS.
 
-#### 🆕 About features
+## 🆕 About features
 
 Since the version 0.5.0, the CLI tool is downloadable with several features. If you don't intend to connect to connect to either a running mysql or sqlite database, ignore what follows, the exports in SQL files will be handled no matter what feature you download the tool for.
 
-##### 🆕 What's a fetaure ?
+### 🆕 What's a fetaure ?
 
 A feature is an addition to the original tool that adds several components and functionnalities to the original ones.
 
-#### 🆕 How will it impact me
+### 🆕 How will it impact me
 
 If you download the tool with a certain feature, you won't be able
 
-#### 🆕 What are the available features
+### 🆕 What are the available features
 
 * `mysql_addons` : Allow you to connect to running MySQL instance
 * `sqlite_addons` : Allow you to connect to a local SQLite database
 
-#### How to download the right tool
+## How to download the right tool
 
 Please refer to the installation guide :https://nag763.github.io/doteur/usage
 
-#### Help us
+## Help us
 
 If you use the tool, and like it, don't forget to add a star to the project on GitHub ⭐, it helps us to keep motivation to improve it.
 
 If you have any suggestion, or issue, please report it, it will help us to fix them.
 
-#### General information
+## General information
 
 - <u>Author :</u> LABEYE Loïc
 - <u>Licence :</u> MIT
@@ -64,10 +64,10 @@ If you have any suggestion, or issue, please report it, it will help us to fix t
 - <u>crates.io :</u> https://crates.io/crates/doteur
 - <u>Docker image, continuous delivery :</u> https://hub.docker.com/r/nag763/doteur  
 
-#### How to install
+## How to install
 
 🆕 Check the github page dedicated to this section : https://nag763.github.io/doteur/install
 
-#### How to use
+## How to use
 
 🆕 Check the github page dedicated to this section : https://nag763.github.io/doteur/usage
