@@ -7,7 +7,7 @@ You will find below the different details about the different versions of this t
 
 ---
 
-## Version 0.5.0 (in development)
+## Version 0.5.0 (latest) :
 
 - A brand new website
 - A better packaging 
@@ -15,7 +15,7 @@ You will find below the different details about the different versions of this t
 
 ---
 
-## Version 0.4.1 (latest) :
+## Version 0.4.1 :
 
 - Adds a connection to a running database with the usage of `--it` and `--url` args
 - Better end of program handling with calls to `exit()` rather than `panic!`

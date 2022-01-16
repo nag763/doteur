@@ -4,7 +4,7 @@ permalink: downloads
 nav_order: 4
 ---
 
-**Since the version 0.5.0, doteur is shipped with in several packages, for more information check the [features](features) section**
+**Since the version 0.5.0, doteur is shipped in several packages, for more information check the [features](features) section**
 
 All the downloads available below are for x86_64 platforms.
 

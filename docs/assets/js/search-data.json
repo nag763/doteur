@@ -30,16 +30,16 @@
     "relUrl": "/install/cargo"
   },"5": {
     "doc": "Changelog",
-    "title": "Version 0.5.0 (in development)",
+    "title": "Version 0.5.0 (latest) :",
     "content": ". | A brand new website | A better packaging | A better code, for a better tool ! | . ",
-    "url": "https://nag763.github.io/doteur/changelog#version-050-in-development",
-    "relUrl": "/changelog#version-050-in-development"
+    "url": "https://nag763.github.io/doteur/changelog#version-050-latest-",
+    "relUrl": "/changelog#version-050-latest-"
   },"6": {
     "doc": "Changelog",
-    "title": "Version 0.4.1 (latest) :",
+    "title": "Version 0.4.1 :",
     "content": ". | Adds a connection to a running database with the usage of --it and --url args | Better end of program handling with calls to exit() rather than panic! | . ",
-    "url": "https://nag763.github.io/doteur/changelog#version-041-latest-",
-    "relUrl": "/changelog#version-041-latest-"
+    "url": "https://nag763.github.io/doteur/changelog#version-041-",
+    "relUrl": "/changelog#version-041-"
   },"7": {
     "doc": "Changelog",
     "title": "Version 0.4.0 :",
@@ -175,7 +175,7 @@
   },"29": {
     "doc": "Downloads",
     "title": "Downloads",
-    "content": "Since the version 0.5.0, doteur is shipped with in several packages, for more information check the features section . All the downloads available below are for x86_64 platforms. See the changelog if you need further details about the versions mentionned below. If you have cargo installed, use : . cargo install doteur --all-features . For Windows users, don’t forget to check that you match the prequisites . For Linux users, don’t forget to check that you match the prerequisites. Since the version 0.5.0, doteur is shipped with in several packages, some features require additional dependencies being installed on your system, please check this section if you face issues . ",
+    "content": "Since the version 0.5.0, doteur is shipped in several packages, for more information check the features section . All the downloads available below are for x86_64 platforms. See the changelog if you need further details about the versions mentionned below. If you have cargo installed, use : . cargo install doteur --all-features . For Windows users, don’t forget to check that you match the prequisites . For Linux users, don’t forget to check that you match the prerequisites. Since the version 0.5.0, doteur is shipped with in several packages, some features require additional dependencies being installed on your system, please check this section if you face issues . ",
     "url": "https://nag763.github.io/doteur/downloads",
     "relUrl": "/downloads"
   },"30": {
