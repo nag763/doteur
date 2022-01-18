@@ -77,7 +77,7 @@ impl fmt::Display for Attribute {
         </TD></TR>",
                     font_color,
                     self.name.trim_leading_trailing(),
-                    PK_EMOJI,
+                    FK_EMOJI,
                     self.foreign_table.as_ref().unwrap().trim_leading_trailing(),
                     self.foreign_key.as_ref().unwrap().trim_leading_trailing()
                 )
