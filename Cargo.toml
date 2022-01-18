@@ -1,5 +1,6 @@
 [workspace]
 members = [
-    "doteur_cli",
     "doteur_core",
+    "doteur_cli",
+    "doteur_wasm"
 ]

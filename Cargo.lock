@@ -382,6 +382,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "doteur_wasm"
+version = "0.1.0"
+dependencies = [
+ "doteur_core",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "either"
 version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
