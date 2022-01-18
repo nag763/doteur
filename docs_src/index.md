@@ -40,4 +40,4 @@ I hope you will appreciate this tool as much as I appreciated developping it, do
 - <a href="https://github.com/nag763/doteur">Link to Github repository</a>
 - <a href="https://crates.io/crates/doteur">Link to Crate</a>
 - <a href="https://hub.docker.com/r/nag763/doteur">Link to Docker image</a>
-
+- <a href="live">(BETA) Live test</a>
