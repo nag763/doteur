@@ -9,8 +9,8 @@
     </script>
   </head>
   <body>
-    <textarea id="userinput"></textarea>
-    <div id="placeholder2"></div>
+    <textarea id="userinput" placeholder="Copy paste your SQL schema here"></textarea>
+    <div id="dotoutput"></div>
     <script type="module">
       import init, {convert_sql_to_dot} from "./pkg/doteur_wasm.js";
       function doteur(data, legend, dark_mode){
@@ -18,7 +18,7 @@
         .then(() => {
 	const dot = convert_sql_to_dot(data, legend, dark_mode);
 	hpccWasm.graphviz.layout(dot, "svg", "dot").then(svg => {
-            const div = document.getElementById("placeholder2");
+            const div = document.getElementById("dotoutput");
             div.innerHTML = svg;
 	    });
 	});

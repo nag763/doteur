@@ -2,33 +2,33 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Doteur live</title>
+    <title>Doteur live example</title>
 	<script src="https://cdn.jsdelivr.net/npm/@hpcc-js/wasm/dist/index.min.js"></script>
     <script>
         var hpccWasm = window["@hpcc-js/wasm"];
     </script>
   </head>
   <body>
-    <textarea id="userinput"></textarea>
-    <div id="placeholder2"></div>
+    <textarea id="userinput" placeholder="Copy paste your SQL schema here"></textarea>
+    <div id="dotoutput"></div>
     <script type="module">
       import init, {convert_sql_to_dot} from "./pkg/doteur_wasm.js";
       function doteur(data, legend, dark_mode){
       init()
         .then(() => {
-	console.log("b");
 	const dot = convert_sql_to_dot(data, legend, dark_mode);
 	hpccWasm.graphviz.layout(dot, "svg", "dot").then(svg => {
-            const div = document.getElementById("placeholder2");
+            const div = document.getElementById("dotoutput");
             div.innerHTML = svg;
 	    });
 	});
 	}
 	let userInput = document.getElementById("userinput");
 	userInput.addEventListener("input", function() {
-		console.log("a");
 		doteur(userInput.value, false, false);
 	});
 	</script>
   </body>
 </html>
+
+
