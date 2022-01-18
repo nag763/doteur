@@ -1,6 +1,6 @@
 [package]
 name = "doteur_core"
-version = "0.5.0"
+version = "0.5.1"
 authors = ["nag763 <loic.labeye@tutanota.de>"]
 edition = "2018"
 license = "MIT"
