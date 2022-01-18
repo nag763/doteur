@@ -1,3 +1,0 @@
-CREATE TABLE mytable ( a INT PRIMARY KEY );
-
-CREATE TABLE fe ( ref int, FOREIGN KEY(ref) REFERENCES mytable(a) );
