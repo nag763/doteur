@@ -15,6 +15,9 @@ enum AttributeType {
     ColDef,
 }
 
+const PK_EMOJI: &str = "🔑";
+const FK_EMOJI: &str = "🗝️";
+
 /// An attribute is a modelisation of a column
 /// in SQL
 pub struct Attribute {
@@ -64,10 +67,6 @@ impl fmt::Display for Attribute {
                     true => "white",
                     false => "black",
                 };
-                let refer_sign: &str = match cfg!(unix) {
-                    true => "\u{1F5DD}",
-                    _ => "[FK]",
-                };
                 write!(
                     f,
                     "
@@ -78,7 +77,7 @@ impl fmt::Display for Attribute {
         </TD></TR>",
                     font_color,
                     self.name.trim_leading_trailing(),
-                    refer_sign,
+                    PK_EMOJI,
                     self.foreign_table.as_ref().unwrap().trim_leading_trailing(),
                     self.foreign_key.as_ref().unwrap().trim_leading_trailing()
                 )
@@ -88,10 +87,6 @@ impl fmt::Display for Attribute {
                 let font_color: &str = match self.dark_mode {
                     true => "white",
                     false => "black",
-                };
-                let pk_sign: &str = match cfg!(unix) {
-                    true => "\u{1F511}",
-                    _ => "[PK]",
                 };
                 write!(
                     f,
@@ -103,7 +98,7 @@ impl fmt::Display for Attribute {
         </TD></TR>",
                     font_color,
                     self.name.trim_leading_trailing(),
-                    pk_sign,
+                    PK_EMOJI,
                     self.associed_definition
                         .as_ref()
                         .unwrap()
@@ -116,14 +111,6 @@ impl fmt::Display for Attribute {
                     true => "white",
                     false => "black",
                 };
-                let pk_sign: &str = match cfg!(unix) {
-                    true => "\u{1F511}",
-                    _ => "[PK]",
-                };
-                let refer_sign: &str = match cfg!(unix) {
-                    true => "\u{1F5DD}",
-                    _ => "[FK]",
-                };
                 write!(
                     f,
                     "
@@ -134,8 +121,8 @@ impl fmt::Display for Attribute {
         </TD></TR>",
                     font_color,
                     self.name.trim_leading_trailing(),
-                    pk_sign,
-                    refer_sign,
+                    PK_EMOJI,
+                    FK_EMOJI,
                     self.foreign_table.as_ref().unwrap().trim_leading_trailing(),
                     self.foreign_key.as_ref().unwrap().trim_leading_trailing()
                 )

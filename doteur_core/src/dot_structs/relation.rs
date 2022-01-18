@@ -1,6 +1,8 @@
 // Copyright ⓒ 2021-2022 LABEYE Loïc
 // This tool is distributed under the MIT License, check out [here](https://github.com/nag763/doteur/blob/main/LICENCE.MD).
 
+const RELATE_TO_EMOJI: &str = "➡";
+
 #[derive(Debug, Clone)]
 enum OnDelete {
     SetNull,
@@ -99,11 +101,6 @@ impl Relation {
             false => "",
         };
 
-        let refer: &str = match cfg!(unix) {
-            true => "\u{27A1}",
-            _ => "refers",
-        };
-
         let arrowhead: &str = match self.relation_type.get_dot_arrowhead() {
             "SET NULL" => "odot",
             "CASCADE" => "dot",
@@ -111,7 +108,7 @@ impl Relation {
         };
         let mut ret: String = String::new();
         for key in self.keys {
-            ret.push_str(format!("\t{0} -> {1} [label=<<I>{2} {3} {4}</I>>, arrowhead = \"{5}\", fontsize=\"12.0\", {6}]", self.origin_table, self.refered_table, key.0, refer, key.1, arrowhead, color_scheme).as_str());
+            ret.push_str(format!("\t{0} -> {1} [label=<<I>{2} {3} {4}</I>>, arrowhead = \"{5}\", fontsize=\"12.0\", {6}]", self.origin_table, self.refered_table, key.0, RELATE_TO_EMOJI, key.1, arrowhead, color_scheme).as_str());
         }
         ret
     }
