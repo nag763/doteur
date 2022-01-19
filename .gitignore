@@ -4,8 +4,4 @@ output.dot
 .output.dot
 **/.output.dot
 **/output.dot
-docs_src/Gemfile.*
-docs_src/_site
-docs_src/vendor
-doteur_wasm/pkg
 doteur_wasm/example/pkg
