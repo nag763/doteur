@@ -8,9 +8,9 @@
 <p align="center"><img src="https://raw.githubusercontent.com/nag763/doteur/main/.github/assets/logo.png"></img></p>
 
 <h2 align="center">Doteur</h2>
-<h4 align="center">A simple tool to render graphically your SQL relations.</h4>
+<h4 align="center">A simple tool to render graphically your SQL schemas.</h4>
 
-<p align="center"><img height ="480" width="640" src="https://raw.githubusercontent.com/nag763/doteur/main/.github/assets/sample.jpeg"></img></p>
+<p align="center"><img height ="480" width="640" src="https://raw.githubusercontent.com/nag763/doteur/main/.github/assets/demo.gif"></img></p>
 
 ## About
 
