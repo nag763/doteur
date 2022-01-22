@@ -5,11 +5,11 @@ authors = ["nag763 <loic.labeye@tutanota.de>"]
 edition = "2018"
 license = "MIT"
 homepage = "https://nag763.github.io/doteur"
-description = "Tool to automate the visualisation of UML dependencies from a SQL file"
+description = "Tool to automate the visualisation of UML dependencies from a SQL input"
 repository = "https://github.com/nag763/doteur/"
 readme = "../README.md"
 categories = ["command-line-utilities", "rendering", "visualization"]
-keywords = ["cli", "mysql", "dot"]
+keywords = ["cli", "mysql", "dot", "sqlite", "graphviz"]
 exclude = [
     "release/*",
     ".github/*",
@@ -20,7 +20,7 @@ exclude = [
 ]
 
 [dependencies]
-doteur_core = { path = "../doteur_core", default-features = false, version="0.5.0" }
+doteur_core = { path = "../doteur_core", default-features = false, version="0.5.1" }
 cfg-if = "1.0.0"
 which = "4.1.0"
 clap = { version = "3.0.3", features = ["derive"] }

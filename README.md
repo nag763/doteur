@@ -22,6 +22,10 @@ So far the tool handles both the MySQL and SQLite syntaxes, but it is planned to
 
 The tool has been developed on Linux, but is also available for Windows 10 and 11 and macOS.
 
+## 🆕 Live test
+
+Since the version 0.5.1, the tool is testable with limited functionnalities on the GitHub pages. Please note that the output of the live functionnality is experimental and won't always reflect the CLI's output.
+
 ## 🆕 About features
 
 Since the version 0.5.0, the CLI tool is downloadable with several features. If you don't intend to connect to connect to either a running mysql or sqlite database, ignore what follows, the exports in SQL files will be handled no matter what feature you download the tool for.
