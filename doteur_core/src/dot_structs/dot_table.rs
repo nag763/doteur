@@ -91,7 +91,7 @@ fn generate_table_header(name: &str, dark_mode: bool) -> String {
     };
     format!(
         "
-    {0} [label=<
+    \"{0}\" [label=<
         <TABLE BGCOLOR=\"{1}\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\">
 
         <TR><TD COLSPAN=\"2\" CELLPADDING=\"5\" ALIGN=\"CENTER\" BGCOLOR=\"{2}\">

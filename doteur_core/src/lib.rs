@@ -82,7 +82,7 @@ macro_rules! unwrap_captures_name_as_str {
 
 lazy_static! {
     ///Get table name.
-    static ref RE_TABLE_NAME : Regex = Regex::new(r####"(?i)\s*CREATE\s*TABLE\s*(?:IF\s*NOT\s*EXISTS)?\s*[`"'\[]?(?P<table_name>\w*)[`"'\]]?\s*\((?P<content>[^;]*)\)"####).unwrap();
+    static ref RE_TABLE_NAME : Regex = Regex::new(r####"(?i)\s*CREATE\s*TABLE\s*(?:IF\s*NOT\s*EXISTS)?\s*(?P<table_name>(?:[`"\[]{1}[^`"\]]+[`"\]]{1})|(?:\w*))\s*\((?P<content>[^;]*)\)"####).unwrap();
     ///Get column type
     static ref RE_COL_TYPE : Regex = Regex::new(r####"(?i)\s*((?:FULLTEXT|SPATIAL)?\s+(?:INDEX|KEY|CHECK))|(?:CONSTRAINT\s*[`'"]\w*[`'"])?\s*(?P<key_type>UNIQUE|FOREIGN|PRIMARY)\s+"####).unwrap();
     ///Get columns definitioon
@@ -163,6 +163,7 @@ fn convert_sql_table_to_dot(
         "table_name",
         "Regex error, the input is either not a sql table or isn't parsed properly by the process"
     )
+    .replace_enclosing()
     .trim_leading_trailing();
     info!(
         "Starting to convert the SQL table {} into a DOT table",
@@ -622,7 +623,7 @@ mod tests {
                 .name("table_name")
                 .unwrap()
                 .as_str(),
-            "HELLO",
+            "`HELLO`",
             "with backquotes"
         );
         assert_eq!(
@@ -632,7 +633,7 @@ mod tests {
                 .name("table_name")
                 .unwrap()
                 .as_str(),
-            "HELLO",
+            "`HELLO`",
             "with backquotes"
         );
         assert_eq!(
@@ -652,7 +653,7 @@ mod tests {
                 .name("table_name")
                 .unwrap()
                 .as_str(),
-            "HELLO",
+            "`HELLO`",
             "with separative sequences"
         );
         assert_eq!(
@@ -662,7 +663,7 @@ mod tests {
                 .name("table_name")
                 .unwrap()
                 .as_str(),
-            "HeLlO",
+            "`HeLlO`",
             "mixed"
         );
     }
