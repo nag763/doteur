@@ -8,7 +8,7 @@
 <p align="center"><img src="https://raw.githubusercontent.com/nag763/doteur/main/.github/assets/logo.png"></img></p>
 
 <h2 align="center">Doteur</h2>
-<h4 align="center">A simple tool to draw your mysql relations from exports.</h4>
+<h4 align="center">A simple tool to render graphically your SQL relations.</h4>
 
 <p align="center"><img height ="480" width="640" src="https://raw.githubusercontent.com/nag763/doteur/main/.github/assets/sample.jpeg"></img></p>
 
@@ -24,7 +24,9 @@ The tool has been developed on Linux, but is also available for Windows 10 and 1
 
 ## 🆕 Live test
 
-Since the version 0.5.1, the tool is testable with limited functionnalities on the GitHub pages. Please note that the output of the live functionnality is experimental and won't always reflect the CLI's output.
+Since the version 0.5.1, the tool is testable with limited functionnalities on the GitHub pages. **Please note that the output of the live functionnality is experimental and won't always reflect the CLI's output.**
+
+You can test the tool [here](https://nag763.github.io/doteur/live/)
 
 ## 🆕 About features
 
@@ -36,16 +38,12 @@ A feature is an addition to the original tool that adds several components and f
 
 ### 🆕 How will it impact me
 
-If you download the tool with a certain feature, you won't be able
+If you download the tool with a certain feature, you might not be able to use the other functionnalities. By default, no additionnal functionnalities are packaged, and you might not be able to either connect to a running mysql instance or a sqlite database.
 
 ### 🆕 What are the available features
 
 * `mysql_addons` : Allow you to connect to running MySQL instance
 * `sqlite_addons` : Allow you to connect to a local SQLite database
-
-## How to download the right tool
-
-Please refer to the installation guide :https://nag763.github.io/doteur/usage
 
 ## Help us
 
@@ -62,7 +60,7 @@ If you have any suggestion, or issue, please report it, it will help us to fix t
 	- Linux
 		- [X] Tested
 	- Windows
-		- [X] Tested
+		- [ ] Untested
 - <u>Github :</u> https://github.com/nag763/doteur
 - <u>Github pages :</u> https://nag763.github.io/doteur/
 - <u>crates.io :</u> https://crates.io/crates/doteur
@@ -70,8 +68,8 @@ If you have any suggestion, or issue, please report it, it will help us to fix t
 
 ## How to install
 
-🆕 Check the github page dedicated to this section : https://nag763.github.io/doteur/install
+🆕 [Check the github page dedicated to this section](https://nag763.github.io/doteur/install)
 
 ## How to use
 
-🆕 Check the github page dedicated to this section : https://nag763.github.io/doteur/usage
+🆕 [Check the github page dedicated to this section](https://nag763.github.io/doteur/usage)
