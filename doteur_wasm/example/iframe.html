@@ -47,7 +47,6 @@ textarea:focus {
         .then(() => {
 	const dot = convert_sql_to_dot(data, legend, dark_mode);
 	hpccWasm.graphviz.layout(dot, "svg", "dot").then(svg => {
-	    console.log("dot", dot);
             const div = document.getElementById("dotoutput");
             div.innerHTML = svg;
 	    });

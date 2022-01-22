@@ -28,6 +28,8 @@ use std::fs;
 /// );
 /// ```
 pub fn detect_comas(content: &str) -> Result<Vec<usize>, &str> {
+    let self_closables: Vec<char> = vec!['`', '"'];
+    let pair_closables: Vec<char> = vec!['(', '['];
     if content.is_empty() {
         return Err("Empty input");
     }
@@ -37,7 +39,7 @@ pub fn detect_comas(content: &str) -> Result<Vec<usize>, &str> {
         match c {
             '(' => {
                 // If the parenthesis aren't inside a string
-                if buffer.is_empty() || buffer.get_last_char() != '`' {
+                if buffer.is_empty() || !self_closables.contains(&buffer.get_last_char()) {
                     buffer.push(c);
                 }
             }
@@ -47,11 +49,30 @@ pub fn detect_comas(content: &str) -> Result<Vec<usize>, &str> {
                     // If last char of buffer is an open parenthesis, we pop it and continue
                     if last_char == '(' {
                         buffer.pop();
-                    } else if last_char != '`' {
+                    } else if !self_closables.contains(&buffer.get_last_char()) {
                         return Err("Opened parenthesis never closed");
                     }
                 } else {
                     return Err("Parenthesis closed without being opened");
+                }
+            }
+            '[' => {
+                // If the parenthesis aren't inside a string
+                if buffer.is_empty() || !self_closables.contains(&buffer.get_last_char()) {
+                    buffer.push(c);
+                }
+            }
+            ']' => {
+                if !buffer.is_empty() {
+                    let last_char: char = buffer.get_last_char();
+                    // If last char of buffer is an open parenthesis, we pop it and continue
+                    if last_char == '[' {
+                        buffer.pop();
+                    } else if !self_closables.contains(&buffer.get_last_char()) {
+                        return Err("Opened hooks never closed");
+                    }
+                } else {
+                    return Err("Hooks closed without being opened");
                 }
             }
             '`' => {
@@ -59,7 +80,22 @@ pub fn detect_comas(content: &str) -> Result<Vec<usize>, &str> {
                     let last_char: char = buffer.get_last_char();
                     if last_char == '`' {
                         buffer.pop();
-                    } else if last_char == '(' {
+                    } else if pair_closables.contains(&last_char) {
+                        buffer.push(c);
+                    // If a back tick is neither a closure nor a declaration
+                    } else {
+                        return Err("Malformed, single backtick");
+                    }
+                } else {
+                    buffer.push(c)
+                }
+            }
+            '"' => {
+                if !buffer.is_empty() {
+                    let last_char: char = buffer.get_last_char();
+                    if last_char == '"' {
+                        buffer.pop();
+                    } else if pair_closables.contains(&last_char) {
                         buffer.push(c);
                     // If a back tick is neither a closure nor a declaration
                     } else {
