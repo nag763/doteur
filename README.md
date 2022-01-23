@@ -32,7 +32,7 @@ You can test the tool [here](https://nag763.github.io/doteur/live/)
 
 Since the version 0.5.0, the CLI tool is downloadable with several features. If you don't intend to connect to connect to either a running mysql or sqlite database, ignore what follows, the exports in SQL files will be handled no matter what feature you download the tool for.
 
-### 🆕 What's a fetaure ?
+### 🆕 What's a feature ?
 
 A feature is an addition to the original tool that adds several components and functionnalities to the original ones.
 
