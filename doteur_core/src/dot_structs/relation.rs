@@ -101,14 +101,9 @@ impl Relation {
             false => "",
         };
 
-        let arrowhead: &str = match self.relation_type.get_dot_arrowhead() {
-            "SET NULL" => "odot",
-            "CASCADE" => "dot",
-            _ => "normal",
-        };
         let mut ret: String = String::new();
         for key in self.keys {
-            ret.push_str(format!("\t{0} -> {1} [label=<<I>{2} {3} {4}</I>>, arrowhead = \"{5}\", fontsize=\"12.0\", {6}]", self.origin_table, self.refered_table, key.0, RELATE_TO_EMOJI, key.1, arrowhead, color_scheme).as_str());
+            ret.push_str(format!("\t{0} -> {1} [label=<<I>{2} {3} {4}</I>>, arrowhead = \"{5}\", fontsize=\"12.0\", {6}]", self.origin_table, self.refered_table, key.0, RELATE_TO_EMOJI, key.1, self.relation_type.get_dot_arrowhead(), color_scheme).as_str());
         }
         ret
     }
