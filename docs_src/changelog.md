@@ -7,7 +7,13 @@ You will find below the different details about the different versions of this t
 
 ---
 
-## Version 0.5.1 (latest) :
+## Version 0.5.2 (latest) :
+
+- Fix dependalerts
+
+---
+
+## Version 0.5.1 :
 
 - Minor fixes
 
