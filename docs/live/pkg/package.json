@@ -1,6 +1,6 @@
 {
   "name": "doteur_wasm",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "files": [
     "doteur_wasm_bg.wasm",
     "doteur_wasm.js"

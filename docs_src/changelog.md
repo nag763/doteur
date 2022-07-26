@@ -7,7 +7,13 @@ You will find below the different details about the different versions of this t
 
 ---
 
-## Version 0.5.2 (latest) :
+## Version 0.5.3 (latest) :
+
+- Upgrade dependencies
+
+---
+
+## Version 0.5.2 :
 
 - Fix dependalerts
 
