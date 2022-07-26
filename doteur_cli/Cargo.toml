@@ -22,10 +22,10 @@ exclude = [
 [dependencies]
 doteur_core = { path = "../doteur_core", default-features = false, version="0.5.2" }
 cfg-if = "1.0.0"
-which = "4.1.0"
-clap = { version = "3.0.3", features = ["derive"] }
+which = "4.2.5"
+clap = { version = "3.2.15", features = ["derive"] }
 env_logger = "0.9.0"
-dialoguer = { version="0.9.0", optional=true}
+dialoguer = { version="0.10.1", optional=true}
 
 [features]
 mysql_addons = ["dialoguer", "doteur_core/mysql_addons"]
