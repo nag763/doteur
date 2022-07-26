@@ -29,7 +29,7 @@ I hope you will appreciate this tool as much as I appreciated developping it, do
 
 - <u>Author :</u> LABEYE Loïc
 - <u>Licence :</u> [MIT](license)
-- <u>Latest version :</u> 0.5.2
+- <u>Latest version :</u> 0.5.3
 - <u>Platforms available :</u>
 	- Linux
 		- [X] Tested

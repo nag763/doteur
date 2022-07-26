@@ -295,7 +295,7 @@
   },"49": {
     "doc": "Welcome",
     "title": "About this project",
-    "content": ". | Author : LABEYE Loïc | Licence : MIT | Latest version : 0.5.2 | Platforms available : . | Linux . | Tested | . | Windows . | Untested | . | Darwin (Apple) . | Untested | . | . | Link to Github repository | Link to Crate | Link to Docker image | . ",
+    "content": ". | Author : LABEYE Loïc | Licence : MIT | Latest version : 0.5.3 | Platforms available : . | Linux . | Tested | . | Windows . | Untested | . | Darwin (Apple) . | Untested | . | . | Link to Github repository | Link to Crate | Link to Docker image | . ",
     "url": "https://nag763.github.io/doteur/#about-this-project",
     "relUrl": "/#about-this-project"
   },"50": {
