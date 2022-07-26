@@ -20,7 +20,7 @@ exclude = [
 ]
 
 [dependencies]
-doteur_core = { path = "../doteur_core", default-features = false, version="0.5.2" }
+doteur_core = { path = "../doteur_core", default-features = false, version="0.5.3" }
 cfg-if = "1.0.0"
 which = "4.2.5"
 clap = { version = "3.2.15", features = ["derive"] }
