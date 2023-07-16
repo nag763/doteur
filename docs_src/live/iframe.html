@@ -3,11 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Doteur live example</title>
-	<script src="https://cdn.jsdelivr.net/npm/@hpcc-js/wasm/dist/index.min.js"></script>
-    <script>
-        var hpccWasm = window["@hpcc-js/wasm"];
-    </script>
-<style>
+	<style>
 textarea {
   -moz-border-bottom-colors: none;
   -moz-border-left-colors: none;
@@ -42,16 +38,16 @@ textarea:focus {
     <div id="dotoutput" style="margin-top: 1em; max-width:100%"></div>
     <script type="module">
       import init, {convert_sql_to_dot} from "./pkg/doteur_wasm.js";
+      import {Graphviz as gv} from 'https://cdn.jsdelivr.net/npm/@hpcc-js/wasm@2.13.0/+esm';
+      const graphviz = await gv.load();
       function doteur(data, legend, dark_mode){
       init()
         .then(() => {
-	const dot = convert_sql_to_dot(data, legend, dark_mode);
-	hpccWasm.graphviz.layout(dot, "svg", "dot").then(svg => {
-            const div = document.getElementById("dotoutput");
-            div.innerHTML = svg;
-	    });
-	});
-	}
+		const dot = convert_sql_to_dot(data, legend, dark_mode);
+		const out = graphviz.dot(dot);
+		const div = document.getElementById("dotoutput");
+		div.innerHTML = out;
+	})};
 	let userInput = document.getElementById("userinput");
 	userInput.addEventListener("input", function() {
 		doteur(userInput.value, false, false);

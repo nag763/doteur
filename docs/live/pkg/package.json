@@ -6,5 +6,7 @@
     "doteur_wasm.js"
   ],
   "module": "doteur_wasm.js",
-  "sideEffects": false
+  "sideEffects": [
+    "./snippets/*"
+  ]
 }

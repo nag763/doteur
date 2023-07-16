@@ -29,7 +29,7 @@ function initNav() {
     }
     if (target) {
       e.preventDefault();
-      target.parentNode.classList.toggle('active');
+      target.ariaPressed = target.parentNode.classList.toggle('active');
     }
   });
 
@@ -43,9 +43,11 @@ function initNav() {
     if (menuButton.classList.toggle('nav-open')) {
       siteNav.classList.add('nav-open');
       mainHeader.classList.add('nav-open');
+      menuButton.ariaPressed = true;
     } else {
       siteNav.classList.remove('nav-open');
       mainHeader.classList.remove('nav-open');
+      menuButton.ariaPressed = false;
     }
   });
 }
@@ -53,12 +55,12 @@ function initNav() {
 
 function initSearch() {
   var request = new XMLHttpRequest();
-  request.open('GET', 'https://nag763.github.io/doteur/assets/js/search-data.json', true);
+  request.open('GET', '/doteur/assets/js/search-data.json', true);
 
   request.onload = function(){
     if (request.status >= 200 && request.status < 400) {
       var docs = JSON.parse(request.responseText);
-      
+
       lunr.tokenizer.separator = /[\s\-/]+/
 
       var index = lunr(function(){
@@ -69,6 +71,7 @@ function initSearch() {
         this.metadataWhitelist = ['position']
 
         for (var i in docs) {
+          
           this.add({
             id: i,
             title: docs[i].title,
@@ -197,6 +200,7 @@ function searchLoaded(index, docs) {
       resultTitle.classList.add('search-result-title');
       resultLink.appendChild(resultTitle);
 
+      // note: the SVG svg-doc is only loaded as a Jekyll include if site.search_enabled is true; see _includes/icons/icons.html
       var resultDoc = document.createElement('div');
       resultDoc.classList.add('search-result-doc');
       resultDoc.innerHTML = '<svg viewBox="0 0 24 24" class="search-result-icon"><use xlink:href="#svg-doc"></use></svg>';
@@ -430,7 +434,19 @@ jtd.getTheme = function() {
 
 jtd.setTheme = function(theme) {
   var cssFile = document.querySelector('[rel="stylesheet"]');
-  cssFile.setAttribute('href', 'https://nag763.github.io/doteur/assets/css/just-the-docs-' + theme + '.css');
+  cssFile.setAttribute('href', '/doteur/assets/css/just-the-docs-' + theme + '.css');
+}
+
+// Scroll site-nav to ensure the link to the current page is visible
+
+function scrollNav() {
+  const href = document.location.pathname;
+  const siteNav = document.getElementById('site-nav');
+  const targetLink = siteNav.querySelector('a[href="' + href + '"], a[href="' + href + '/"]');
+  if(targetLink){
+    const rect = targetLink.getBoundingClientRect();
+    siteNav.scrollBy(0, rect.top - 3*rect.height);
+  }
 }
 
 // Document ready
@@ -438,6 +454,49 @@ jtd.setTheme = function(theme) {
 jtd.onReady(function(){
   initNav();
   initSearch();
+  scrollNav();
+});
+
+// Copy button on code
+
+jtd.onReady(function(){
+
+  if (!window.isSecureContext) {
+    console.log('Window does not have a secure context, therefore code clipboard copy functionality will not be available. For more details see https://web.dev/async-clipboard/#security-and-permissions');
+    return;
+  }
+
+  var codeBlocks = document.querySelectorAll('div.highlighter-rouge, div.listingblock > div.content, figure.highlight');
+
+  // note: the SVG svg-copied and svg-copy is only loaded as a Jekyll include if site.enable_copy_code_button is true; see _includes/icons/icons.html
+  var svgCopied =  '<svg viewBox="0 0 24 24" class="copy-icon"><use xlink:href="#svg-copied"></use></svg>';
+  var svgCopy =  '<svg viewBox="0 0 24 24" class="copy-icon"><use xlink:href="#svg-copy"></use></svg>';
+
+  codeBlocks.forEach(codeBlock => {
+    var copyButton = document.createElement('button');
+    var timeout = null;
+    copyButton.type = 'button';
+    copyButton.ariaLabel = 'Copy code to clipboard';
+    copyButton.innerHTML = svgCopy;
+    codeBlock.append(copyButton);
+
+    copyButton.addEventListener('click', function () {
+      if(timeout === null) {
+        var code = (codeBlock.querySelector('pre:not(.lineno, .highlight)') || codeBlock.querySelector('code')).innerText;
+        window.navigator.clipboard.writeText(code);
+
+        copyButton.innerHTML = svgCopied;
+
+        var timeoutSetting = 4000;
+
+        timeout = setTimeout(function () {
+          copyButton.innerHTML = svgCopy;
+          timeout = null;
+        }, timeoutSetting);
+      }
+    });
+  });
+
 });
 
 })(window.jtd = window.jtd || {});
