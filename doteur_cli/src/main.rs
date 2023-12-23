@@ -26,6 +26,7 @@ mod args;
 /// Module used to handle common errors
 mod errors;
 
+use std::env;
 use std::process::Command;
 use which::which;
 
@@ -80,10 +81,12 @@ fn run_main() -> Result<(), Box<dyn std::error::Error>> {
             } else if !args.can_render_with_graphviz() {
                 Err(DoteurCliError::ext_not_supported(&POSSIBLE_DOTS_OUTPUT.join(";")).into())
             } else {
-                write_output_to_file(output_content.as_str(), ".output.dot")?;
+                let temp_dir = env::temp_dir();
+                let temp_file_location = format!("{}/.output.dot", temp_dir.to_str().unwrap());
+                write_output_to_file(output_content.as_str(), &temp_file_location)?;
                 Command::new("dot")
                     .arg(["-T", file_ext].join(""))
-                    .arg(".output.dot")
+                    .arg(&temp_file_location)
                     .arg(["-o", args.get_output_filename()].join(""))
                     .spawn()?;
 
