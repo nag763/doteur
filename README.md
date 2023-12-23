@@ -28,19 +28,19 @@ Since the version 0.5.1, the tool is testable with limited functionnalities on t
 
 You can test the tool [here](https://nag763.github.io/doteur/live/)
 
-## 🆕 About features
+## About features
 
 Since the version 0.5.0, the CLI tool is downloadable with several features. If you don't intend to connect to connect to either a running mysql or sqlite database, ignore what follows, the exports in SQL files will be handled no matter what feature you download the tool for.
 
-### 🆕 What's a feature ?
+### What's a feature ?
 
 A feature is an addition to the original tool that adds several components and functionnalities to the original ones.
 
-### 🆕 How will it impact me
+### How will it impact me
 
 If you download the tool with a certain feature, you might not be able to use the other functionnalities. By default, no additionnal functionnalities are packaged, and you might not be able to either connect to a running mysql instance or a sqlite database.
 
-### 🆕 What are the available features
+### What are the available features
 
 * `mysql_addons` : Allow you to connect to running MySQL instance
 * `sqlite_addons` : Allow you to connect to a local SQLite database
