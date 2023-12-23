@@ -1,4 +1,9 @@
+[profile.release]
+lto = true
+codegen-units = 1
+
 [workspace]
+resolver = "2"
 members = [
     "doteur_core",
     "doteur_cli",

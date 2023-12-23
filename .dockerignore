@@ -1,0 +1,5 @@
+**/target
+**/release
+.github
+release.sh
+

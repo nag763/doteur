@@ -1,6 +1,6 @@
 [package]
 name = "doteur_wasm"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 readme = "README.md"
 
@@ -10,5 +10,5 @@ crate-type = ["cdylib"]
 
 [dependencies]
 doteur_core = { path = "../doteur_core", default-features = false, version="0.5.3" }
-wasm-bindgen = "0.2.82"
+wasm-bindgen = "0.2.89"
 wasm-logger = "0.2.0"

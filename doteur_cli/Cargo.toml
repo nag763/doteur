@@ -1,6 +1,6 @@
 [package]
 name = "doteur"
-version = "0.5.3"
+version = "0.5.4"
 authors = ["nag763 <loic.labeye@tutanota.de>"]
 edition = "2018"
 license = "MIT"
@@ -22,10 +22,10 @@ exclude = [
 [dependencies]
 doteur_core = { path = "../doteur_core", default-features = false, version="0.5.3" }
 cfg-if = "1.0.0"
-which = "4.2.5"
-clap = { version = "3.2.15", features = ["derive"] }
-env_logger = "0.9.0"
-dialoguer = { version="0.10.1", optional=true}
+which = "5.0.0"
+clap = { version = "4.4.11", features = ["derive"] }
+env_logger = "0.10.1"
+dialoguer = { version="0.11.0", optional=true}
 
 [features]
 mysql_addons = ["dialoguer", "doteur_core/mysql_addons"]
