@@ -15,15 +15,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Extra steps to have it working with github
-        run:  mkdir ~/.ruby ; echo 'export GEM_HOME=~/.ruby/' >> ~/.bashrc; echo 'export PATH="$PATH:~/.ruby/bin"' >> ~/.bashrc; source ~/.bashrc
+        run:  mkdir ~/.ruby ; 
       - name: Install jekyll and bundle
-        run: gem install jekyll bundler
+        run: GEM_HOME=~/.ruby/ gem install jekyll bundler
       - name: Go to docs dir
         run: cd docs 
       - name: Install jekyll gems
-        run: bundle install
+        run: GEM_HOME=~/.ruby/ bundle install
       - name: Build out
-        run: bundle exec jekyll b
+        run: GEM_HOME=~/.ruby/ bundle exec jekyll b
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3.0.1
         with:
