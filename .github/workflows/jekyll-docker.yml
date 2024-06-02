@@ -18,7 +18,7 @@ jobs:
         run: cd docs 
       - name: Install jekyll gems
         run: bundle install
-      -name: Build out
+      - name: Build out
         run: bundle exec jekyll b
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3.0.1
