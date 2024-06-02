@@ -10,3 +10,4 @@ docs/Gemfile.*
 docs/_site
 docs/vendor
 _site
+docs/live/pkg/*

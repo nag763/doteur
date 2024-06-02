@@ -14,6 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install toolchain
+        run: rustup target add wasm32-unknown-unknown
+      - name: Install wasm-pack
+        run: cargo install wasm-pack
+      - name: Build package
+        run: wasm-pack build doteur_wasm/ --target web --no-typescript --out-dir docs/live/pkg/ --release
       - name: Extra steps to have it working with github
         run: |
           docker run \
