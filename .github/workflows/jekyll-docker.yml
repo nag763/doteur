@@ -19,7 +19,7 @@ jobs:
       - name: Install wasm-pack
         run: cargo install wasm-pack
       - name: Build package
-        run: wasm-pack build doteur_wasm/ --target web --no-typescript --out-dir docs/live/pkg/ --release
+        run: wasm-pack build doteur_wasm/ --target web --no-typescript --out-dir $(pwd)/docs/live/pkg/ --release
       - name: Extra steps to have it working with github
         run: |
           docker run \
