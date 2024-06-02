@@ -11,7 +11,6 @@ markdown: kramdown
 theme: just-the-docs
 url: https://nag763.github.io
 domain: nag763.github.io
-destination: ../_site
 logo: "./assets/logo.png"
 aux_links:
   "GitHub repository":
