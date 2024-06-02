@@ -29,6 +29,12 @@ do
 		cd "target/$i" ;
 		echo "Currently in ";
 		pwd;
+		echo 'Using upx';
+		if [ $i = "x86_64-pc-windows-gnu" ]; then
+			upx release/doteur.exe;
+		else
+			upx release/doteur;
+		fi
 		echo 'Rebranding folder';
 		mv release doteur ;
 		echo 'Folder rebranded into doteur';

@@ -1,6 +1,6 @@
 [package]
 name = "doteur"
-version = "0.5.4"
+version = "0.5.5"
 authors = ["nag763 <loic.labeye@tutanota.de>"]
 edition = "2018"
 license = "MIT"
@@ -20,7 +20,7 @@ exclude = [
 ]
 
 [dependencies]
-doteur_core = { path = "../doteur_core", default-features = false, version="0.5.3" }
+doteur_core = { path = "../doteur_core", default-features = false, version="0.5.5" }
 cfg-if = "1.0.0"
 which = "5.0.0"
 clap = { version = "4.5.4", features = ["derive"] }

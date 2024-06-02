@@ -527,7 +527,7 @@ dependencies = [
 
 [[package]]
 name = "doteur"
-version = "0.5.4"
+version = "0.5.5"
 dependencies = [
  "cfg-if",
  "clap",
@@ -539,7 +539,7 @@ dependencies = [
 
 [[package]]
 name = "doteur_core"
-version = "0.5.4"
+version = "0.5.5"
 dependencies = [
  "itertools 0.13.0",
  "lazy_static",

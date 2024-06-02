@@ -5,9 +5,27 @@ permalink: changelog
 
 You will find below the different details about the different versions of this tool.
 
+
 ---
 
-## Version 0.5.3 (latest) :
+## Version 0.5.5 (latest) :
+
+- Upgrade deps
+
+- Optimize binary sizes
+
+---
+
+## Version 0.5.4 :
+
+- This release upgrades the dependencies of the crate.
+- It also upgrades the rust version.
+- Temporary file for rendering is now created in temporary dir
+- Partial postgres support
+
+---
+
+## Version 0.5.3 :
 
 - Upgrade dependencies
 
