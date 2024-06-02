@@ -6,3 +6,7 @@ output.dot
 **/output.dot
 doteur_wasm/example/pkg
 doteur_wasm/push_to_pages.sh
+docs/Gemfile.*
+docs/_site
+docs/vendor
+_site
