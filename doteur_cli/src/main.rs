@@ -1,4 +1,4 @@
-//! Copyright ⓒ 2021-2022 LABEYE Loïc
+//! Copyright ⓒ 2021-2024 LABEYE Loïc
 //! This tool is distributed under the MIT License, check out [here](https://github.com/nag763/doteur/blob/main/LICENCE.MD).
 //! # General information
 //! <p align="center"><img src="https://raw.githubusercontent.com/nag763/doteur/main/.github/assets/logo.png"></img></p>

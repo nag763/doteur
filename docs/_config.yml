@@ -18,7 +18,7 @@ aux_links:
   "Check this project on crates.io":
           - "https://crates.io/crates/doteur"
 heading_anchors: true
-footer_content: "Copyright &copy; 2021-2022 LABEYE Loïc. Distributed by an <a href=\"https://github.com/nag763/doteur/LICENCE.MD\">MIT Licence</a>"
+footer_content: "Copyright &copy; 2021-2024 LABEYE Loïc. Distributed by an <a href=\"https://github.com/nag763/doteur/LICENCE.MD\">MIT Licence</a>"
 last_edit_timestamp: true
 exclude:
   - Gemfile
