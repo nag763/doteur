@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Extra steps to have it working with github
+        run:  mkdir ~/.ruby ; $ echo 'export GEM_HOME=~/.ruby/' >> ~/.bashrc; echo 'export PATH="$PATH:~/.ruby/bin"' >> ~/.bashrc; source ~/.bashrc
       - name: Install jekyll and bundle
         run: gem install jekyll bundler
       - name: Go to docs dir
