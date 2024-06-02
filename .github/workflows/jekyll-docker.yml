@@ -15,10 +15,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Extra steps to have it working with github
-        run:  |
-        docker run \
-        -v ${{ github.workspace }}/docs:/srv/jekyll -v ${{ github.workspace }}/_site:/srv/_site \
-        jekyll/builder:latest /bin/bash -c "chmod -R 777 /srv/jekyll && jekyll build --future"
+        run: |
+          docker run \
+          -v ${{ github.workspace }}/docs:/srv/jekyll -v ${{ github.workspace }}/_site:/srv/_site \
+          jekyll/builder:latest /bin/bash -c "chmod -R 777 /srv/jekyll && jekyll build --future"
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3.0.1
         with:
