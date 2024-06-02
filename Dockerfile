@@ -1,4 +1,4 @@
-FROM rust:1.74.1
+FROM rust:1.78.0
 
 RUN apt update; apt install graphviz gcc libssl-dev libsqlite3-dev -y
 
