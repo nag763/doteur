@@ -5,7 +5,7 @@
 @layer base {
 
     body {
-        @apply h-dvh;
+        @apply h-dvh flex flex-col ;
     }
 
 }
