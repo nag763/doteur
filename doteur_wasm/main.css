@@ -5,7 +5,7 @@
 @layer base {
 
     body {
-        @apply h-dvh flex flex-col ;
+        @apply h-dvh flex flex-col caret-indigo-500;
     }
 
 }
