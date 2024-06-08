@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "daisyui": "^4.11.1"
+  },
+  "devDependencies": {
+    "tailwindcss-animated": "^1.1.0"
   }
 }

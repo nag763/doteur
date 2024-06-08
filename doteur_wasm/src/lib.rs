@@ -1,12 +1,15 @@
 mod graphviz;
 
+use std::str::FromStr;
+
 use graphviz::Graphviz;
 use leptos::{
-    component, create_local_resource, create_signal, event_target_value, view, IntoView, SignalGet,
-    SignalGetUntracked, SignalSet, Suspense,
+    component,  create_local_resource, create_signal, event_target_value, view, IntoView, SignalGet, SignalGetUntracked, SignalSet, Suspense
 };
+use leptos_use::{use_timeout_fn, UseTimeoutFnReturn};
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
+use web_sys::{js_sys::{Array, JsString}, Blob};
 
 const DEFAULT: &str = "CREATE TABLE HELLO (world INT PRIMARY KEY);";
 
@@ -47,6 +50,23 @@ pub fn app() -> impl IntoView {
         Some(graphviz.dot(&dot))
     };
 
+    let UseTimeoutFnReturn { start, is_pending, .. } = use_timeout_fn(
+        |()| {},
+        5000.0
+    );
+    
+    let gen_download = move || {
+        if let Some(output) = output() {
+            let js_str = JsString::from_str(&output).unwrap();
+            let array = Array::from(&js_str);
+            let b = Blob::new_with_str_sequence(&array).unwrap();
+            let url = web_sys::Url::create_object_url_with_blob(&b).unwrap();
+            Some(url)
+        } else {
+            None
+        }
+    };
+
     view! {
         <nav class="navbar bg-base-100">
             <div class="flex-1">
@@ -54,7 +74,21 @@ pub fn app() -> impl IntoView {
             </div>
             <div class="flex-none">
                 <ul class="menu menu-horizontal px-1">
-                <li><a on:click=move|_|options_open_set.set(true)>"Show options"</a></li>
+                <li>
+                    <a title="Download" href=gen_download download="export.svg"  class="btn btn-ghost btn-circle" on:click=move |_| start(())>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 20 20" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                        <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z" />
+                        <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
+                        </svg>
+                    </a>
+                </li>
+                <li>
+                    <button title="Options" on:click=move|_|options_open_set.set(true) class="btn btn-ghost btn-circle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 20 20" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                        <path fill-rule="evenodd" d="M8.34 1.804A1 1 0 0 1 9.32 1h1.36a1 1 0 0 1 .98.804l.295 1.473c.497.144.971.342 1.416.587l1.25-.834a1 1 0 0 1 1.262.125l.962.962a1 1 0 0 1 .125 1.262l-.834 1.25c.245.445.443.919.587 1.416l1.473.294a1 1 0 0 1 .804.98v1.361a1 1 0 0 1-.804.98l-1.473.295a6.95 6.95 0 0 1-.587 1.416l.834 1.25a1 1 0 0 1-.125 1.262l-.962.962a1 1 0 0 1-1.262.125l-1.25-.834a6.953 6.953 0 0 1-1.416.587l-.294 1.473a1 1 0 0 1-.98.804H9.32a1 1 0 0 1-.98-.804l-.295-1.473a6.957 6.957 0 0 1-1.416-.587l-1.25.834a1 1 0 0 1-1.262-.125l-.962-.962a1 1 0 0 1-.125-1.262l.834-1.25a6.957 6.957 0 0 1-.587-1.416l-1.473-.294A1 1 0 0 1 1 10.68V9.32a1 1 0 0 1 .804-.98l1.473-.295c.144-.497.342-.971.587-1.416l-.834-1.25a1 1 0 0 1 .125-1.262l.962-.962A1 1 0 0 1 5.38 3.03l1.25.834a6.957 6.957 0 0 1 1.416-.587l.294-1.473ZM13 10a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </li>              
                 </ul>
             </div>
         </nav>
@@ -101,5 +135,15 @@ pub fn app() -> impl IntoView {
             </div>
             </div>
         </dialog>
+        {move || is_pending.get().then(|| view! {
+                <div class="toast animate-fade-up animate-twice animate-duration-[2500ms] animate-ease-out animate-alternate">
+                    <div role="alert" class="alert alert-success">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <span>Your download has started</span>
+                    </div>
+                </div>
+            })
+        }
+        
     }
 }
