@@ -82,7 +82,7 @@ macro_rules! unwrap_captures_name_as_str {
 
 lazy_static! {
     ///Get table name.
-    static ref RE_TABLE_NAME : Regex = Regex::new(r####"(?i)\s*CREATE\s*TABLE\s*(?:IF\s*NOT\s*EXISTS)?\s*(?:(?:public|private).)?(?P<table_name>(?:[`"\[]{1}[^`"\]]+[`"\]]{1})|(?:\w*))\s*\((?P<content>[^;]*)\)"####).unwrap();
+    static ref RE_TABLE_NAME : Regex = Regex::new(r####"(?i)\s*CREATE\s*TABLE\s*(?:IF\s*NOT\s*EXISTS)?\s*(?:(?:\w+)\.)?(?P<table_name>(?:[`"\[]{1}[^`"\]]+[`"\]]{1})|(?:\w*))\s*\((?P<content>[^;]*)\)"####).unwrap();
     ///Get column type
     static ref RE_COL_TYPE : Regex = Regex::new(r####"(?i)\s*((?:FULLTEXT|SPATIAL)?\s+(?:INDEX|KEY|CHECK))|(?:CONSTRAINT\s*[`'"]\w*[`'"])?\s*(?P<key_type>UNIQUE|FOREIGN|PRIMARY)\s+"####).unwrap();
     ///Get columns definitioon
