@@ -67,7 +67,7 @@ pub fn app() -> impl IntoView {
         }
     };
 
-    let _handle = window_event_listener(leptos::ev::keypress, move |ev| {
+    let _handle = window_event_listener(leptos::ev::keydown, move |ev| {
         if ev.key_code() == 27 {
             options_open_set.set(false);
         }
