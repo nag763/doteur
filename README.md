@@ -22,11 +22,9 @@ So far the tool handles both the MySQL and SQLite syntaxes, but it is planned to
 
 The tool has been developed on Linux, but is also available for Windows 10 and 11 and macOS.
 
-## Live test
+## :new: Live test
 
-Since the version 0.5.1, the tool is testable with limited functionnalities on the GitHub pages. **Please note that the output of the live functionnality is experimental and won't always reflect the CLI's output.**
-
-You can test the tool [here](https://nag763.github.io/doteur/live/)
+The tool is now fully testable in its latest version right [here](https://nag763.github.io/doteur/live/)
 
 ## About features
 
