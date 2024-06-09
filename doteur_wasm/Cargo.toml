@@ -1,14 +1,14 @@
 [package]
 name = "doteur_wasm"
-version = "0.1.3"
+version = "0.2.0"
 edition = "2021"
 readme = "README.md"
 
 
-[lib]
-crate-type = ["cdylib"]
-
 [dependencies]
 doteur_core = { path = "../doteur_core", default-features = false, version="0.5.5" }
+leptos = { version = "0.6.12", features = ["csr"] }
+leptos-use = "0.10.10"
 wasm-bindgen = "0.2.92"
-wasm-logger = "0.2.0"
+wasm-bindgen-futures = "0.4.42"
+web-sys = "0.3.69"
