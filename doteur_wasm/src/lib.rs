@@ -4,7 +4,7 @@ use std::str::FromStr;
 
 use graphviz::Graphviz;
 use leptos::{
-    component,  create_local_resource, create_signal, event_target_value, view, IntoView, SignalGet, SignalGetUntracked, SignalSet, Suspense
+    component, create_local_resource, create_signal, event_target_value, view, window_event_listener, IntoView, SignalGet, SignalGetUntracked, SignalSet, Suspense
 };
 use leptos_use::{use_timeout_fn, UseTimeoutFnReturn};
 use wasm_bindgen::JsCast;
@@ -66,6 +66,12 @@ pub fn app() -> impl IntoView {
             None
         }
     };
+
+    let _handle = window_event_listener(leptos::ev::keypress, move |ev| {
+        if ev.key_code() == 27 {
+            options_open_set.set(false);
+        }
+    });
 
     view! {
         <nav class="navbar bg-base-100">
