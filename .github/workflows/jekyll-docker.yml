@@ -20,16 +20,15 @@ jobs:
         run: curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
       - name: Install trunk
         run: cargo binstall trunk -y
-      - name: Go in dir
-        run: cd doteur_wasm
       - name: Install npm deps
         run: npm i
+        working-directory: ./doteur_wasm
       - name: Build package
         run: trunk build --release --public-url https://nag763.github.io/doteur/live
+        working-directory: ./doteur_wasm
       - name: Copy generated
         run: cp -r dist/* ../docs/live/
-      - name: Go back to root
-        run: cd ..
+        working-directory: ./doteur_wasm
       - name: Extra steps to have it working with github
         run: |
           docker run \
