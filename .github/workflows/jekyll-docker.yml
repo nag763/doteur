@@ -16,10 +16,18 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install toolchain
         run: rustup target add wasm32-unknown-unknown
-      - name: Install wasm-pack
-        run: cargo install wasm-pack
+      - name: Install trunk
+        run: cargo install trunk
+      - name: Go in dir
+        run: cd doteur_wasm
+      - name: Install npm deps
+        run: npm i
       - name: Build package
-        run: wasm-pack build doteur_wasm/ --target web --no-typescript --out-dir $(pwd)/docs/live/pkg/ --release
+        run: trunk build --release --public-url https://nag763.github.io/doteur/live
+      - name: Copy generated
+        run: cp -r dist/* ../docs/live/
+      - name: Go back to root
+        run: cd ..
       - name: Extra steps to have it working with github
         run: |
           docker run \
@@ -29,7 +37,6 @@ jobs:
         uses: actions/upload-pages-artifact@v3.0.1
         with:
           path: ./_site
-    
   deploy:
     environment:
       name: github-pages
