@@ -27,7 +27,7 @@ jobs:
         run: trunk build --release --public-url https://nag763.github.io/doteur/live
         working-directory: ./doteur_wasm
       - name: Copy generated
-        run: cp -r dist/* ../docs/live/
+        run: mkdir -p ../docs/live; cp -r dist/* ../docs/live/
         working-directory: ./doteur_wasm
       - name: Extra steps to have it working with github
         run: |
