@@ -22,7 +22,53 @@ For Linux users, don't forget to check that you match the [prerequisites](instal
 
 **Since the version 0.5.0, doteur is shipped in several packages, some features require additional dependencies being installed on your system, please check this [section](features#additional-known-requirements-on-linux-regarding-the-features) if you face issues**
 
-## Version 0.5.5 (latest) :
+## Version 0.5.6 (latest) :
+
+### Linux :
+
+#### Light
+
+- [doteur](https://github.com/nag763/doteur/releases/download/0.5.6/doteur_light_x86_64-unknown-linux-gnu.zip){: .btn .btn-purple}
+- [checksum](https://github.com/nag763/doteur/releases/download/0.5.6/doteur_light_x86_64-unknown-linux-gnu.zip.md5){: .btn .btn-purple}
+
+#### MySQL addons
+
+- [doteur](https://github.com/nag763/doteur/releases/download/0.5.6/doteur_mysql_x86_64-unknown-linux-gnu.zip){: .btn .btn-purple}
+- [checksum](https://github.com/nag763/doteur/releases/download/0.5.6/doteur_mysql_x86_64-unknown-linux-gnu.zip.md5){: .btn .btn-purple}
+
+#### SQLite addons
+
+- [doteur](https://github.com/nag763/doteur/releases/download/0.5.6/doteur_sqlite_x86_64-unknown-linux-gnu.zip){: .btn .btn-purple}
+- [checksum](https://github.com/nag763/doteur/releases/download/0.5.6/doteur_sqlite_x86_64-unknown-linux-gnu.zip.md5){: .btn .btn-purple}
+
+#### All features
+
+- [doteur](https://github.com/nag763/doteur/releases/download/0.5.6/doteur_x86_64-unknown-linux-gnu.zip){: .btn .btn-purple}
+- [checksum](https://github.com/nag763/doteur/releases/download/0.5.6/doteur_x86_64-unknown-linux-gnu.zip.md5){: .btn .btn-purple}
+
+### Windows :
+
+#### Light
+
+- [doteur](https://github.com/nag763/doteur/releases/download/0.5.6/doteur_light_x86_64-pc-windows-gnu.zip){: .btn}
+- [checksum](https://github.com/nag763/doteur/releases/download/0.5.6/doteur_light_x86_64-pc-windows-gnu.zip.md5){: .btn}
+
+#### MySQL addons
+
+- [doteur](https://github.com/nag763/doteur/releases/download/0.5.6/doteur_mysql_x86_64-pc-windows-gnu.zip){: .btn}
+- [checksum](https://github.com/nag763/doteur/releases/download/0.5.6/doteur_mysql_x86_64-pc-windows-gnu.zip.md5){: .btn}
+
+#### SQLite addons
+
+- [doteur](https://github.com/nag763/doteur/releases/download/0.5.6/doteur_sqlite_x86_64-pc-windows-gnu.zip){: .btn}
+- [checksum](https://github.com/nag763/doteur/releases/download/0.5.6/doteur_sqlite_x86_64-pc-windows-gnu.zip.md5){: .btn}
+
+#### All features
+
+- [doteur](https://github.com/nag763/doteur/releases/download/0.5.6/doteur_x86_64-pc-windows-gnu.zip){: .btn}
+- [checksum](https://github.com/nag763/doteur/releases/download/0.5.6/doteur_x86_64-pc-windows-gnu.zip.md5){: .btn}
+
+## Version 0.5.5 :
 
 ### Linux :
 

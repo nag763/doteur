@@ -12,44 +12,47 @@ then
     exit
 fi
 
+target_args=""
+for target in "${target_names[@]}"; do
+	target_args+="--target ${target} "
+done
+
 rm -rf release
 mkdir release
 
-for i in "${target_names[@]}"
-do
-	echo ""
-	echo "Building for target : $i"
-	echo "-----------------------"
-	for ((j=0;j<=numberOfFeatures;j++)); do
-		echo "";
-		echo "** Time for $i with ${featuresToBuild[j]} **"
-		echo "Running cargo build --release ${featuresToBuild[j]} --target $i";
-		cargo build --release ${featuresToBuild[j]} --target $i -q ;
-		echo 'Cargo build done';
-		cd "target/$i" ;
-		echo "Currently in ";
-		pwd;
+echo ""
+echo "Target args ${target_args}"
+echo "-----------------------"
+for ((j=0;j<=numberOfFeatures;j++)); do
+	echo "";
+	echo "** Time for $i with ${featuresToBuild[j]} **"
+	echo "Running cargo build --bin doteur --release ${featuresToBuild[j]} ${target_args} -q ";
+	cargo build --release ${featuresToBuild[j]} ${target_args} -q ;
+	echo 'Cargo build done';
+	for target in "${target_names[@]}"; do
 		echo 'Using upx';
-		if [ $i = "x86_64-pc-windows-gnu" ]; then
-			upx release/doteur.exe;
+		if [ $target = "x86_64-pc-windows-gnu" ]; then
+			upx target/$target/release/doteur.exe;
 		else
-			upx release/doteur;
+			upx target/$target/release/doteur;
 		fi
-		echo 'Rebranding folder';
-		mv release doteur ;
-		echo 'Folder rebranded into doteur';
-		echo "Starting to zip $i/release in ../../release/${packagesNames[j]}_$i";
-		zip ../../release/${packagesNames[j]}_$i -r doteur -r -qq;
-		echo "Zipping done";
-		cd ../..;
-		echo "Back to ";
-		pwd
+		echo "Moving to release dir"
+		cd target/$target/
+		echo "Updating dir name"
+		mv release doteur
+		echo "Include copy of licenese and README"
+		cp ../../LICENCE.MD doteur
+		cp ../../README.md doteur
+		echo "Zipping in";
+		zip ../../release/${packagesNames[j]}_$target doteur/doteur* doteur/LICENCE.md doteur/README.md -qq -r;
+		echo "Back to former dir"
+		cd ../..
 		echo "Adding sum";
-		md5sum ./release/${packagesNames[j]}_$i.zip > ./release/${packagesNames[j]}_$i.zip.md5
-		echo "Cleaning release dir";
-		rm -r target/$i/doteur;
-		echo "Done with ${featuresToBuild[j]} for $i";
+		md5sum ./release/${packagesNames[j]}_$target.zip > ./release/${packagesNames[j]}_$target.zip.md5
 	done
+	echo "Cleaning release dir";
+	rm -r target/$target/doteur;
+	echo "Done with ${featuresToBuild[j]}";
 done
 
 cargo doc -q --all-features;
