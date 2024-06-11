@@ -15,7 +15,6 @@ Since the release 0.3.3, doteur is downloadable with cargo as it has been publis
 
 ## Step 1 : Download the tool
 
-**Since the version 0.5.0, doteur is shipped with several packages, for more information check the [features](../features) section**
 - `light` :
 
 ```

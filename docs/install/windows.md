@@ -5,7 +5,8 @@ title: On Windows
 permalink: install/windows
 ---
 
-**Since the version 0.5.0, doteur is shipped with several packages, for more information check the [features](../features) section**
+
+**Windows binary might get blocked by Windows defender on the latest Windows versions. I would rather advise to use the [live version](https://nag763.github.io/doteur/live).**
 
 ## Prerequisites
 
