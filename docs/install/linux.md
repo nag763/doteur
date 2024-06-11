@@ -41,17 +41,21 @@ And unzip it :
 unzip $ZIP_FOLDER_NAME
 ```
 
-## Second step : Move the tool in your library
+## Second : Add it to your path
+
+### By linking the binary into your /usr/local/bin
 
 ```
-sudo mv $UNZIPPED_FOLDER/doteur /usr/local/lib
+sudo ln -s /${unzipped_folder}/doteur /usr/local/bin/doteur
 ```
 
-## Finally create a symlink so that the tool remains in your path
+### By moving it into your /usr/local/bin
+
 
 ```
-sudo ln -s /usr/local/lib/doteur/doteur /usr/local/bin/doteur
+sudo mv /${unzipped_folder}/doteur /usr/local/bin/doteur
 ```
+
 
 You should now be done ! Check with your terminal that the tool is in your path :
 

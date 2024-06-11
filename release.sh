@@ -20,6 +20,8 @@ done
 rm -rf release
 mkdir release
 
+rm -rf target
+
 echo ""
 echo "Target args ${target_args}"
 echo "-----------------------"
@@ -51,7 +53,7 @@ for ((j=0;j<=numberOfFeatures;j++)); do
 		md5sum ./release/${packagesNames[j]}_$target.zip > ./release/${packagesNames[j]}_$target.zip.md5
 	done
 	echo "Cleaning release dir";
-	rm -r target/$target/doteur;
+	rm -r target/$target;
 	echo "Done with ${featuresToBuild[j]}";
 done
 
