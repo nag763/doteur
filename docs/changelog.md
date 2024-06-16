@@ -13,6 +13,7 @@ You will find below the different details about the different versions of this t
 - Optimize release package size
 
 - Support for schema name prefix
+
 ---
 
 ## Version 0.5.5 :
