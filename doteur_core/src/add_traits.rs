@@ -11,8 +11,6 @@ pub trait Trim {
 
 /// Replace characters that can set issues for the dot file.
 pub trait Replacable {
-    /// Remove all non ascii chars or digits.
-    fn replace_specials(&self) -> String;
     /// Remove all backquotes.
     fn replace_bq(&self) -> String;
     /// Remove all hooks.
@@ -52,11 +50,6 @@ impl Trim for str {
 }
 
 impl Replacable for str {
-    fn replace_specials(&self) -> String {
-        self.chars()
-            .filter(|c| c.is_ascii_alphanumeric() || c.is_ascii_whitespace())
-            .collect::<String>()
-    }
     fn replace_bq(&self) -> String {
         str::replace(self, "`", "")
     }
@@ -72,11 +65,6 @@ impl Replacable for str {
 }
 
 impl Replacable for String {
-    fn replace_specials(&self) -> String {
-        self.chars()
-            .filter(|c| c.is_ascii_alphanumeric() || c.is_ascii_whitespace())
-            .collect::<String>()
-    }
     fn replace_bq(&self) -> String {
         str::replace(self, "`", "")
     }
@@ -170,15 +158,6 @@ mod tests {
         );
     }
 
-    #[test]
-    fn test_replace_specials() {
-        assert_eq!("h*ù$$âe🔎,;:!)l&²l<o".replace_specials(), "hello");
-        assert_eq!(
-            "\n\th ell o\t\n".replace_specials(),
-            "\n\th ell o\t\n",
-            "white spaces are preserved"
-        );
-    }
 
     #[test]
     fn test_replace_backquotes() {
