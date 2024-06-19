@@ -1,15 +1,22 @@
+mod codemirror;
 mod graphviz;
 
 use std::str::FromStr;
 
+use codemirror::{CodeMirror, CodeMirrorOptions};
 use graphviz::Graphviz;
 use leptos::{
-    component, create_local_resource, create_signal, event_target_value, view, window_event_listener, IntoView, SignalGet, SignalGetUntracked, SignalSet, Suspense
+    component, create_effect, create_local_resource, create_signal, document, event_target_checked,
+    event_target_value, view, window_event_listener, IntoView, SignalGet, SignalGetUntracked,
+    SignalSet, Suspense,
 };
 use leptos_use::{use_timeout_fn, UseTimeoutFnReturn};
-use wasm_bindgen::JsCast;
+use wasm_bindgen::{closure::Closure, JsCast};
 use wasm_bindgen_futures::JsFuture;
-use web_sys::{js_sys::{Array, JsString}, Blob};
+use web_sys::{
+    js_sys::{Array, Function, JsString},
+    Blob,
+};
 
 const DEFAULT: &str = "CREATE TABLE HELLO (world INT PRIMARY KEY);";
 
@@ -35,10 +42,8 @@ pub fn app() -> impl IntoView {
     let (options_open_val, options_open_set) = create_signal(false);
 
     let output = move || {
-        let Some(graphviz) = graphviz.get() else {
-            return None;
-        };
-        let true = doteur_core::contains_sql_tables(&typed_val.get()) else {
+        let graphviz = graphviz.get()?;
+        if !doteur_core::contains_sql_tables(&typed_val.get()) {
             return None;
         };
         let dot = doteur_core::process_data(
@@ -50,11 +55,32 @@ pub fn app() -> impl IntoView {
         Some(graphviz.dot(&dot))
     };
 
-    let UseTimeoutFnReturn { start, is_pending, .. } = use_timeout_fn(
-        |()| {},
-        5000.0
+    let cm = create_local_resource(
+        || (),
+        move |_| async move {
+            let el = document().get_element_by_id("sql_source");
+            let options = CodeMirrorOptions::default();
+            options.set_line_numbers(true);
+            options.set_mode("sql");
+            let Some(cm) = CodeMirror::from_text_area(el, options) else {
+                panic!("Code mirror can't be initialized");
+            };
+            cm.focus();
+            cm.set_size("100%", "100%");
+            cm
+        },
     );
-    
+
+    let cm_on_val_change = move || {
+        if let Some(cm) = cm.get() {
+            typed_set.set(cm.get_value());
+        };
+    };
+
+    let UseTimeoutFnReturn {
+        start, is_pending, ..
+    } = use_timeout_fn(|()| {}, 5000.0);
+
     let gen_download = move || {
         if let Some(output) = output() {
             let js_str = JsString::from_str(&output).unwrap();
@@ -67,9 +93,35 @@ pub fn app() -> impl IntoView {
         }
     };
 
+    let compute_cm_theme = move |e| {
+        let theme = if event_target_checked(&e) == is_dark_mode.get() {
+            "normal"
+        } else {
+            "material"
+        };
+        if let Some(cm) = cm.get() {
+            cm.set_option("theme", theme.into());
+        }
+    };
+
     let _handle = window_event_listener(leptos::ev::keydown, move |ev| {
         if ev.key_code() == 27 {
             options_open_set.set(false);
+        }
+    });
+
+    // Once loaded
+    create_effect(move |_| {
+        if let Some(cm) = cm.get() {
+            if is_dark_mode.get() {
+                cm.set_option("theme", "material".into());
+            }
+            let closure: Box<dyn FnMut()> = Box::new(cm_on_val_change);
+            let closure = Closure::wrap(closure);
+            cm.on(
+                "change",
+                &closure.into_js_value().unchecked_into::<Function>(),
+            );
         }
     });
 
@@ -88,12 +140,12 @@ pub fn app() -> impl IntoView {
                     </a>
                 </li>
                 <li>
-                    <a title="Download" href=gen_download download="export.svg"  class="btn btn-ghost btn-circle" on:click=move |_| start(())>
+                    <a title="Download" href=gen_download download="export.svg"  class="btn btn-ghost btn-circle" on:click=move |_| if output().is_some() { start(()) } >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 h-5">
                     <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z" />
                     <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
                   </svg>
-                  
+
                     </a>
                 </li>
                 <li>
@@ -101,7 +153,7 @@ pub fn app() -> impl IntoView {
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 h-5">
                         <path d="M10 3.75a2 2 0 1 0-4 0 2 2 0 0 0 4 0ZM17.25 4.5a.75.75 0 0 0 0-1.5h-5.5a.75.75 0 0 0 0 1.5h5.5ZM5 3.75a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.75.75 0 0 1 .75.75ZM4.25 17a.75.75 0 0 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5h1.5ZM17.25 17a.75.75 0 0 0 0-1.5h-5.5a.75.75 0 0 0 0 1.5h5.5ZM9 10a.75.75 0 0 1-.75.75h-5.5a.75.75 0 0 1 0-1.5h5.5A.75.75 0 0 1 9 10ZM17.25 10.75a.75.75 0 0 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5h1.5ZM14 10a2 2 0 1 0-4 0 2 2 0 0 0 4 0ZM10 16.25a2 2 0 1 0-4 0 2 2 0 0 0 4 0Z" />
                     </svg>
-                    
+
                     </button>
                 </li>
                 </ul>
@@ -109,7 +161,7 @@ pub fn app() -> impl IntoView {
         </nav>
         <main class="flex flex-row max-h-full grow overflow-x-auto">
             <div class="h-full w-1/2 ">
-                <textarea placeholder="Type here ..." class="textarea  w-full h-full resize-none focus:ring-0 focus:border-transparent focus:outline-none rounded-none"  prop:value=move || typed_val.get() on:input=move |ev| typed_set.set(event_target_value(&ev))>{typed_val.get_untracked()}</textarea>
+                <textarea placeholder="Type here ..." id="sql_source" class="textarea  w-full h-full resize-none focus:ring-0 focus:border-transparent focus:outline-none rounded-none"  prop:value=move || typed_val.get() on:input=move |ev| typed_set.set(event_target_value(&ev))>{typed_val.get_untracked()}</textarea>
             </div>
             <Suspense
                 fallback=move || view! { <p>"Loading..."</p> }
@@ -129,9 +181,9 @@ pub fn app() -> impl IntoView {
             <label class="label cursor-pointer">
                 <span class="label-text">Dark mode</span>
                 <label class="swap">
-                <input type="checkbox" class="theme-controller" value=move|| if is_dark_mode.get() { "light" } else { "dark"} checked:is_dark_mode />
-                    <div class="swap-off" class:swap-off=is_light_mode class:swap-on=is_dark_mode >OFF</div>
-                    <div class="swap-on" class:swap-off=is_dark_mode class:swap-on=is_light_mode >ON</div>
+                <input type="checkbox" class="theme-controller" on:change=compute_cm_theme value=move|| if is_dark_mode.get() {  "light" } else { "dark"} />
+                    <div class:swap-off=is_light_mode class:swap-on=is_dark_mode >OFF</div>
+                    <div class:swap-off=is_dark_mode class:swap-on=is_light_mode >ON</div>
               </label>
             </label>
             <label class="label cursor-pointer">
@@ -159,6 +211,6 @@ pub fn app() -> impl IntoView {
                 </div>
             })
         }
-        
+
     }
 }
