@@ -193,11 +193,11 @@ pub fn app() -> impl IntoView {
             </label>
             <label class="label cursor-pointer">
               <span class="label-text">Dark mode rendering</span>
-              <input type="checkbox" checked:render_in_dark_mode_val class="checkbox" on:click=move|_|render_in_dark_mode_set.set(!render_in_dark_mode_val.get()) />
+              <input type="checkbox" checked=render_in_dark_mode_val class="checkbox" on:click=move|_|render_in_dark_mode_set.set(!render_in_dark_mode_val.get()) />
             </label>
             <label class="label cursor-pointer">
                 <span class="label-text">Show legend</span>
-                <input type="checkbox" checked:show_legend_val class="checkbox" on:click=move|_|show_legend_set.set(!show_legend_val.get())  />
+                <input type="checkbox" checked=show_legend_val class="checkbox" on:click=move|_|show_legend_set.set(!show_legend_val.get())  />
             </label>
           </div>
             <div class="modal-action">
