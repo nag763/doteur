@@ -119,6 +119,7 @@ pub fn app() -> impl IntoView {
         if let Some(cm) = cm.get() {
             if is_dark_mode.get() {
                 cm.set_option("theme", "material".into());
+                render_in_dark_mode_set.set(true);
             }
             let closure: Box<dyn FnMut()> = Box::new(cm_on_val_change);
             let closure = Closure::wrap(closure);
