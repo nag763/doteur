@@ -3,7 +3,7 @@ mod graphviz;
 
 use std::str::FromStr;
 
-use codemirror::{CodeMirror, CodeMirrorOptions};
+use codemirror::{CodeMirror, CodeMirrorOptions, Position};
 use graphviz::Graphviz;
 use leptos::{
     component, create_effect, create_local_resource, create_signal, document, event_target_checked,
@@ -67,6 +67,10 @@ pub fn app() -> impl IntoView {
             };
             cm.focus();
             cm.set_size("100%", "100%");
+            let position = Position::default();
+            position.set_character(DEFAULT.len());
+            position.set_line(0);
+            cm.set_cursor(&position);
             cm
         },
     );
