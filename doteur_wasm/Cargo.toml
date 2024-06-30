@@ -7,6 +7,7 @@ readme = "README.md"
 
 [dependencies]
 doteur_core = { path = "../doteur_core", default-features = false, version="0.5.6" }
+gloo-console = "0.3.0"
 leptos = { version = "0.6.12", features = ["csr"] }
 leptos-use = "0.10.10"
 wasm-bindgen = "0.2.92"

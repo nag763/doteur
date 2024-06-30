@@ -3,7 +3,7 @@ mod graphviz;
 
 use std::str::FromStr;
 
-use codemirror::{CodeMirror, CodeMirrorOptions, Position};
+use codemirror::{sql, CodeMirror, CodeMirrorOptions, EditorView, Position};
 use graphviz::Graphviz;
 use leptos::{
     component, create_effect, create_local_resource, create_signal, document, event_target_checked,
@@ -58,10 +58,15 @@ pub fn app() -> impl IntoView {
     let cm = create_local_resource(
         || (),
         move |_| async move {
+            sql();
             let el = document().get_element_by_id("sql_source");
+            let extensions = Array::new();
+            extensions.push(&sql());
             let options = CodeMirrorOptions::default();
             options.set_line_numbers(true);
+            options.set_extensions(extensions);
             options.set_mode("sql");
+            gloo_console::log!("Options ?", &options);
             let Some(cm) = CodeMirror::from_text_area(el, options) else {
                 panic!("Code mirror can't be initialized");
             };
@@ -71,6 +76,8 @@ pub fn app() -> impl IntoView {
             position.set_character(DEFAULT.len());
             position.set_line(0);
             cm.set_cursor(&position);
+            gloo_console::log!("CM ?", &cm);
+            EditorView::new();
             cm
         },
     );
