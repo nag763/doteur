@@ -1,33 +1,11 @@
 use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
 use web_sys::{
-    js_sys::{Array, Function, Object},
+    js_sys::{Function, Object},
     Element,
 };
 
-#[wasm_bindgen(module = "https://cdn.jsdelivr.net/npm/@codemirror/lang-sql@6.7.0/+esm")]
-extern "C" {
-
-
-
-
-    #[wasm_bindgen]
-    pub fn sql() -> LanguageSupport;
-
-}
-
 #[wasm_bindgen(module = "https://cdn.jsdelivr.net/npm/codemirror@6.65.7/+esm")]
 extern "C" {
-
-
-    #[wasm_bindgen(js_name = "EditorView")]
-    pub type EditorView;
-
-    #[wasm_bindgen(constructor ,js_class = "EditorView")]
-    pub fn new() -> EditorView;
-
-
-    #[wasm_bindgen(js_name = "LanguageSupport")]
-    pub type LanguageSupport;
 
     #[derive(Clone)]
     #[wasm_bindgen(js_name = "default")]
@@ -49,9 +27,6 @@ extern "C" {
 
     #[wasm_bindgen(method, setter = theme)]
     pub fn set_theme(this: &CodeMirrorOptions, theme: &str);
-
-    #[wasm_bindgen(method, setter = extensions)]
-    pub fn set_extensions(this: &CodeMirrorOptions, extensions: Array);
 
     #[wasm_bindgen(method, setter = line)]
     pub fn set_line(this: &Position, line: u32);
