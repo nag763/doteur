@@ -23,6 +23,8 @@ jobs:
       - name: Install npm deps
         run: npm i
         working-directory: ./doteur_wasm
+      - name: Optimize build
+        run: printf "\n[profile.release]\nlto = true\ncodegen-units = 1\nstrip = true\npanic = \"abort\"\nopt-level = \"z\"\n" >> Cargo.toml
       - name: Build package
         run: trunk build --release --public-url https://nag763.github.io/doteur/live
         working-directory: ./doteur_wasm
