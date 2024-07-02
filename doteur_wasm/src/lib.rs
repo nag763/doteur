@@ -7,8 +7,7 @@ use codemirror::{CodeMirror, CodeMirrorOptions, Position};
 use graphviz::Graphviz;
 use leptos::{
     component, create_effect, create_local_resource, create_signal, document, event_target_checked,
-    event_target_value, view, window_event_listener, IntoView, SignalGet, SignalGetUntracked,
-    SignalSet, Suspense,
+    view, window_event_listener, IntoView, SignalGet, SignalSet, Suspense,
 };
 use leptos_use::{use_timeout_fn, UseTimeoutFnReturn};
 use wasm_bindgen::{closure::Closure, JsCast};
@@ -38,22 +37,8 @@ pub fn app() -> impl IntoView {
     let (render_in_dark_mode_val, render_in_dark_mode_set) = create_signal(false);
     let (show_legend_val, show_legend_set) = create_signal(false);
 
-    let (typed_val, typed_set) = create_signal(String::from(DEFAULT));
+    let (output_val, output_set) = create_signal(None);
     let (options_open_val, options_open_set) = create_signal(false);
-
-    let output = move || {
-        let graphviz = graphviz.get()?;
-        if !doteur_core::contains_sql_tables(&typed_val.get()) {
-            return None;
-        };
-        let dot = doteur_core::process_data(
-            &typed_val.get(),
-            None,
-            show_legend_val.get(),
-            render_in_dark_mode_val.get(),
-        );
-        Some(graphviz.dot(&dot))
-    };
 
     let cm = create_local_resource(
         || (),
@@ -70,15 +55,26 @@ pub fn app() -> impl IntoView {
             let position = Position::default();
             position.set_character(DEFAULT.len());
             position.set_line(0);
+            cm.set_value(DEFAULT);
             cm.set_cursor(&position);
             cm
         },
     );
 
     let cm_on_val_change = move || {
-        if let Some(cm) = cm.get() {
-            typed_set.set(cm.get_value());
-        };
+        if let (Some(cm), Some(graphviz)) = (cm.get(), graphviz.get()) {
+            let cm_val = cm.get_value();
+            if !doteur_core::contains_sql_tables(&cm_val) {
+                output_set.set(None);
+            };
+            let dot = doteur_core::process_data(
+                &cm_val,
+                None,
+                show_legend_val.get(),
+                render_in_dark_mode_val.get(),
+            );
+            output_set.set(Some(graphviz.dot(&dot)));
+        }
     };
 
     let UseTimeoutFnReturn {
@@ -86,7 +82,7 @@ pub fn app() -> impl IntoView {
     } = use_timeout_fn(|()| {}, 5000.0);
 
     let gen_download = move || {
-        if let Some(output) = output() {
+        if let Some(output) = output_val.get() {
             let js_str = JsString::from_str(&output).unwrap();
             let array = Array::from(&js_str);
             let b = Blob::new_with_str_sequence(&array).unwrap();
@@ -117,6 +113,7 @@ pub fn app() -> impl IntoView {
     // Once loaded
     create_effect(move |_| {
         if let Some(cm) = cm.get() {
+            cm_on_val_change();
             if is_dark_mode.get() {
                 cm.set_option("theme", "material".into());
                 render_in_dark_mode_set.set(true);
@@ -145,7 +142,7 @@ pub fn app() -> impl IntoView {
                     </a>
                 </li>
                 <li>
-                    <a title="Download" href=gen_download download="export.svg"  class="btn btn-ghost btn-circle" on:click=move |_| if output().is_some() { start(()) } >
+                    <a title="Download" href=gen_download download="export.svg"  class="btn btn-ghost btn-circle" on:click=move |_| if output_val.get().is_some() { start(()) } >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 h-5">
                     <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z" />
                     <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
@@ -166,12 +163,12 @@ pub fn app() -> impl IntoView {
         </nav>
         <main class="flex flex-row max-h-full grow overflow-x-auto">
             <div class="h-full w-1/2 ">
-                <textarea placeholder="Type here ..." id="sql_source" class="textarea  w-full h-full resize-none focus:ring-0 focus:border-transparent focus:outline-none rounded-none"  prop:value=move || typed_val.get() on:input=move |ev| typed_set.set(event_target_value(&ev))>{typed_val.get_untracked()}</textarea>
+                <textarea placeholder="Type here ..." id="sql_source" class="textarea  w-full h-full resize-none focus:ring-0 focus:border-transparent focus:outline-none rounded-none"  ></textarea>
             </div>
             <Suspense
                 fallback=move || view! { <p>"Loading..."</p> }
             >
-            <div inner_html=output class="w-1/2 h-full max-w-1/2 glass overflow-x-auto"></div>
+            <div inner_html=output_val class="w-1/2 h-full max-w-1/2 glass overflow-x-auto"></div>
             </Suspense>
         </main>
         <footer class="footer footer-center p-4 bg-base-200 text-base-content">
