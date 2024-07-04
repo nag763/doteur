@@ -6,15 +6,16 @@ use std::str::FromStr;
 use codemirror::{CodeMirror, CodeMirrorOptions, Position};
 use graphviz::Graphviz;
 use leptos::{
-    component, create_effect, create_local_resource, create_signal, document, event_target_checked,
-    view, window_event_listener, IntoView, SignalGet, SignalSet, Suspense,
+    component, create_effect, create_local_resource, create_node_ref, create_signal, document,
+    event_target_checked, html::Input, view, window_event_listener, HtmlElement, IntoView,
+    SignalGet, SignalSet, Suspense,
 };
 use leptos_use::{use_timeout_fn, UseTimeoutFnReturn};
 use wasm_bindgen::{closure::Closure, JsCast};
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{
     js_sys::{Array, Function, JsString},
-    Blob,
+    Blob, FileReader, InputEvent,
 };
 
 const DEFAULT: &str = "CREATE TABLE HELLO (world INT PRIMARY KEY);";
@@ -55,7 +56,7 @@ pub fn app() -> impl IntoView {
             let position = Position::default();
             position.set_character(DEFAULT.len());
             position.set_line(0);
-            cm.set_value(DEFAULT);
+            cm.set_str_value(DEFAULT);
             cm.set_cursor(&position);
             cm
         },
@@ -127,8 +128,46 @@ pub fn app() -> impl IntoView {
         }
     });
 
+    let Ok(reader) = FileReader::new() else {
+        panic!("File reader can't be initialized");
+    };
+    reader.set_onload(Some(
+        &Closure::<dyn Fn(InputEvent)>::new(move |ie: InputEvent| {
+            let Some(target) = ie.target() else {
+                panic!("Target must be defined");
+            };
+            let Ok(input) = target.dyn_into::<FileReader>() else {
+                panic!("This is only implemented for file reader")
+            };
+            let Ok(text) = input.result() else {
+                return;
+            };
+            let Some(cm) = cm.get() else {
+                panic!("Code mirror can not be undefined");
+            };
+            cm.set_value(&text);
+        })
+        .into_js_value()
+        .unchecked_into::<Function>(),
+    ));
+    let file_node_ref = create_node_ref();
+
+    let read_file = move |_e| {
+        let Some(file_node_ref): Option<HtmlElement<Input>> = file_node_ref.get() else {
+            panic!("Can't be unloaded");
+        };
+        let Some(files) = file_node_ref.files() else {
+            panic!("Can't be anything but files");
+        };
+        let Some(file) = files.get(0) else {
+            return;
+        };
+        let _ = reader.read_as_text(&Blob::from(file));
+    };
+
     view! {
         <nav class="navbar bg-base-100">
+        <input node_ref=file_node_ref class="hidden" id="upload" type="file" on:change=read_file />
             <div class="flex-1">
                 <p class="text-xl">doteur</p>
             </div>
@@ -140,6 +179,13 @@ pub fn app() -> impl IntoView {
                         <path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0ZM8.94 6.94a.75.75 0 1 1-1.061-1.061 3 3 0 1 1 2.871 5.026v.345a.75.75 0 0 1-1.5 0v-.5c0-.72.57-1.172 1.081-1.287A1.5 1.5 0 1 0 8.94 6.94ZM10 15a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd" />
                         </svg>
                     </a>
+                </li>
+                <li>
+                        <label for="upload" title="Upload a file" class="btn btn-ghost btn-circle">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 h-5 ">
+                                <path d="M4.75 3A1.75 1.75 0 0 0 3 4.75v2.752l.104-.002h13.792c.035 0 .07 0 .104.002V6.75A1.75 1.75 0 0 0 15.25 5h-3.836a.25.25 0 0 1-.177-.073L9.823 3.513A1.75 1.75 0 0 0 8.586 3H4.75ZM3.104 9a1.75 1.75 0 0 0-1.673 2.265l1.385 4.5A1.75 1.75 0 0 0 4.488 17h11.023a1.75 1.75 0 0 0 1.673-1.235l1.384-4.5A1.75 1.75 0 0 0 16.896 9H3.104Z" />
+                            </svg>
+                        </label>
                 </li>
                 <li>
                     <a title="Download" href=gen_download download="export.svg"  class="btn btn-ghost btn-circle" on:click=move |_| if output_val.get().is_some() { start(()) } >

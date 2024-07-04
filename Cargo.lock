@@ -769,6 +769,7 @@ name = "doteur_wasm"
 version = "0.2.0"
 dependencies = [
  "doteur_core",
+ "gloo-console",
  "leptos",
  "leptos-use",
  "wasm-bindgen",
@@ -1067,6 +1068,19 @@ name = "glob"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d2fabcfbdc87f4758337ca535fb41a6d701b65693ce38287d856d1674551ec9b"
+
+[[package]]
+name = "gloo-console"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2a17868f56b4a24f677b17c8cb69958385102fa879418052d60b50bc1727e261"
+dependencies = [
+ "gloo-utils",
+ "js-sys",
+ "serde",
+ "wasm-bindgen",
+ "web-sys",
+]
 
 [[package]]
 name = "gloo-net"

@@ -56,5 +56,8 @@ extern "C" {
     pub fn get_value(this: &CodeMirror) -> String;
 
     #[wasm_bindgen(method, js_name=setValue)]
-    pub fn set_value(this: &CodeMirror, value: &str);
+    pub fn set_value(this: &CodeMirror, value: &JsValue);
+
+    #[wasm_bindgen(method, js_name=setValue)]
+    pub fn set_str_value(this: &CodeMirror, value: &str);
 }
