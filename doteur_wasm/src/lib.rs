@@ -96,7 +96,7 @@ pub fn app() -> impl IntoView {
 
     let compute_cm_theme = move |e| {
         let theme = if event_target_checked(&e) == is_dark_mode.get() {
-            "normal"
+            "default"
         } else {
             "material"
         };

@@ -4,11 +4,10 @@ use web_sys::{
     Element,
 };
 
-#[wasm_bindgen(module = "https://cdn.jsdelivr.net/npm/codemirror@6.65.7/+esm")]
+#[wasm_bindgen]
 extern "C" {
 
     #[derive(Clone)]
-    #[wasm_bindgen(js_name = "default")]
     pub type CodeMirror;
 
     #[wasm_bindgen(extends = Object)]
@@ -34,7 +33,7 @@ extern "C" {
     #[wasm_bindgen(method, setter = character)]
     pub fn set_character(this: &Position, character: usize);
 
-    #[wasm_bindgen(static_method_of=CodeMirror, js_name =fromTextArea ,js_class = "default")]
+    #[wasm_bindgen(static_method_of=CodeMirror, js_name =fromTextArea)]
     pub fn from_text_area(el: Option<Element>, options: CodeMirrorOptions) -> Option<CodeMirror>;
 
     #[wasm_bindgen(method)]
