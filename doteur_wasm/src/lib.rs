@@ -67,6 +67,7 @@ pub fn app() -> impl IntoView {
             let cm_val = cm.get_value();
             if !doteur_core::contains_sql_tables(&cm_val) {
                 output_set.set(None);
+                return;
             };
             let dot = doteur_core::process_data(
                 &cm_val,
