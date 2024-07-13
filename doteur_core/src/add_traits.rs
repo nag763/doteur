@@ -158,7 +158,6 @@ mod tests {
         );
     }
 
-
     #[test]
     fn test_replace_backquotes() {
         assert_eq!(
