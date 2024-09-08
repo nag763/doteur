@@ -1,6 +1,10 @@
-use sql_parser::{ClauseKeyword, DdlKeyword, SqlTable};
+use sql_parser::{ClauseKeyword, DdlKeyword, SqlAttribute, SqlDataType, SqlTable};
 
 pub mod sql_parser;
+
+fn split_tokens(input:  &str)  {
+
+}
 
 pub fn parse_table(input: &str) -> Option<SqlTable> {
     let mut splitted = input.split_ascii_whitespace();
@@ -36,4 +40,26 @@ pub fn parse_table(input: &str) -> Option<SqlTable> {
         name: table_name.to_string(),
         content: table_content.to_string(),
     })
+}
+
+pub fn parse_attribute(input: &str) -> Option<SqlAttribute> {
+    if input.is_empty() {
+        return None;
+    };
+    let mut splitted = input.split_whitespace();
+    let attr_name = splitted.next()?;
+    let next_token = splitted.next()?;
+    let Ok(attr_data_type) = SqlDataType::try_from(splitted.next()?) else {
+        return None;
+    };
+    for (index, next_token) in splitted.by_ref().enumerate() {
+        if index == 0 {
+            if next_token == ClauseKeyword::Default {
+                let next = splitted.next();
+            }
+        }
+    }  
+        
+    
+    None
 }

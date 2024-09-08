@@ -7,6 +7,14 @@ pub struct SqlTable {
     pub content: String,
 }
 
+pub struct SqlAttribute {
+    pub name : String,
+    pub sql_type: SqlDataType,
+    pub sql_data_size: Option<u32>,
+    pub is_primary: bool,
+    pub is_foreign: bool
+}
+
 #[derive(Eq, PartialEq)]
 pub enum DdlKeyword {
     Add,
@@ -45,6 +53,7 @@ pub enum ClauseKeyword {
     Asc,
     Between,
     By,
+    Default,
     Desc,
     Distinct,
     Exists,
