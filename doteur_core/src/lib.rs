@@ -424,10 +424,10 @@ fn generate_relations(
         .map_or("RESTRICT", |m| m.as_str());
 
     // Process the input
-    return match detect_comas(table_key.as_str()) {
+    match detect_comas(table_key.as_str()) {
         // Case where attributes are separated by comas
         Ok(comas_vec) if !comas_vec.is_empty() => {
-            return match detect_comas(distant_key.as_str()) {
+            match detect_comas(distant_key.as_str()) {
                 // If both vec are the same size, then the nth key of vec1 matches nth key of vec2
                 Ok(second_coma_vec)
                     if !second_coma_vec.is_empty() && second_coma_vec.len() == comas_vec.len() =>
@@ -461,7 +461,7 @@ fn generate_relations(
                 _ => Err(DoteurCoreError::user_input_malformed(
                     "Error in file format",
                 )),
-            };
+            }
         }
         // Single key processing
         _ => Ok(Some(Relation::new_with_single_pair(
@@ -471,7 +471,7 @@ fn generate_relations(
             distant_key.replace_enclosing().trim_leading_trailing(),
             relation_type.to_string(),
         ))),
-    };
+    }
 }
 
 /// Process the given file and return the output as a string
