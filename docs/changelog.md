@@ -8,7 +8,15 @@ You will find below the different details about the different versions of this t
 
 ---
 
-## Version 0.5.6 (latest) :
+## Version 0.5.7 (latest) :
+
+- Fix multiple line comments issue ((https://github.com/nag763/doteur/issues/6)[https://github.com/nag763/doteur/issues/6])
+
+- Dependencies and rust version upgrade
+
+---
+
+## Version 0.5.6 :
 
 - Optimize release package size
 

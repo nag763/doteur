@@ -80,7 +80,7 @@ pub const POSSIBLE_DOTS_OUTPUT: [&str; 53] = [
 #[derive(Parser)]
 #[clap(
     author = "LABEYE Loïc <loic.labeye@pm.me>",
-    version = "0.5.6",
+    version = "0.5.7",
     about = "Parse a SQL configuration and convert it into a .dot file, render the output if Graphviz is installed",
     after_help = "Some functionnalities might not appear as they depend on which version this tool has been downloaded or built for."
 )]
