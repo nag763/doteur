@@ -96,7 +96,7 @@ lazy_static! {
     ///Look after alter table statements.
     static ref RE_ALTERED_TABLE : Regex = Regex::new(r####"\s*(?i)ALTER\s*TABLE\s*(?:ONLY)?\s*['`"\[]?(?:(?:public|private).)?(?P<table_name>\w*)[`"'\]]?\s*(?P<altered_content>[^;]*)"####).unwrap();
     ///Regex to remove comments
-    static ref RE_COMMENTS : Regex = Regex::new(r####"(?:[-]{2}|[#]{1}).*$|(?:(?:\\\*)[^\*/]+(?:\*/))"####).unwrap();
+    static ref RE_COMMENTS : Regex = Regex::new(r####"(--.*|#.*|/\*[^*/]*\*/)"####).unwrap();
 }
 
 /// Get the tables from the input
@@ -147,7 +147,7 @@ pub fn contains_sql_tables(data: &str) -> bool {
 
 /// Remove the SQL comments from an input
 fn remove_sql_comments(data: &str) -> Cow<'_, str> {
-    RE_COMMENTS.replace(data, "")
+    RE_COMMENTS.replace_all(data, "")
 }
 
 /// Convert a sql table to a dot table and store it in the given dot file
@@ -1211,6 +1211,133 @@ mod tests {
         assert!(
             !RE_COL_TYPE.is_match("`productCode` varchar(15) NOT NULL,"),
             "col def"
+        );
+    }
+
+    #[test]
+    fn test_re_comments() {
+        // Test single-line comments with --
+        assert!(
+            RE_COMMENTS.is_match("-- This is a single-line comment"),
+            "single-line comment with --"
+        );
+        assert!(
+            RE_COMMENTS.is_match("SELECT * FROM users; -- This is another comment"),
+            "single-line comment with -- at the end of a line"
+        );
+
+        // Test single-line comments with #
+        assert!(
+            RE_COMMENTS.is_match("# This is a comment with hash"),
+            "single-line comment with #"
+        );
+        assert!(
+            RE_COMMENTS.is_match("SELECT * FROM products; # End of query"),
+            "single-line comment with # at the end of a line"
+        );
+
+        // Test multi-line comments with /* */
+        assert!(
+            RE_COMMENTS.is_match("/* This is a multi-line comment */"),
+            "multi-line comment"
+        );
+        assert!(
+            RE_COMMENTS.is_match("SELECT * FROM orders; /* Comment within SQL */"),
+            "multi-line comment inside SQL query"
+        );
+        assert!(
+            RE_COMMENTS.is_match("/* This is a\nmulti-line comment */"),
+            "multi-line comment spanning multiple lines"
+        );
+
+        // Test comments with special characters or mixed spacing
+        assert!(
+            RE_COMMENTS.is_match("  -- Comment with leading spaces"),
+            "single-line comment with leading spaces"
+        );
+        assert!(
+            RE_COMMENTS.is_match("    # Another comment with spaces before hash"),
+            "single-line comment with spaces before #"
+        );
+        assert!(
+            RE_COMMENTS.is_match("  /* A multi-line\n  comment with indentation */"),
+            "multi-line comment with indentation"
+        );
+
+        // Ensure non-matching text does not match
+        assert!(
+            !RE_COMMENTS.is_match("SELECT * FROM users;"),
+            "text without comments"
+        );
+        assert!(
+            !RE_COMMENTS.is_match("CREATE TABLE products (id INT, name VARCHAR);"),
+            "SQL definition without comments"
+        );
+
+        // Check the capturing groups to ensure proper comment capture
+        assert_eq!(
+            RE_COMMENTS
+                .captures("-- This is a comment")
+                .unwrap()
+                .get(0)
+                .unwrap()
+                .as_str(),
+            "-- This is a comment",
+            "capture single-line comment with --"
+        );
+        assert_eq!(
+            RE_COMMENTS
+                .captures("# This is a hash comment")
+                .unwrap()
+                .get(0)
+                .unwrap()
+                .as_str(),
+            "# This is a hash comment",
+            "capture single-line comment with #"
+        );
+        assert_eq!(
+            RE_COMMENTS
+                .captures("/* This is a multi-line comment */")
+                .unwrap()
+                .get(0)
+                .unwrap()
+                .as_str(),
+            "/* This is a multi-line comment */",
+            "capture multi-line comment"
+        );
+        assert_eq!(
+            RE_COMMENTS
+                .captures("SELECT * FROM orders; /* Comment at the end */")
+                .unwrap()
+                .get(0)
+                .unwrap()
+                .as_str(),
+            "/* Comment at the end */",
+            "capture multi-line comment at the end of a SQL statement"
+        );
+
+        // Test edge cases like empty comments or comments with only spaces
+        assert!(RE_COMMENTS.is_match("-- "), "empty single-line comment");
+        assert!(
+            RE_COMMENTS.is_match("  #     "),
+            "empty single-line comment with leading spaces"
+        );
+        assert!(RE_COMMENTS.is_match("/*  */"), "empty multi-line comment");
+        assert!(
+            RE_COMMENTS.is_match("/*\n   \n*/"),
+            "empty multi-line comment with newline characters"
+        );
+
+        // Ensure the comment is correctly captured even with different line breaks
+        assert_eq!(
+            RE_COMMENTS
+                .captures("/*\nThis is a multi-line comment\n*/")
+                .unwrap()
+                .get(0)
+                .unwrap()
+                .as_str(),
+            "/*\nThis is a multi-line comment\n*/",
+            "capture multi-line comment with line breaks"
         );
     }
 }
