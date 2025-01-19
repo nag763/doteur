@@ -10,6 +10,6 @@ doteur_core = { path = "../doteur_core", default-features = false, version="0.5.
 gloo-console = "0.3.0"
 leptos = { version = "0.6.15", features = ["csr"] }
 leptos-use = "0.13.13"
-wasm-bindgen = "0.2.99"
-wasm-bindgen-futures = "0.4.49"
-web-sys = "0.3.76"
+wasm-bindgen = "0.2.100"
+wasm-bindgen-futures = "0.4.50"
+web-sys = "0.3.77"

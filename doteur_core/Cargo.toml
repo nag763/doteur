@@ -12,7 +12,7 @@ repository = "https://github.com/nag763/doteur/"
 [dependencies]
 regex = "1.11.1"
 lazy_static = "1.5.0"
-log = "0.4.22"
+log = "0.4.25"
 itertools = "0.13.0"
 mysql = { version="25.0.1", optional=true}
 rusqlite = { version="0.32.1", optional=true}
