@@ -22,8 +22,8 @@ exclude = [
 [dependencies]
 doteur_core = { path = "../doteur_core", default-features = false, version="0.5.7" }
 cfg-if = "1.0.0"
-which = "7.0.1"
-clap = { version = "4.5.26", features = ["derive"] }
+which = "7.0.2"
+clap = { version = "4.5.28", features = ["derive"] }
 env_logger = "0.11.6"
 dialoguer = { version="0.11.0", optional=true}
 
